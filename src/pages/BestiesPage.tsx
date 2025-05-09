@@ -2,13 +2,17 @@
 import React, { useState } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
-import { Search, Rainbow } from "lucide-react";
+import { Search, Rainbow, UserPlus, Users, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BestiesFilter from "@/components/besties/BestiesFilter";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("suggested");
+  const [showFilters, setShowFilters] = useState(false);
   
   const profiles = [
     {
@@ -67,9 +71,34 @@ const BestiesPage: React.FC = () => {
           <Rainbow className="h-5 w-5 mr-2 text-pink-500" />
           <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">Besties</h1>
         </div>
-        <Button variant="ghost" size="icon">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => setShowFilters(!showFilters)}
+        >
           <Search className="h-5 w-5" />
         </Button>
+      </div>
+      
+      <div className="mb-4">
+        <Tabs defaultValue="suggested" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full grid grid-cols-3 mb-2">
+            <TabsTrigger value="suggested" className="flex items-center gap-1">
+              <Sparkles className="h-4 w-4" />
+              <span>Suggested</span>
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>Groups</span>
+            </TabsTrigger>
+            <TabsTrigger value="search" className="flex items-center gap-1">
+              <Search className="h-4 w-4" />
+              <span>Search</span>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        {showFilters && <BestiesFilter />}
       </div>
       
       <div className="flex-1 flex flex-col items-center justify-center">
