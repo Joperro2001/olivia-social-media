@@ -8,8 +8,8 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="relative min-h-full pb-20">
-      <main className="container mx-auto px-4 py-4">{children}</main>
+    <div className="relative min-h-full">
+      <main className="h-full">{children}</main>
       <NavigationBar />
     </div>
   );

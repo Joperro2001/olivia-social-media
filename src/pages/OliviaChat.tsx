@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
@@ -23,25 +22,27 @@ const OliviaChat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const suggestedCards = [{
-    id: "card1",
-    title: "Find Your Perfect City",
-    description: "Take our City Match Quiz and discover where you'd thrive!",
-    image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=500",
-    ctaText: "Start Quiz"
-  }, {
-    id: "card2",
-    title: "Get a Local SIM Card",
-    description: "Stay connected with affordable mobile data options.",
-    image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=500",
-    ctaText: "View Options"
-  }, {
-    id: "card3",
-    title: "Housing Assistance",
-    description: "Find roommates, short-term rentals, or your dream apartment.",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=500",
-    ctaText: "Explore Housing"
-  }];
+  const suggestedCards = [
+    {
+      id: "card1",
+      title: "Find Your Perfect City",
+      description: "Take our City Match Quiz and discover where you'd thrive!",
+      image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=500",
+      ctaText: "Start Quiz"
+    }, {
+      id: "card2",
+      title: "Get a Local SIM Card",
+      description: "Stay connected with affordable mobile data options.",
+      image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=500",
+      ctaText: "View Options"
+    }, {
+      id: "card3",
+      title: "Housing Assistance",
+      description: "Find roommates, short-term rentals, or your dream apartment.",
+      image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=500",
+      ctaText: "Explore Housing"
+    }
+  ];
   
   const handleSendMessage = (content: string) => {
     // Add user message
@@ -106,7 +107,7 @@ const OliviaChat: React.FC = () => {
   }, [messages, isTyping]);
   
   return (
-    <div className="flex flex-col h-[100vh] bg-gradient-to-b from-peach-light to-white pb-16">
+    <div className="flex flex-col h-[100vh] bg-peach-light pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
       </div>
@@ -123,7 +124,7 @@ const OliviaChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-white to-transparent pt-6">
+      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-peach-light to-transparent pt-6">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
       

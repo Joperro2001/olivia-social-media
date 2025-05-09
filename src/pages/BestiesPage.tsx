@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
@@ -65,7 +64,7 @@ const BestiesPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[100vh] bg-gradient-to-b from-lavender-light to-white pb-16">
+    <div className="flex flex-col h-[100vh] bg-lavender-light pb-16">
       <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center">
           <Rainbow className="h-5 w-5 mr-2 text-pink-500" />

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import EventCard from "@/components/social/EventCard";
 import CategoryTabs from "@/components/social/CategoryTabs";
@@ -74,16 +73,18 @@ const SocialPage: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col h-[100vh] bg-gradient-to-b from-mint-light to-white pb-16">
+    <div className="flex flex-col h-[100vh] bg-mint-light pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Social</h1>
       </div>
       
-      <CategoryTabs
-        categories={categories}
-        activeCategory={activeCategory}
-        onSelectCategory={setActiveCategory}
-      />
+      <div className="px-4">
+        <CategoryTabs
+          categories={categories}
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+        />
+      </div>
       
       <div className="grid grid-cols-1 gap-6 py-4 px-4 overflow-y-auto">
         {filteredEvents.length > 0 ? (

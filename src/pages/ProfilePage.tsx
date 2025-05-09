@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const ProfilePage: React.FC = () => {
   return (
-    <div className="h-[100vh] bg-gradient-to-br from-lavender-light via-white to-mint-light pb-16">
+    <div className="h-[100vh] bg-lavender-light pb-16">
       <ScrollArea className="h-full">
         <div className="flex flex-col pb-10">
           <div className="flex items-center justify-center py-4">
@@ -23,7 +23,7 @@ const ProfilePage: React.FC = () => {
             <div className="mt-4 text-center">
               <h2 className="text-xl font-bold">Alex Taylor</h2>
               <div className="flex items-center justify-center mt-1">
-                <Badge className="bg-lavender-light text-primary">🗺️ Wandering in Berlin</Badge>
+                <Badge className="bg-lavender-dark text-primary">🗺️ Wandering in Berlin</Badge>
               </div>
             </div>
           </div>
