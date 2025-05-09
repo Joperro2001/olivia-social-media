@@ -66,10 +66,10 @@ const BestiesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#D3E4FD] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
-        <div className="flex items-center">
-          <Rainbow className="h-5 w-5 mr-2 text-pink-500" />
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">Besties</h1>
+        <div className="w-10">
+          {/* Empty div for layout balance */}
         </div>
+        <h1 className="text-2xl font-bold text-black">Besties</h1>
         <Button 
           variant="ghost" 
           size="icon"
