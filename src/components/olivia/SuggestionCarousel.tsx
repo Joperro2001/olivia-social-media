@@ -37,14 +37,6 @@ const SuggestionCarousel: React.FC<SuggestionCarouselProps> = ({
           </div>
         ))}
       </div>
-      <div className="flex justify-center mt-1 gap-1">
-        {suggestions.map((suggestion, index) => (
-          <div
-            key={`indicator-${suggestion.id}`}
-            className="w-1.5 h-1.5 rounded-full bg-gray-300"
-          ></div>
-        ))}
-      </div>
     </div>
   );
 };
