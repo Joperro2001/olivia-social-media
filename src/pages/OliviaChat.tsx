@@ -4,7 +4,6 @@ import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import SuggestionCarousel from "@/components/olivia/SuggestionCarousel";
-import FloatingVoiceButton from "@/components/olivia/FloatingVoiceButton";
 
 interface Message {
   id: string;
@@ -95,11 +94,6 @@ const OliviaChat: React.FC = () => {
     }
   };
 
-  const handleVoiceActivate = () => {
-    console.log("Voice activated");
-    // Would implement voice functionality in a real app
-  };
-
   // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
@@ -128,8 +122,6 @@ const OliviaChat: React.FC = () => {
       <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-[#D3E4FD] to-transparent pt-6">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
-      
-      <FloatingVoiceButton onActivate={handleVoiceActivate} />
     </div>
   );
 };
