@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import SuggestionCarousel from "@/components/olivia/SuggestionCarousel";
-import FloatingVoiceButton from "@/components/olivia/FloatingVoiceButton";
 
 interface Message {
   id: string;
@@ -96,11 +94,6 @@ const OliviaChat: React.FC = () => {
     return "Thanks for your message! I'd be happy to help with your relocation needs. Could you provide a bit more detail about what you're looking for? 😊";
   };
 
-  const handleVoiceActivate = () => {
-    console.log("Voice assistant activated");
-    // In a real app, this would trigger voice recognition
-  };
-
   const handleCardAction = (id: string) => {
     console.log(`Card ${id} action triggered`);
     // Would handle specific card actions in a real app
@@ -148,8 +141,6 @@ const OliviaChat: React.FC = () => {
       <div className="p-4 sticky bottom-0">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
-      
-      <FloatingVoiceButton onActivate={handleVoiceActivate} />
     </div>
   );
 };
