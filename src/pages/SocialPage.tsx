@@ -74,7 +74,7 @@ const SocialPage: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col min-h-[calc(100vh-10rem)]">
+    <div className="flex flex-col min-h-[calc(100vh-10rem)] bg-gradient-to-b from-mint-light to-white">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Social</h1>
       </div>

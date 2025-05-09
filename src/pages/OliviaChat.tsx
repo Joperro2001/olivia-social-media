@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
@@ -99,7 +100,7 @@ const OliviaChat: React.FC = () => {
   }, [messages, isTyping]);
   
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-[calc(100vh-8rem)] bg-gradient-to-br from-peach-light to-white">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
       </div>

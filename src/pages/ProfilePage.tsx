@@ -1,11 +1,13 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
 const ProfilePage: React.FC = () => {
-  return <ScrollArea className="h-[calc(100vh-5rem)]">
+  return <ScrollArea className="h-[calc(100vh-5rem)] bg-gradient-to-br from-lavender-light via-white to-mint-light">
       <div className="flex flex-col pb-10">
         <div className="flex items-center justify-center py-4">
           <h1 className="text-2xl font-bold">Profile</h1>
@@ -25,7 +27,7 @@ const ProfilePage: React.FC = () => {
         </div>
         
         <div className="mt-8 space-y-6 px-4">
-          <div className="bg-white rounded-2xl shadow-sm p-5 border">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border">
             <h3 className="font-semibold text-lg mb-3">About Me</h3>
             <p className="text-gray-600">
               Tech professional exploring Berlin for 6 months. Looking to connect with fellow expats, find great workspaces, and explore the local culture.
@@ -54,7 +56,7 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-sm p-5 border">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border">
             <h3 className="font-semibold text-lg mb-4">Relocation Progress</h3>
             
             <div className="space-y-4">
@@ -104,4 +106,5 @@ const ProfilePage: React.FC = () => {
       </div>
     </ScrollArea>;
 };
+
 export default ProfilePage;
