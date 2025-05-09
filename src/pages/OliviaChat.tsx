@@ -4,6 +4,7 @@ import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import SuggestionCarousel from "@/components/olivia/SuggestionCarousel";
+import FloatingVoiceButton from "@/components/olivia/FloatingVoiceButton";
 
 interface Message {
   id: string;
@@ -92,6 +93,11 @@ const OliviaChat: React.FC = () => {
     }
   };
 
+  const handleVoiceActivate = () => {
+    console.log("Voice activated");
+    // Would implement voice functionality in a real app
+  };
+
   // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
@@ -100,12 +106,12 @@ const OliviaChat: React.FC = () => {
   }, [messages, isTyping]);
   
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] bg-gradient-to-br from-peach-light to-white">
+    <div className="flex flex-col h-[100vh] bg-gradient-to-b from-peach-light to-white pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
       </div>
       
-      <div className="flex-1 overflow-y-auto pb-2 px-2">
+      <div className="flex-1 overflow-y-auto pb-2 px-4">
         {messages.map(message => <ChatBubble key={message.id} message={message.content} isUser={message.isUser} timestamp={message.timestamp} avatar={!message.isUser ? "https://api.dicebear.com/7.x/thumbs/svg?seed=olivia" : undefined} />)}
         
         {/* Show typing indicator when Olivia is "typing" */}
@@ -117,9 +123,11 @@ const OliviaChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-0 pb-0 sticky bottom-0 py-0">
+      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-white to-transparent pt-6">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
+      
+      <FloatingVoiceButton onActivate={handleVoiceActivate} />
     </div>
   );
 };

@@ -12,12 +12,12 @@ const SettingsPage: React.FC = () => {
   const [locationSharing, setLocationSharing] = useState(true);
   
   return (
-    <div className="flex flex-col min-h-[calc(100vh-10rem)] bg-gradient-to-br from-white via-blue-50 to-lavender-light">
+    <div className="flex flex-col h-[100vh] bg-gradient-to-br from-white via-blue-50 to-lavender-light pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Settings</h1>
       </div>
       
-      <div className="px-4 space-y-6">
+      <div className="px-4 space-y-6 overflow-y-auto">
         <div className="rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm border overflow-hidden">
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center">

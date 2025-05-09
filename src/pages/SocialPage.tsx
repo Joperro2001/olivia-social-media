@@ -74,7 +74,7 @@ const SocialPage: React.FC = () => {
   };
   
   return (
-    <div className="flex flex-col min-h-[calc(100vh-10rem)] bg-gradient-to-b from-mint-light to-white">
+    <div className="flex flex-col h-[100vh] bg-gradient-to-b from-mint-light to-white pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Social</h1>
       </div>
@@ -85,7 +85,7 @@ const SocialPage: React.FC = () => {
         onSelectCategory={setActiveCategory}
       />
       
-      <div className="grid grid-cols-1 gap-6 py-4">
+      <div className="grid grid-cols-1 gap-6 py-4 px-4 overflow-y-auto">
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
             <EventCard

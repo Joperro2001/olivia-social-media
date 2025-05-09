@@ -65,8 +65,8 @@ const BestiesPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] bg-gradient-to-b from-lavender-light to-white">
-      <div className="flex items-center justify-between py-4">
+    <div className="flex flex-col h-[100vh] bg-gradient-to-b from-lavender-light to-white pb-16">
+      <div className="flex items-center justify-between px-4 py-4">
         <div className="flex items-center">
           <Rainbow className="h-5 w-5 mr-2 text-pink-500" />
           <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">Besties</h1>
@@ -80,7 +80,7 @@ const BestiesPage: React.FC = () => {
         </Button>
       </div>
       
-      <div className="mb-4">
+      <div className="px-4 mb-4">
         <Tabs defaultValue="suggested" className="w-full" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full grid grid-cols-3 mb-2">
             <TabsTrigger value="suggested" className="flex items-center gap-1">
@@ -101,7 +101,7 @@ const BestiesPage: React.FC = () => {
         {showFilters && <BestiesFilter />}
       </div>
       
-      <div className="flex-1 flex flex-col items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center px-4">
         {profiles.length > 0 && currentIndex < profiles.length ? (
           <ProfileCard
             key={profiles[currentIndex].id}
