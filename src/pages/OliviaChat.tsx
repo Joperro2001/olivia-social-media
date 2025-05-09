@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
@@ -107,7 +108,7 @@ const OliviaChat: React.FC = () => {
   }, [messages, isTyping]);
   
   return (
-    <div className="flex flex-col h-[100vh] bg-peach-light pb-16">
+    <div className="flex flex-col h-[100vh] bg-[#D3E4FD] pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
       </div>
@@ -124,7 +125,7 @@ const OliviaChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-peach-light to-transparent pt-6">
+      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-[#D3E4FD] to-transparent pt-6">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
       

@@ -8,7 +8,7 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="relative min-h-full">
+    <div className="relative min-h-full bg-[#D3E4FD]">
       <main className="h-full">{children}</main>
       <NavigationBar />
     </div>

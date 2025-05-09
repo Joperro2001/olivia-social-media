@@ -12,7 +12,7 @@ const SettingsPage: React.FC = () => {
   const [locationSharing, setLocationSharing] = useState(true);
   
   return (
-    <div className="flex flex-col h-[100vh] bg-lavender-light pb-16">
+    <div className="flex flex-col h-[100vh] bg-[#D3E4FD] pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Settings</h1>
       </div>
@@ -21,7 +21,7 @@ const SettingsPage: React.FC = () => {
         <div className="rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm border overflow-hidden">
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-9 h-9 rounded-full bg-lavender-light flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-[#D3E4FD] flex items-center justify-center">
                 <Bell className="h-5 w-5 text-gray-600" />
               </div>
               <div className="ml-3">
@@ -41,7 +41,7 @@ const SettingsPage: React.FC = () => {
           
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-9 h-9 rounded-full bg-lavender-light flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-[#D3E4FD] flex items-center justify-center">
                 <Moon className="h-5 w-5 text-gray-600" />
               </div>
               <div className="ml-3">
@@ -61,7 +61,7 @@ const SettingsPage: React.FC = () => {
           
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-9 h-9 rounded-full bg-lavender-light flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-[#D3E4FD] flex items-center justify-center">
                 <Globe className="h-5 w-5 text-gray-600" />
               </div>
               <div className="ml-3">
@@ -81,7 +81,7 @@ const SettingsPage: React.FC = () => {
         <div className="rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm border overflow-hidden">
           <button className="w-full p-4 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-9 h-9 rounded-full bg-lavender-light flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-[#D3E4FD] flex items-center justify-center">
                 <Shield className="h-5 w-5 text-gray-600" />
               </div>
               <div className="ml-3 text-left">
@@ -95,7 +95,7 @@ const SettingsPage: React.FC = () => {
           
           <button className="w-full p-4 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-9 h-9 rounded-full bg-lavender-light flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-[#D3E4FD] flex items-center justify-center">
                 <CreditCard className="h-5 w-5 text-gray-600" />
               </div>
               <div className="ml-3 text-left">
