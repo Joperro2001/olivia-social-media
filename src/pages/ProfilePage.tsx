@@ -1,26 +1,19 @@
-
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
 const ProfilePage: React.FC = () => {
-  return (
-    <ScrollArea className="h-[calc(100vh-5rem)]">
-      <div className="flex flex-col pb-20">
+  return <ScrollArea className="h-[calc(100vh-5rem)]">
+      <div className="flex flex-col pb-10">
         <div className="flex items-center justify-center py-4">
           <h1 className="text-2xl font-bold">Profile</h1>
         </div>
         
         <div className="flex flex-col items-center mt-2">
           <Avatar className="w-28 h-28 border-4 border-white shadow-md">
-            <img
-              src="https://api.dicebear.com/7.x/thumbs/svg?seed=user"
-              alt="User profile"
-              className="w-full h-full object-cover"
-            />
+            <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=user" alt="User profile" className="w-full h-full object-cover" />
           </Avatar>
           
           <div className="mt-4 text-center">
@@ -100,7 +93,7 @@ const ProfilePage: React.FC = () => {
                 </p>
               </div>
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFD700" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFD700" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <Button className="mt-4 w-full bg-white text-primary hover:bg-white/90 font-medium">
@@ -109,8 +102,6 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
-    </ScrollArea>
-  );
+    </ScrollArea>;
 };
-
 export default ProfilePage;
