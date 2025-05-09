@@ -139,7 +139,7 @@ const OliviaChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-4 pb-6 sticky bottom-0">
+      <div className="p-4 pb-16 sticky bottom-0">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
