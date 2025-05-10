@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, Sparkles, Users } from "lucide-react";
+import { Heart, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
@@ -16,10 +16,6 @@ const BestiesPage: React.FC = () => {
   const handleOpenMatches = () => {
     navigate("/matches");
   };
-  
-  const handleOpenGroups = () => {
-    navigate("/my-matches");
-  };
 
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
@@ -28,26 +24,15 @@ const BestiesPage: React.FC = () => {
           {/* Empty div for layout balance */}
         </div>
         <h1 className="text-2xl font-bold text-black">Social</h1>
-        <div className="flex gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleOpenGroups}
-            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
-            aria-label="View Groups"
-          >
-            <Users className="h-5 w-5" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleOpenMatches}
-            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
-            aria-label="View Matches"
-          >
-            <Heart className="h-5 w-5" />
-          </Button>
-        </div>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={handleOpenMatches}
+          className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+          aria-label="View Matches"
+        >
+          <Heart className="h-5 w-5" />
+        </Button>
       </div>
       
       <div className="px-4 mb-4">
