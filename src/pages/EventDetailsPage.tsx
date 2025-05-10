@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -226,11 +227,10 @@ const EventDetailsPage: React.FC = () => {
         <div className="border-t border-gray-200 my-4"></div>
         
         <h3 className="text-lg font-semibold mb-2">About this event</h3>
-        <p className="text-gray-700 mb-8">{event.description}</p>
+        <p className="text-gray-700 mb-16">{event.description}</p>
       </div>
       
-      {/* Bottom action buttons - increased bottom padding from pb-16 to pb-24 on parent container
-          and adjusted the bottom position with bottom-20 (was bottom-16) */}
+      {/* Bottom action buttons - increased margin bottom on text above */}
       <div className="fixed bottom-20 left-0 right-0 p-4 flex gap-2 bg-[#FDF5EF] border-t border-gray-200 shadow-sm">
         <Button 
           variant="outline" 
