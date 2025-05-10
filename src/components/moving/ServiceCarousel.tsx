@@ -120,14 +120,14 @@ const ServiceCarousel: React.FC<ServiceCarouselProps> = ({ category, searchQuery
   
   if (filteredServices.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
+      <div className="text-center py-6 text-muted-foreground">
         No services found. Try a different search term.
       </div>
     );
   }
 
   return (
-    <div className="relative px-4">
+    <div className="relative">
       <Carousel className="w-full">
         <CarouselContent className="-ml-2 md:-ml-4">
           {filteredServices.map((service) => (
@@ -136,7 +136,7 @@ const ServiceCarousel: React.FC<ServiceCarouselProps> = ({ category, searchQuery
             </CarouselItem>
           ))}
         </CarouselContent>
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center mt-2">
           <CarouselPrevious className="relative inset-auto mr-2 translate-y-0" />
           <CarouselNext className="relative inset-auto ml-2 translate-y-0" />
         </div>

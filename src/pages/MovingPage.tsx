@@ -22,7 +22,7 @@ const MovingPage: React.FC = () => {
           value={activeTab}
           onValueChange={setActiveTab}
         >
-          <TabsList className="grid grid-cols-3 mb-6 w-full sticky top-0 z-10 bg-[#FDF5EF]">
+          <TabsList className="grid grid-cols-3 mb-4 w-full sticky top-0 z-10 bg-[#FDF5EF]">
             <TabsTrigger value="city-match" className="flex items-center gap-2">
               <MapPin className="w-4 h-4" />
               <span className="hidden sm:inline">City Match</span>
@@ -37,16 +37,16 @@ const MovingPage: React.FC = () => {
             </TabsTrigger>
           </TabsList>
           
-          <div className="flex-1 pb-20">
-            <TabsContent value="city-match" className="mt-0 pb-8">
+          <div className="flex-1 pb-6">
+            <TabsContent value="city-match" className="mt-0">
               <CityMatchSection />
             </TabsContent>
             
-            <TabsContent value="packing" className="mt-0 pb-8">
+            <TabsContent value="packing" className="mt-0">
               <PackingSection />
             </TabsContent>
             
-            <TabsContent value="services" className="mt-0 pb-24">
+            <TabsContent value="services" className="mt-0">
               <BrandDiscoverySection />
             </TabsContent>
           </div>

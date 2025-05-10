@@ -24,8 +24,8 @@ const BrandDiscoverySection: React.FC = () => {
   };
 
   return (
-    <Card className="w-full mb-6">
-      <CardHeader>
+    <Card className="w-full">
+      <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <List className="h-5 w-5 text-primary" />
           <CardTitle>Local Services & Products</CardTitle>
@@ -45,14 +45,14 @@ const BrandDiscoverySection: React.FC = () => {
         </div>
       </CardHeader>
       
-      <CardContent className="pb-4">
+      <CardContent className="pt-2">
         <Tabs 
           defaultValue="housing" 
           className="w-full" 
           value={activeCategory}
           onValueChange={setActiveCategory}
         >
-          <TabsList className="flex flex-nowrap overflow-x-auto pb-1 mb-6 w-full justify-start">
+          <TabsList className="flex flex-nowrap overflow-x-auto pb-1 mb-4 w-full justify-start">
             {categories.map(category => (
               <TabsTrigger 
                 key={category.id} 
