@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Heart, MessageCircle, Calendar, User, Settings, ListChecked } from "lucide-react";
+import { Heart, MessageCircle, Calendar, User, Settings, ListCheck } from "lucide-react";
 
 const NavigationBar = () => {
   const location = useLocation();
@@ -25,7 +25,7 @@ const NavigationBar = () => {
     },
     {
       name: "Matches",
-      icon: ListChecked,
+      icon: ListCheck,
       path: "/matches",
     },
     {
