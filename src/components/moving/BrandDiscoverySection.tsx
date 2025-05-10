@@ -12,7 +12,7 @@ const categories = [
   { id: "transport", label: "Transport" },
   { id: "banking", label: "Banking" },
   { id: "shopping", label: "Shopping" },
-  { id: "food", label: "Food & Groceries" }
+  { id: "food", label: "Food" }
 ];
 
 const BrandDiscoverySection: React.FC = () => {
@@ -25,12 +25,12 @@ const BrandDiscoverySection: React.FC = () => {
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-2">
+      <CardHeader className="py-3 px-4">
         <div className="flex items-center gap-2">
           <List className="h-5 w-5 text-primary" />
-          <CardTitle>Local Services & Products</CardTitle>
+          <CardTitle className="text-lg">Local Services</CardTitle>
         </div>
-        <CardDescription>
+        <CardDescription className="text-xs">
           Discover curated brands and services for your new location
         </CardDescription>
         
@@ -38,26 +38,26 @@ const BrandDiscoverySection: React.FC = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search services..."
-            className="pl-8"
+            className="pl-8 h-9"
             value={searchQuery}
             onChange={handleSearch}
           />
         </div>
       </CardHeader>
       
-      <CardContent className="pt-2">
+      <CardContent className="pt-0 px-3 pb-3">
         <Tabs 
           defaultValue="housing" 
           className="w-full" 
           value={activeCategory}
           onValueChange={setActiveCategory}
         >
-          <TabsList className="flex flex-nowrap overflow-x-auto pb-1 mb-4 w-full justify-start">
+          <TabsList className="flex flex-nowrap overflow-x-auto pb-1 mb-2 w-full justify-start h-8">
             {categories.map(category => (
               <TabsTrigger 
                 key={category.id} 
                 value={category.id}
-                className="flex-shrink-0"
+                className="flex-shrink-0 text-xs h-7 px-2"
               >
                 {category.label}
               </TabsTrigger>
