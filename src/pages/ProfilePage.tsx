@@ -1,14 +1,27 @@
+
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Edit, Settings } from "lucide-react";
+import { Edit, Settings, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [hasNotifications, setHasNotifications] = useState(true);
+  
+  const handleNotificationClick = () => {
+    toast({
+      title: "Notifications",
+      description: "You have no new notifications",
+      className: "bg-primary text-white",
+    });
+    setHasNotifications(false);
+  };
   
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
@@ -17,6 +30,17 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center justify-between py-4 px-4">
             <h1 className="text-2xl font-bold">Profile</h1>
             <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative"
+                onClick={handleNotificationClick}
+              >
+                <Bell size={20} />
+                {hasNotifications && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
+              </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
