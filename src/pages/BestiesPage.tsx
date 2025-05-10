@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, Sparkles, Users } from "lucide-react";
+import { Diamond, Heart, Plus, Sparkles, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
@@ -20,6 +20,13 @@ const BestiesPage: React.FC = () => {
   const navigateToMyGroups = () => {
     navigate('/my-groups');
   };
+  
+  const handleCreateGroup = () => {
+    toast({
+      title: "Creating a new group",
+      description: "You'll be able to create your own group in the full version!",
+    });
+  };
 
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
@@ -28,15 +35,38 @@ const BestiesPage: React.FC = () => {
           {/* Empty div for layout balance */}
         </div>
         <h1 className="text-2xl font-bold text-black">Besties</h1>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={handleOpenMatches}
-          className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
-          aria-label="View Matches"
-        >
-          <Heart className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleCreateGroup}
+            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+            aria-label="Create Group"
+          >
+            <div className="relative">
+              <Plus className="h-5 w-5" />
+              <Diamond className="h-3 w-3 absolute -bottom-1 -right-1" />
+            </div>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={navigateToMyGroups}
+            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+            aria-label="View My Groups"
+          >
+            <Users className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleOpenMatches}
+            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+            aria-label="View Matches"
+          >
+            <Heart className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
       
       <div className="px-4 mb-4">
@@ -45,15 +75,6 @@ const BestiesPage: React.FC = () => {
             <Sparkles className="h-4 w-4" />
             <span className="font-medium">Suggested Connections</span>
           </div>
-          
-          <Button 
-            variant="outline"
-            className="flex items-center gap-1"
-            onClick={navigateToMyGroups}
-          >
-            <Users size={18} />
-            My Groups
-          </Button>
         </div>
 
         {showFilters && <BestiesFilter />}
