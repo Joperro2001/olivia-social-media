@@ -1,17 +1,14 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import SuggestionCarousel from "@/components/olivia/SuggestionCarousel";
-
 interface Message {
   id: string;
   content: string;
   isUser: boolean;
   timestamp: string;
 }
-
 const OliviaChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([{
     id: "1",
@@ -21,29 +18,25 @@ const OliviaChat: React.FC = () => {
   }]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const suggestedCards = [
-    {
-      id: "card1",
-      title: "Find Your Perfect City",
-      description: "Take our City Match Quiz and discover where you'd thrive!",
-      image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=500",
-      ctaText: "Start Quiz"
-    }, {
-      id: "card2",
-      title: "Get a Local SIM Card",
-      description: "Stay connected with affordable mobile data options.",
-      image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=500",
-      ctaText: "View Options"
-    }, {
-      id: "card3",
-      title: "Join Group Matches",
-      description: "Connect with people who share your interests and goals.",
-      image: "https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?q=80&w=500",
-      ctaText: "Explore Groups"
-    }
-  ];
-  
+  const suggestedCards = [{
+    id: "card1",
+    title: "Find Your Perfect City",
+    description: "Take our City Match Quiz and discover where you'd thrive!",
+    image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=500",
+    ctaText: "Start Quiz"
+  }, {
+    id: "card2",
+    title: "Get a Local SIM Card",
+    description: "Stay connected with affordable mobile data options.",
+    image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=500",
+    ctaText: "View Options"
+  }, {
+    id: "card3",
+    title: "Join Group Matches",
+    description: "Connect with people who share your interests and goals.",
+    image: "https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?q=80&w=500",
+    ctaText: "Explore Groups"
+  }];
   const handleSendMessage = (content: string) => {
     // Add user message
     const userMessage: Message = {
@@ -68,7 +61,6 @@ const OliviaChat: React.FC = () => {
       setMessages(prev => [...prev, oliviaResponse]);
     }, 1500);
   };
-  
   const getOliviaResponse = (userMessage: string): string => {
     const lowerCaseMessage = userMessage.toLowerCase();
     if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi")) {
@@ -91,7 +83,6 @@ const OliviaChat: React.FC = () => {
     }
     return "Thanks for your message! I'd be happy to help with your relocation needs. I can help you find housing, connect with like-minded people, or join groups with shared interests. Could you provide a bit more detail about what you're looking for? 😊";
   };
-  
   const handleCardAction = (id: string) => {
     console.log(`Card ${id} action triggered`);
     // Would handle specific card actions in a real app
@@ -108,9 +99,7 @@ const OliviaChat: React.FC = () => {
       behavior: "smooth"
     });
   }, [messages, isTyping]);
-  
-  return (
-    <div className="flex flex-col h-[100vh] bg-[#D3E4FD] pb-16">
+  return <div className="flex flex-col h-[100vh] bg-[#D3E4FD] pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
       </div>
@@ -127,11 +116,9 @@ const OliviaChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-[#D3E4FD] to-transparent pt-6">
+      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-[#D3E4FD] to-transparent pt-0">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default OliviaChat;
