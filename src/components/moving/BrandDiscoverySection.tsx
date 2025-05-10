@@ -57,7 +57,7 @@ const BrandDiscoverySection: React.FC = () => {
               <TabsTrigger 
                 key={category.id} 
                 value={category.id}
-                className="flex-shrink-0 text-xs h-7 px-2 justify-start"
+                className="flex-shrink-0 text-sm h-7 px-2 justify-start"
               >
                 {category.label}
               </TabsTrigger>
