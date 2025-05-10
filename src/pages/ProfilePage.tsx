@@ -1,23 +1,36 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Edit } from "lucide-react";
+import { Edit, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage: React.FC = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
       <ScrollArea className="h-full">
         <div className="flex flex-col pb-10">
           <div className="flex items-center justify-between py-4 px-4">
             <h1 className="text-2xl font-bold">Profile</h1>
-            <Button variant="ghost" size="sm" className="flex items-center gap-1">
-              <Edit size={16} />
-              <span>Edit</span>
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => navigate("/settings")}
+              >
+                <Settings size={16} />
+                <span>Settings</span>
+              </Button>
+              <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                <Edit size={16} />
+                <span>Edit</span>
+              </Button>
+            </div>
           </div>
           
           <div className="flex flex-col items-center mt-2">
