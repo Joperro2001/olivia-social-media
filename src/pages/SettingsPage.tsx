@@ -12,7 +12,7 @@ const SettingsPage: React.FC = () => {
   const [locationSharing, setLocationSharing] = useState(true);
   
   return (
-    <div className="flex flex-col h-[100vh] bg-[#D3E4FD] pb-16">
+    <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">Settings</h1>
       </div>
