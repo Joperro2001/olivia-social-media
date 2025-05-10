@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Heart, MessageCircle, Calendar, User, ListCheck } from "lucide-react";
@@ -13,7 +14,7 @@ const NavigationBar = () => {
       path: "/",
     },
     {
-      name: "Matches",
+      name: "Social",
       icon: Heart,
       path: "/besties",
     },
