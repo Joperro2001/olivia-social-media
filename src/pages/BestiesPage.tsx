@@ -7,11 +7,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import BestiesFilter from "@/components/besties/BestiesFilter";
 import GroupCard from "@/components/besties/GroupCard";
+import GroupMatchCard from "@/components/besties/GroupMatchCard";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("suggested");
   const [showFilters, setShowFilters] = useState(false);
   
@@ -98,6 +100,26 @@ const BestiesPage: React.FC = () => {
     }
   };
 
+  const handleGroupSwipeLeft = (id: string) => {
+    console.log(`Swiped left on group ${id}`);
+    if (currentGroupIndex < groups.length - 1) {
+      setCurrentGroupIndex(currentGroupIndex + 1);
+    }
+  };
+
+  const handleGroupSwipeRight = (id: string) => {
+    console.log(`Swiped right on group ${id}`);
+    toast({
+      title: "Group Match Request Sent! 🎉",
+      description: `You've requested to join ${groups[currentGroupIndex].name}. We'll notify you when the group approves.`,
+      className: "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white border-none",
+    });
+    
+    if (currentGroupIndex < groups.length - 1) {
+      setCurrentGroupIndex(currentGroupIndex + 1);
+    }
+  };
+
   const handleGroupJoinRequest = (groupId: string) => {
     const group = groups.find(g => g.id === groupId);
     toast({
@@ -169,16 +191,27 @@ const BestiesPage: React.FC = () => {
           <TabsContent value="groups" className="mt-2">
             {showFilters && <BestiesFilter />}
             
-            <div className="flex flex-col gap-4 pb-2">
-              {groups.map(group => (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  onJoinRequest={handleGroupJoinRequest}
+            <div className="flex-1 flex flex-col items-center justify-center px-4">
+              {groups.length > 0 && currentGroupIndex < groups.length ? (
+                <GroupMatchCard
+                  group={groups[currentGroupIndex]}
+                  onSwipeLeft={handleGroupSwipeLeft}
+                  onSwipeRight={handleGroupSwipeRight}
                 />
-              ))}
+              ) : (
+                <div className="text-center px-4 py-10">
+                  <h3 className="text-xl font-semibold mb-2">No more groups</h3>
+                  <p className="text-gray-500 mb-6">Check back later for new group matches</p>
+                  <Button 
+                    onClick={() => setCurrentGroupIndex(0)}
+                    className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 transition-opacity"
+                  >
+                    Reset Groups (Demo)
+                  </Button>
+                </div>
+              )}
               
-              <div className="text-center py-4">
+              <div className="text-center py-4 mt-4">
                 <Button 
                   variant="outline"
                   className="mb-2"
