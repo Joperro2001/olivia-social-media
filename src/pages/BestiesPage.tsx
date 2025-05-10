@@ -6,16 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
 import BestiesFilter from "@/components/besties/BestiesFilter";
-import MatchesDialog from "@/components/besties/MatchesDialog";
-import { matchedProfiles } from "@/data/matchesMockData";
+import { useNavigate } from "react-router-dom";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
-  const [showMatches, setShowMatches] = useState(false);
   
   const handleOpenMatches = () => {
-    setShowMatches(true);
+    navigate("/matches");
   };
 
   return (
@@ -45,12 +44,6 @@ const BestiesPage: React.FC = () => {
         <ProfileMatching 
           profiles={profiles} 
           onMatchFound={handleOpenMatches}
-        />
-        
-        <MatchesDialog 
-          open={showMatches} 
-          onOpenChange={setShowMatches} 
-          profiles={matchedProfiles}
         />
       </div>
     </div>
