@@ -26,7 +26,7 @@ const NavigationBar = () => {
     {
       name: "Moving",
       icon: Globe,
-      path: "/matches",
+      path: "/moving",
     },
     {
       name: "Profile",

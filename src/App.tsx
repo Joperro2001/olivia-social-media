@@ -27,7 +27,7 @@ const App = () => (
           <Route path="/besties" element={<AppLayout><BestiesPage /></AppLayout>} />
           <Route path="/social" element={<AppLayout><SocialPage /></AppLayout>} />
           <Route path="/my-groups" element={<AppLayout><MyGroupsPage /></AppLayout>} />
-          <Route path="/matches" element={<AppLayout><MovingPage /></AppLayout>} />
+          <Route path="/moving" element={<AppLayout><MovingPage /></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
           <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
