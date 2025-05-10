@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -26,24 +25,30 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#B892FF", // Lavender / Soft Purple
+          foreground: "#F8F8F8", // Off-white for text on primary
+          light: "#D6C0FF", // Lighter variant
+          dark: "#9A75E0", // Darker variant
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#9EEAF9", // Soft Sky Blue
+          foreground: "#2D2D2D", // Charcoal for text on secondary
+          light: "#C3F2FF", // Lighter variant
+          dark: "#76D1F0", // Darker variant
+        },
+        accent: {
+          DEFAULT: "#FF6D6D", // Neon Coral / Pink
+          foreground: "#F8F8F8", // Off-white for text on accent
+          light: "#FF9797", // Lighter variant
+          dark: "#E94F4F", // Darker variant
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#E9E9E9", // Light gray
+          foreground: "#757575", // Medium gray for text
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -79,11 +84,11 @@ export default {
           dark: "#B1ACFF",
         },
         app: {
-          background: "#fafafa",
-          card: "#ffffff",
-          text: "#2D2D2D",
-          subtext: "#6B7280",
-          border: "#F0F0F0",
+          background: "#F8F8F8", // Off-white
+          card: "#FFFFFF",
+          text: "#2D2D2D", // Charcoal
+          subtext: "#757575",
+          border: "#E9E9E9",
         },
       },
       borderRadius: {
@@ -124,6 +129,9 @@ export default {
         pulse: "pulse 1.5s infinite",
         "slide-up": "slide-up 0.3s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       },
     },
   },

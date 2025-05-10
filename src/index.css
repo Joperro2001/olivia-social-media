@@ -5,74 +5,74 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 240 10% 3.9%;
+    --background: 0 0% 97%; /* #F8F8F8 */
+    --foreground: 0 0% 18%; /* #2D2D2D */
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 0 0% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 0 0% 18%;
 
-    --primary: 252 56% 55%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 260 100% 79%; /* #B892FF */
+    --primary-foreground: 0 0% 97%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 190 90% 80%; /* #9EEAF9 */
+    --secondary-foreground: 0 0% 18%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 0 0% 91%;
+    --muted-foreground: 0 0% 46%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 0 100% 71%; /* #FF6D6D */
+    --accent-foreground: 0 0% 97%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 97%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --border: 0 0% 91%;
+    --input: 0 0% 91%;
+    --ring: 0 0% 18%;
 
     --radius: 1rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 18%; /* #2D2D2D */
+    --foreground: 0 0% 97%; /* #F8F8F8 */
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 18%;
+    --card-foreground: 0 0% 97%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 18%;
+    --popover-foreground: 0 0% 97%;
 
-    --primary: 252 56% 55%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 260 100% 79%; /* #B892FF */
+    --primary-foreground: 0 0% 97%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 190 90% 80%; /* #9EEAF9 */
+    --secondary-foreground: 0 0% 18%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 0 100% 71%; /* #FF6D6D */
+    --accent-foreground: 0 0% 97%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 97%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 0 0% 25%;
+    --input: 0 0% 25%;
+    --ring: 0 0% 83.9%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 0 0% 14%;
+    --sidebar-foreground: 0 0% 97%;
+    --sidebar-primary: 260 100% 79%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 0 0% 25%;
+    --sidebar-accent-foreground: 0 0% 97%;
+    --sidebar-border: 0 0% 25%;
+    --sidebar-ring: 260 100% 79%;
   }
 }
 
@@ -84,6 +84,7 @@
   html, body {
     height: 100%;
     overflow-x: hidden;
+    font-family: 'Inter', sans-serif;
   }
 
   body {
@@ -130,14 +131,30 @@
   }
   
   .chat-bubble-assistant {
-    @apply chat-bubble bg-gray-100 text-gray-800 mr-auto rounded-tl-none;
+    @apply chat-bubble bg-secondary text-app-text mr-auto rounded-tl-none;
   }
   
   .typing-indicator {
-    @apply flex space-x-1 px-4 py-3 rounded-2xl bg-gray-100 w-16;
+    @apply flex space-x-1 px-4 py-3 rounded-2xl bg-secondary/50 w-16;
   }
   
   .typing-dot {
     @apply w-2 h-2 bg-gray-400 rounded-full animate-pulse;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-br from-secondary/30 to-primary/30;
+  }
+  
+  .accent-button {
+    @apply bg-accent hover:bg-accent-dark text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .primary-button {
+    @apply bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+  
+  .secondary-button {
+    @apply bg-secondary hover:bg-secondary-dark text-app-text font-medium py-2 px-4 rounded-lg transition-colors;
   }
 }
