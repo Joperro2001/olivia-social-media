@@ -15,7 +15,7 @@ interface Message {
 const OliviaChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([{
     id: "1",
-    content: "Hi there! I'm Olivia, your relocation concierge. How can I help you today?",
+    content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
     isUser: false,
     timestamp: "Just now"
   }]);
@@ -37,10 +37,10 @@ const OliviaChat: React.FC = () => {
       ctaText: "View Options"
     }, {
       id: "card3",
-      title: "Housing Assistance",
-      description: "Find roommates, short-term rentals, or your dream apartment.",
-      image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=500",
-      ctaText: "Explore Housing"
+      title: "Join Group Matches",
+      description: "Connect with people who share your interests and goals.",
+      image: "https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?q=80&w=500",
+      ctaText: "Explore Groups"
     }
   ];
   
@@ -72,18 +72,24 @@ const OliviaChat: React.FC = () => {
   const getOliviaResponse = (userMessage: string): string => {
     const lowerCaseMessage = userMessage.toLowerCase();
     if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi")) {
-      return "Hey there! 👋 How can I help with your relocation journey today?";
+      return "Hey there! 👋 How can I help with your relocation journey today? I can help you find housing, connect with like-minded people, or join groups with shared interests!";
     }
     if (lowerCaseMessage.includes("city") || lowerCaseMessage.includes("move")) {
       return "Thinking about moving? That's exciting! Would you like to take our City Match Quiz to find your perfect location? Or I can tell you about popular expat destinations! 🌍";
     }
     if (lowerCaseMessage.includes("housing") || lowerCaseMessage.includes("apartment")) {
-      return "Finding housing can be tricky! I can help you compare neighborhoods, estimate costs, or connect with trusted rental agencies. What specifically do you need help with? 🏠";
+      return "Finding housing can be tricky! I can help you compare neighborhoods, estimate costs, or connect with trusted rental agencies. I could also introduce you to others looking for housing in the same area! What specifically do you need help with? 🏠";
     }
     if (lowerCaseMessage.includes("visa") || lowerCaseMessage.includes("passport")) {
       return "Visa requirements vary by country. I can help you understand what documents you need and guide you through the application process! Which country are you moving to? 📝";
     }
-    return "Thanks for your message! I'd be happy to help with your relocation needs. Could you provide a bit more detail about what you're looking for? 😊";
+    if (lowerCaseMessage.includes("group") || lowerCaseMessage.includes("connect") || lowerCaseMessage.includes("meet") || lowerCaseMessage.includes("people")) {
+      return "I'd be happy to help you connect with like-minded people! I can match you with groups based on your interests like 'tech professionals in Berlin' or 'expats looking for housing in Rotterdam'. What kind of people are you hoping to connect with? 👥";
+    }
+    if (lowerCaseMessage.includes("match") || lowerCaseMessage.includes("introduction")) {
+      return "My group matching works through a double opt-in system, so everyone's comfortable with the introduction. Once there's a match, I can set up a group chat where you can all connect! Would you like to tell me what interests or goals you have for finding a group? 🤝";
+    }
+    return "Thanks for your message! I'd be happy to help with your relocation needs. I can help you find housing, connect with like-minded people, or join groups with shared interests. Could you provide a bit more detail about what you're looking for? 😊";
   };
   
   const handleCardAction = (id: string) => {
@@ -91,6 +97,8 @@ const OliviaChat: React.FC = () => {
     // Would handle specific card actions in a real app
     if (id === "card1") {
       handleSendMessage("I'd like to take the City Match Quiz");
+    } else if (id === "card3") {
+      handleSendMessage("I'm interested in joining group matches");
     }
   };
 
