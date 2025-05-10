@@ -14,7 +14,7 @@ const NavigationBar = () => {
       path: "/",
     },
     {
-      name: "Besties",
+      name: "Matches",
       icon: Heart,
       path: "/besties",
     },
@@ -24,7 +24,7 @@ const NavigationBar = () => {
       path: "/social",
     },
     {
-      name: "Matches",
+      name: "People",
       icon: ListCheck,
       path: "/my-matches",
     },
