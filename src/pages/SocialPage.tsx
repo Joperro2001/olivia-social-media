@@ -1,11 +1,9 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EventCard from "@/components/social/EventCard";
 import CategoryTabs from "@/components/social/CategoryTabs";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const SocialPage: React.FC = () => {
   const { toast } = useToast();
@@ -76,23 +74,11 @@ const SocialPage: React.FC = () => {
       });
     }
   };
-
-  const navigateToMyGroups = () => {
-    navigate('/my-groups');
-  };
   
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between py-4 px-4">
         <h1 className="text-2xl font-bold">Events</h1>
-        <Button 
-          variant="outline"
-          className="flex items-center gap-1"
-          onClick={navigateToMyGroups}
-        >
-          <Users size={18} />
-          My Groups
-        </Button>
       </div>
       
       <div className="px-4">
