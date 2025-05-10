@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Search, Sparkles } from "lucide-react";
+import { Heart, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
@@ -28,9 +28,10 @@ const BestiesPage: React.FC = () => {
         <Button 
           variant="ghost" 
           size="icon"
-          onClick={() => setShowFilters(!showFilters)}
+          onClick={handleOpenMatches}
+          className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
         >
-          <Search className="h-5 w-5" />
+          <Heart className="h-5 w-5" />
         </Button>
       </div>
       
