@@ -1,12 +1,13 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, X, Send } from "lucide-react";
 import { MatchedProfile } from "@/data/matchesMockData";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 
 interface MatchesListProps {
   profiles: MatchedProfile[];
@@ -14,13 +15,23 @@ interface MatchesListProps {
 
 const MatchesList: React.FC<MatchesListProps> = ({ profiles }) => {
   const { toast } = useToast();
+  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
 
-  const handleMessageClick = (name: string) => {
+  const handleMessageClick = (id: string) => {
+    setActiveChat(id);
+  };
+
+  const handleSendMessage = (name: string) => {
+    if (!message.trim()) return;
+
     toast({
-      title: "Message Started",
-      description: `Starting conversation with ${name}`,
+      title: "Message Sent",
+      description: `Your message was sent to ${name}`,
       className: "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white border-none",
     });
+    setMessage("");
+    // In a real app, this would send the message to the backend
   };
 
   return (
@@ -57,16 +68,49 @@ const MatchesList: React.FC<MatchesListProps> = ({ profiles }) => {
                 </p>
               </div>
             </div>
-            <div className="flex justify-end mt-3">
-              <Button 
-                size="sm" 
-                className="bg-primary"
-                onClick={() => handleMessageClick(profile.name)}
-              >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                Message
-              </Button>
-            </div>
+
+            {activeChat === profile.id ? (
+              <div className="mt-3">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium">Chat with {profile.name}</h4>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setActiveChat(null)} 
+                    className="h-6 w-6"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Textarea
+                  placeholder={`Send a message to ${profile.name}...`}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="min-h-[80px] mb-2"
+                />
+                <div className="flex justify-end">
+                  <Button 
+                    className="bg-primary"
+                    onClick={() => handleSendMessage(profile.name)}
+                    disabled={!message.trim()}
+                  >
+                    <Send className="h-4 w-4 mr-1" />
+                    Send
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-end mt-3">
+                <Button 
+                  size="sm" 
+                  className="bg-primary"
+                  onClick={() => handleMessageClick(profile.id)}
+                >
+                  <MessageCircle className="h-4 w-4 mr-1" />
+                  Message
+                </Button>
+              </div>
+            )}
           </Card>
         ))
       )}
