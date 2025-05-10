@@ -1,6 +1,12 @@
 
 import React from "react";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
 import ServiceCard from "./ServiceCard";
 
 interface ServiceCarouselProps {
@@ -121,15 +127,21 @@ const ServiceCarousel: React.FC<ServiceCarouselProps> = ({ category, searchQuery
   }
 
   return (
-    <Carousel className="w-full">
-      <CarouselContent>
-        {filteredServices.map((service) => (
-          <CarouselItem key={service.id} className="md:basis-1/2 lg:basis-1/3">
-            <ServiceCard service={service} />
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
+    <div className="relative px-4">
+      <Carousel className="w-full">
+        <CarouselContent className="-ml-2 md:-ml-4">
+          {filteredServices.map((service) => (
+            <CarouselItem key={service.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/3">
+              <ServiceCard service={service} />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <div className="flex justify-center mt-4">
+          <CarouselPrevious className="relative inset-auto mr-2 translate-y-0" />
+          <CarouselNext className="relative inset-auto ml-2 translate-y-0" />
+        </div>
+      </Carousel>
+    </div>
   );
 };
 

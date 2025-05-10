@@ -24,7 +24,7 @@ const BrandDiscoverySection: React.FC = () => {
   };
 
   return (
-    <Card className="w-full mb-20">
+    <Card className="w-full mb-6">
       <CardHeader>
         <div className="flex items-center gap-2">
           <List className="h-5 w-5 text-primary" />
@@ -45,7 +45,7 @@ const BrandDiscoverySection: React.FC = () => {
         </div>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="pb-4">
         <Tabs 
           defaultValue="housing" 
           className="w-full" 

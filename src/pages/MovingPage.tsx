@@ -39,16 +39,16 @@ const MovingPage: React.FC = () => {
           </TabsList>
           
           <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-[calc(100vh-130px)] pb-20">
-              <TabsContent value="city-match" className="mt-0">
+            <ScrollArea className="h-[calc(100vh-150px)]">
+              <TabsContent value="city-match" className="mt-0 pb-8">
                 <CityMatchSection />
               </TabsContent>
               
-              <TabsContent value="packing" className="mt-0">
+              <TabsContent value="packing" className="mt-0 pb-8">
                 <PackingSection />
               </TabsContent>
               
-              <TabsContent value="services" className="mt-0">
+              <TabsContent value="services" className="mt-0 pb-24">
                 <BrandDiscoverySection />
               </TabsContent>
             </ScrollArea>
