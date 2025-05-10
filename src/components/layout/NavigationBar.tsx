@@ -26,7 +26,7 @@ const NavigationBar = () => {
     {
       name: "Matches",
       icon: ListCheck,
-      path: "/my-matches",
+      path: "/matches",
     },
     {
       name: "Profile",
