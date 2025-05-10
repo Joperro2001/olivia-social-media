@@ -13,6 +13,7 @@ import SettingsPage from "./pages/SettingsPage";
 import MyGroupsPage from "./pages/MyGroupsPage";
 import MovingPage from "./pages/MovingPage";
 import NotFound from "./pages/NotFound";
+import EventDetailsPage from "./pages/EventDetailsPage";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/" element={<AppLayout><OliviaChat /></AppLayout>} />
           <Route path="/besties" element={<AppLayout><BestiesPage /></AppLayout>} />
           <Route path="/social" element={<AppLayout><SocialPage /></AppLayout>} />
+          <Route path="/event/:eventId" element={<AppLayout><EventDetailsPage /></AppLayout>} />
           <Route path="/my-groups" element={<AppLayout><MyGroupsPage /></AppLayout>} />
           <Route path="/moving" element={<AppLayout><MovingPage /></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />

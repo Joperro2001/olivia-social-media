@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EventCard from "@/components/social/EventCard";
@@ -61,7 +62,7 @@ const SocialPage: React.FC = () => {
   
   const handleViewEventDetails = (id: string) => {
     console.log(`View details for event ${id}`);
-    // In a real app, this would open a modal with event details
+    navigate(`/event/${id}`);
   };
   
   const handleRSVP = (id: string) => {
