@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -114,7 +113,7 @@ const EventDetailsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-[100vh] bg-[#FDF5EF] pb-16">
+    <div className="flex flex-col min-h-[100vh] bg-[#FDF5EF] pb-24">
       {/* Header with back button */}
       <div className="flex items-center justify-between px-4 py-4 sticky top-0 bg-[#FDF5EF] z-10">
         <Button 
@@ -230,8 +229,9 @@ const EventDetailsPage: React.FC = () => {
         <p className="text-gray-700 mb-8">{event.description}</p>
       </div>
       
-      {/* Bottom action buttons */}
-      <div className="fixed bottom-16 left-0 right-0 p-4 flex gap-2 bg-[#FDF5EF] border-t border-gray-200">
+      {/* Bottom action buttons - increased bottom padding from pb-16 to pb-24 on parent container
+          and adjusted the bottom position with bottom-20 (was bottom-16) */}
+      <div className="fixed bottom-20 left-0 right-0 p-4 flex gap-2 bg-[#FDF5EF] border-t border-gray-200 shadow-sm">
         <Button 
           variant="outline" 
           className="flex-1 gap-2"
