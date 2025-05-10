@@ -11,7 +11,7 @@ import SocialPage from "./pages/SocialPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import MyGroupsPage from "./pages/MyGroupsPage";
-import MatchesPage from "./pages/MatchesPage";
+import MovingPage from "./pages/MovingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,7 +27,7 @@ const App = () => (
           <Route path="/besties" element={<AppLayout><BestiesPage /></AppLayout>} />
           <Route path="/social" element={<AppLayout><SocialPage /></AppLayout>} />
           <Route path="/my-groups" element={<AppLayout><MyGroupsPage /></AppLayout>} />
-          <Route path="/matches" element={<AppLayout><MatchesPage /></AppLayout>} />
+          <Route path="/matches" element={<AppLayout><MovingPage /></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
           <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
