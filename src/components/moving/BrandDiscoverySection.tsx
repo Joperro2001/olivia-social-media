@@ -28,9 +28,9 @@ const BrandDiscoverySection: React.FC = () => {
       <CardHeader className="py-3 px-4">
         <div className="flex items-center gap-2">
           <List className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Local Services</CardTitle>
+          <CardTitle>Local Services</CardTitle>
         </div>
-        <CardDescription className="text-xs">
+        <CardDescription>
           Discover curated brands and services for your new location
         </CardDescription>
         
