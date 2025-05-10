@@ -5,14 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Edit } from "lucide-react";
 
 const ProfilePage: React.FC = () => {
   return (
     <div className="h-[100vh] bg-[#D3E4FD] pb-16">
       <ScrollArea className="h-full">
         <div className="flex flex-col pb-10">
-          <div className="flex items-center justify-center py-4">
+          <div className="flex items-center justify-between py-4 px-4">
             <h1 className="text-2xl font-bold">Profile</h1>
+            <Button variant="ghost" size="sm" className="flex items-center gap-1">
+              <Edit size={16} />
+              <span>Edit</span>
+            </Button>
           </div>
           
           <div className="flex flex-col items-center mt-2">
