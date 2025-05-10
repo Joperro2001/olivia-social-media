@@ -5,10 +5,13 @@ import { useToast } from "@/hooks/use-toast";
 import { matchedGroups } from "@/data/matchesMockData";
 import CreateGroupButton from "@/components/besties/CreateGroupButton";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const MyMatchesPage: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   
   const filteredGroups = matchedGroups.filter(group => 
@@ -30,7 +33,17 @@ const MyMatchesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between py-4 px-4">
-        <h1 className="text-2xl font-bold">My Groups</h1>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate("/matches")}
+            className="hover:bg-pink-100"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">My Groups</h1>
+        </div>
         <div className="relative w-1/2 max-w-[200px]">
           <Input
             className="pl-8 bg-white"
