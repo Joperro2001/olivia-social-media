@@ -33,6 +33,11 @@ const NavigationBar = () => {
       icon: User,
       path: "/profile",
     },
+    {
+      name: "Settings",
+      icon: Settings,
+      path: "/settings",
+    },
   ];
 
   return (
@@ -42,7 +47,7 @@ const NavigationBar = () => {
           {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (
-              <li key={item.name} className="w-1/5 h-full">
+              <li key={item.name} className="w-1/6 h-full">
                 <Link
                   to={item.path}
                   className={`flex flex-col items-center justify-center h-full transition-all ${
