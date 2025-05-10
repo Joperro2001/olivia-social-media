@@ -5,9 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { matchedGroups } from "@/data/matchesMockData";
 import CategoryTabs from "@/components/social/CategoryTabs";
-import { Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import GroupCard from "@/components/social/GroupCard";
-import CreateGroupButton from "@/components/besties/CreateGroupButton";
 
 // Extend the matched groups data with categories
 const groupsWithCategories = matchedGroups.map(group => ({
@@ -62,6 +61,13 @@ const MyMatchesPage: React.FC = () => {
     }
   };
 
+  const handleCreateGroup = () => {
+    toast({
+      title: "Creating a new group",
+      description: "You'll be able to create your own group in the full version!",
+    });
+  };
+
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
@@ -69,15 +75,26 @@ const MyMatchesPage: React.FC = () => {
           {/* Empty div for layout balance */}
         </div>
         <h1 className="text-2xl font-bold">Groups</h1>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => navigate('/my-groups')}
-          className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
-          aria-label="View Joined Groups"
-        >
-          <Users className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleCreateGroup}
+            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+            aria-label="Create New Group"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/my-groups')}
+            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+            aria-label="View Joined Groups"
+          >
+            <Users className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
       <div className="px-4">
@@ -103,10 +120,6 @@ const MyMatchesPage: React.FC = () => {
             <p className="text-gray-500">No groups in this category</p>
           </div>
         )}
-      </div>
-      
-      <div className="px-4">
-        <CreateGroupButton />
       </div>
     </div>
   );
