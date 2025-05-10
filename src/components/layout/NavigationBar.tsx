@@ -14,19 +14,19 @@ const NavigationBar = () => {
       path: "/",
     },
     {
-      name: "Besties",
-      icon: Heart,
-      path: "/besties",
+      name: "Moving",
+      icon: Globe,
+      path: "/moving",
     },
     {
-      name: "Social",
+      name: "Events",
       icon: Calendar,
       path: "/social",
     },
     {
-      name: "Moving",
-      icon: Globe,
-      path: "/moving",
+      name: "Social",
+      icon: Heart,
+      path: "/besties",
     },
     {
       name: "Profile",
