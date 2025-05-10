@@ -45,7 +45,8 @@ const BestiesPage: React.FC = () => {
           >
             <div className="relative">
               <Plus className="h-5 w-5" />
-              <Diamond className="h-3 w-3 absolute -bottom-1 -right-1" />
+              <Diamond className="h-3 w-3 absolute -bottom-1 -right-1 text-amber-400 animate-pulse" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-yellow-300 to-amber-500 rounded-full animate-ping"></span>
             </div>
           </Button>
           <Button 
@@ -72,7 +73,7 @@ const BestiesPage: React.FC = () => {
       <div className="px-4 mb-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-4 w-4 text-amber-400" />
             <span className="font-medium">Suggested Connections</span>
           </div>
         </div>
