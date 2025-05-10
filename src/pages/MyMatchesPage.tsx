@@ -7,10 +7,13 @@ import { matchedGroups } from "@/data/matchesMockData";
 import CreateGroupButton from "@/components/besties/CreateGroupButton";
 import GroupMatching from "@/components/besties/GroupMatching";
 import { groups } from "@/data/bestiesMockData";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 const MyMatchesPage: React.FC = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("my-groups");
+  const [searchTerm, setSearchTerm] = useState("");
   
   const handleJoinRequest = (groupId: string) => {
     const group = matchedGroups.find((g) => g.id === groupId);
@@ -21,6 +24,24 @@ const MyMatchesPage: React.FC = () => {
       });
     }
   };
+
+  // Filter groups based on search term
+  const filteredGroups = matchedGroups.filter((group) => {
+    if (searchTerm === "") return true;
+    
+    const searchTermLower = searchTerm.toLowerCase();
+    
+    // Search in name
+    if (group.name.toLowerCase().includes(searchTermLower)) return true;
+    
+    // Search in description
+    if (group.description.toLowerCase().includes(searchTermLower)) return true;
+    
+    // Search in tags
+    if (group.tags.some(tag => tag.toLowerCase().includes(searchTermLower))) return true;
+    
+    return false;
+  });
 
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
@@ -36,10 +57,20 @@ const MyMatchesPage: React.FC = () => {
           </TabsList>
           
           <TabsContent value="my-groups" className="space-y-4">
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+              <Input 
+                className="pl-10"
+                placeholder="Search groups..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
             <h2 className="text-lg font-medium mb-3">Your Groups</h2>
-            {matchedGroups.length > 0 ? (
+            {filteredGroups.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
-                {matchedGroups.map((group) => (
+                {filteredGroups.map((group) => (
                   <div key={group.id} className="border border-gray-100 rounded-lg p-4 bg-white shadow-sm">
                     <div className="flex gap-3 items-center mb-3">
                       {group.image && (
@@ -70,7 +101,9 @@ const MyMatchesPage: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">You haven't joined any groups yet</p>
+                <p className="text-gray-500 mb-4">
+                  {searchTerm ? "No groups found matching your search" : "You haven't joined any groups yet"}
+                </p>
               </div>
             )}
             
