@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -131,7 +130,7 @@
   }
   
   .chat-bubble-assistant {
-    @apply chat-bubble bg-secondary text-app-text mr-auto rounded-tl-none;
+    @apply chat-bubble bg-[#3D2748] text-white mr-auto rounded-tl-none;
   }
   
   .typing-indicator {

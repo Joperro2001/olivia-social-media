@@ -84,12 +84,15 @@ export default {
           dark: "#B1ACFF",
         },
         app: {
-          background: "#F8F8F8", // Off-white
+          background: "#FDF5EF", // Updated to the new color
           card: "#FFFFFF",
           text: "#2D2D2D", // Charcoal
           subtext: "#757575",
           border: "#E9E9E9",
         },
+        olivia: {
+          message: "#3D2748", // Added Olivia's message color
+        }
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -8,7 +8,7 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="relative min-h-full bg-gradient-to-br from-secondary/30 to-primary/20">
+    <div className="relative min-h-full bg-[#FDF5EF]">
       <main className="h-full pb-20">{children}</main>
       <NavigationBar />
     </div>
