@@ -31,7 +31,7 @@ const BestiesPage: React.FC = () => {
         <div className="w-10">
           {/* Empty div for layout balance */}
         </div>
-        <h1 className="text-2xl font-bold text-black">Besties</h1>
+        <h1 className="text-2xl font-bold text-black">Matches</h1>
         <Button 
           variant="ghost" 
           size="icon"
@@ -79,3 +79,4 @@ const BestiesPage: React.FC = () => {
 };
 
 export default BestiesPage;
+

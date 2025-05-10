@@ -62,7 +62,7 @@ const MyMatchesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-center py-4">
-        <h1 className="text-2xl font-bold">My Matches</h1>
+        <h1 className="text-2xl font-bold">People</h1>
       </div>
       
       <div className="px-4">
