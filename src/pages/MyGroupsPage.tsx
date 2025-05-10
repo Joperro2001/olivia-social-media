@@ -1,15 +1,17 @@
 
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { matchedGroups } from "@/data/matchesMockData";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const MyGroupsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Filter groups based on search term
   const searchFilteredGroups = matchedGroups.filter((group) => {
@@ -39,10 +41,25 @@ const MyGroupsPage: React.FC = () => {
     }
   };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
-      <div className="flex items-center justify-center py-4">
+      <div className="flex items-center justify-between py-4 px-4">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={handleGoBack}
+          className="text-gray-600"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <h1 className="text-2xl font-bold">My Groups</h1>
+        <div className="w-10">
+          {/* Empty div for layout balance */}
+        </div>
       </div>
       
       <div className="px-4 pb-4">
