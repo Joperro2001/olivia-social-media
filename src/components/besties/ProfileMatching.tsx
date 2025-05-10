@@ -16,9 +16,10 @@ interface Profile {
 
 interface ProfileMatchingProps {
   profiles: Profile[];
+  onMatchFound?: () => void;
 }
 
-const ProfileMatching: React.FC<ProfileMatchingProps> = ({ profiles }) => {
+const ProfileMatching: React.FC<ProfileMatchingProps> = ({ profiles, onMatchFound }) => {
   const { toast } = useToast();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -36,6 +37,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ profiles }) => {
       description: `You and ${profiles[currentIndex].name} might be a good fit! We'll notify them.`,
       className: "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white border-none",
     });
+    
+    if (onMatchFound) {
+      onMatchFound();
+    }
     
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
