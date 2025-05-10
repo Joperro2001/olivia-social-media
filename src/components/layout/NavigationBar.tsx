@@ -14,12 +14,12 @@ const NavigationBar = () => {
       path: "/",
     },
     {
-      name: "Social",
+      name: "Besties",
       icon: Heart,
       path: "/besties",
     },
     {
-      name: "Events",
+      name: "Social",
       icon: Calendar,
       path: "/social",
     },

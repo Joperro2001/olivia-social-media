@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Sparkles, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
@@ -17,13 +17,17 @@ const BestiesPage: React.FC = () => {
     navigate("/matches");
   };
 
+  const navigateToMyGroups = () => {
+    navigate('/my-groups');
+  };
+
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
         <div className="w-10">
           {/* Empty div for layout balance */}
         </div>
-        <h1 className="text-2xl font-bold text-black">Social</h1>
+        <h1 className="text-2xl font-bold text-black">Besties</h1>
         <Button 
           variant="ghost" 
           size="icon"
@@ -36,9 +40,20 @@ const BestiesPage: React.FC = () => {
       </div>
       
       <div className="px-4 mb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-4 w-4" />
-          <span className="font-medium">Suggested Connections</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            <span className="font-medium">Suggested Connections</span>
+          </div>
+          
+          <Button 
+            variant="outline"
+            className="flex items-center gap-1"
+            onClick={navigateToMyGroups}
+          >
+            <Users size={18} />
+            My Groups
+          </Button>
         </div>
 
         {showFilters && <BestiesFilter />}
