@@ -24,9 +24,9 @@ const NavigationBar = () => {
       path: "/social",
     },
     {
-      name: "Groups",
+      name: "My Groups",
       icon: Users,
-      path: "/my-matches",
+      path: "/my-groups",
     },
     {
       name: "Profile",

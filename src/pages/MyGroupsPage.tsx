@@ -1,15 +1,15 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { matchedGroups } from "@/data/matchesMockData";
+import { useToast } from "@/hooks/use-toast";
 
 const MyGroupsPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
   
   // Filter groups based on search term
   const searchFilteredGroups = matchedGroups.filter((group) => {
@@ -29,22 +29,20 @@ const MyGroupsPage: React.FC = () => {
     return false;
   });
 
+  const handleOpenChat = (groupId: string) => {
+    const group = matchedGroups.find((g) => g.id === groupId);
+    if (group) {
+      toast({
+        title: "Opening chat",
+        description: `Chat with ${group.name} will be available in the full version!`,
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
-      <div className="flex items-center justify-between px-4 py-4">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => navigate('/my-matches')}
-          className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
-          aria-label="Go back"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+      <div className="flex items-center justify-center py-4">
         <h1 className="text-2xl font-bold">My Groups</h1>
-        <div className="w-10">
-          {/* Empty div for layout balance */}
-        </div>
       </div>
       
       <div className="px-4 pb-4">
@@ -83,7 +81,11 @@ const MyGroupsPage: React.FC = () => {
                   ))}
                 </div>
                 <p className="text-sm text-gray-700 mb-3">{group.description}</p>
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => handleOpenChat(group.id)}
+                >
                   Open Chat
                 </Button>
               </div>
