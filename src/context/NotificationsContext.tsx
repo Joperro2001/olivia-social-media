@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { toast } from 'sonner';
 
 export interface Notification {
   id: string;
@@ -54,12 +53,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     
     setNotifications(prev => [newNotification, ...prev]);
     
-    // Show toast for new notification using Sonner toast
-    toast(notification.title, {
-      description: notification.message,
-      icon: getNotificationIcon(notification.type),
-      position: 'top-right',
-    });
+    // Removed the toast notification popup
   };
   
   // Return appropriate icon based on notification type
