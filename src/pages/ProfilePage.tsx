@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,19 +8,22 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Edit, Settings, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/context/NotificationsContext";
+import NotificationsPanel from "@/components/notifications/NotificationsPanel";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [hasNotifications, setHasNotifications] = useState(true);
+  const { unreadCount, markAllAsRead } = useNotifications();
+  const [showNotifications, setShowNotifications] = useState(false);
   
   const handleNotificationClick = () => {
-    toast({
-      title: "Notifications",
-      description: "You have no new notifications",
-      className: "bg-primary text-white",
-    });
-    setHasNotifications(false);
+    setShowNotifications(true);
   };
   
   return (
@@ -29,17 +33,26 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center justify-between px-4 py-4">
             <h1 className="text-2xl font-bold">Profile</h1>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative"
-                onClick={handleNotificationClick}
-              >
-                <Bell size={20} />
-                {hasNotifications && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                )}
-              </Button>
+              <Popover open={showNotifications} onOpenChange={setShowNotifications}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative"
+                    onClick={handleNotificationClick}
+                  >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="end" className="p-0 w-80">
+                  <NotificationsPanel onClose={() => setShowNotifications(false)} />
+                </PopoverContent>
+              </Popover>
               <Button 
                 variant="ghost" 
                 size="icon"
