@@ -97,6 +97,11 @@ const SocialPage: React.FC = () => {
     console.log("Viewing attended events");
     navigate("/attended-events");
   };
+
+  const handleCreateEvent = () => {
+    console.log("Creating new event");
+    navigate("/create-event");
+  };
   
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
@@ -118,6 +123,14 @@ const SocialPage: React.FC = () => {
             className="rounded-full"
           >
             <Calendar className="h-5 w-5 text-primary" />
+          </Button>
+          <Button
+            onClick={handleCreateEvent}
+            className="rounded-full bg-primary hover:bg-primary/90 flex items-center gap-1 px-3"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Create Event</span>
           </Button>
         </div>
       </div>

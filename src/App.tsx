@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import SavedEventsPage from "./pages/SavedEventsPage";
 import AttendedEventsPage from "./pages/AttendedEventsPage";
+import CreateEventPage from "./pages/CreateEventPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/besties" element={<AppLayout><BestiesPage /></AppLayout>} />
           <Route path="/social" element={<AppLayout><SocialPage /></AppLayout>} />
           <Route path="/event/:eventId" element={<AppLayout><EventDetailsPage /></AppLayout>} />
+          <Route path="/create-event" element={<AppLayout><CreateEventPage /></AppLayout>} />
           <Route path="/saved-events" element={<AppLayout><SavedEventsPage /></AppLayout>} />
           <Route path="/attended-events" element={<AppLayout><AttendedEventsPage /></AppLayout>} />
           <Route path="/my-groups" element={<AppLayout><MyGroupsPage /></AppLayout>} />
