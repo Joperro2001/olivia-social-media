@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { matchedProfiles, matchedGroups, rsvpEvents } from "@/data/matchesMockData";
@@ -15,21 +15,12 @@ import ProfileStats from "@/components/profile/ProfileStats";
 
 const ProfilePage: React.FC = () => {
   const { toast } = useToast();
-  const [userCity, setUserCity] = useState<string>("Berlin"); // Default city
   const [currentCity, setCurrentCity] = useState<string>("London");
   
   // Count of user's social activity
   const rsvpEventsCount = rsvpEvents.length;
   const matchesCount = matchedProfiles.filter(profile => !profile.isPending).length;
   const groupsCount = matchedGroups.length;
-  
-  // Fetch the matched city from localStorage if available
-  useEffect(() => {
-    const savedCity = localStorage.getItem("matchedCity");
-    if (savedCity) {
-      setUserCity(savedCity);
-    }
-  }, []);
   
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
@@ -40,7 +31,6 @@ const ProfilePage: React.FC = () => {
           <UserHeader 
             userName="Alex Taylor" 
             userAge={27}
-            userCity={userCity}
           />
           
           <div className="mt-4 space-y-6 px-4">
@@ -48,7 +38,7 @@ const ProfilePage: React.FC = () => {
               university="LSE"
               currentCity={currentCity}
               currentCountryFlag="🇬🇧"
-              moveInCity={userCity}
+              moveInCity="Berlin"
               moveInCountryFlag="🇩🇪"
               nationality="British"
             />

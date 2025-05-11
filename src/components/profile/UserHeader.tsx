@@ -1,16 +1,14 @@
 
 import React from "react";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 
 interface UserHeaderProps {
   userName: string;
   userAge: number;
-  userCity: string;
 }
 
-const UserHeader: React.FC<UserHeaderProps> = ({ userName, userAge, userCity }) => {
+const UserHeader: React.FC<UserHeaderProps> = ({ userName, userAge }) => {
   return (
     <div className="flex flex-col items-center mt-2">
       <motion.div
@@ -33,14 +31,6 @@ const UserHeader: React.FC<UserHeaderProps> = ({ userName, userAge, userCity }) 
           <h2 className="text-xl font-bold">{userName}</h2>
           <span className="text-gray-500">• {userAge}</span>
         </div>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-          className="flex items-center justify-center mt-1"
-        >
-          <Badge className="bg-lavender-dark text-primary">🗺️ Moving to {userCity}</Badge>
-        </motion.div>
       </motion.div>
     </div>
   );

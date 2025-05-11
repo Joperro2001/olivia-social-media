@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -61,12 +60,6 @@ const EditProfilePage: React.FC = () => {
     const savedInterests = localStorage.getItem("userInterests");
     if (savedInterests) {
       setInterests(JSON.parse(savedInterests));
-    }
-    
-    // Load matched city
-    const savedCity = localStorage.getItem("matchedCity");
-    if (savedCity) {
-      form.setValue("moveInCity", savedCity);
     }
   }, [form]);
 
