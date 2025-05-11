@@ -19,7 +19,7 @@ const SuggestionCarousel: React.FC<SuggestionCarouselProps> = ({
       <Carousel className="w-full">
         <CarouselContent>
           {suggestions.map(suggestion => <CarouselItem key={suggestion.id} className="md:basis-1/2 lg:basis-1/3">
-              <div className="p-1">
+              <div className="p-1 py-0">
                 <SuggestionCard title={suggestion.title} description={suggestion.description} image={suggestion.image} ctaText={suggestion.ctaText} onAction={() => onCardAction(suggestion.id)} />
               </div>
             </CarouselItem>)}
