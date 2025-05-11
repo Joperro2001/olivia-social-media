@@ -1,16 +1,14 @@
-
 import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 const CityPage: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [hasChecklist, setHasChecklist] = useState<boolean>(false);
-  
+
   // Check if user has a checklist
   useEffect(() => {
     // In a real app, this would check from API or localStorage
@@ -18,16 +16,13 @@ const CityPage: React.FC = () => {
     const savedChecklist = localStorage.getItem("cityPackerData");
     setHasChecklist(!!savedChecklist);
   }, []);
-
   const handleChatRedirect = (message: string) => {
     // Store the message in session storage so it can be picked up by the chat page
     sessionStorage.setItem("autoSendMessage", message);
     // Navigate to the chat page
     navigate("/");
   };
-
-  return (
-    <div className="flex flex-col h-screen bg-[#FDF5EF]">
+  return <div className="flex flex-col h-screen bg-[#FDF5EF]">
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">City</h1>
         <div className="flex items-center gap-2">
@@ -40,18 +35,13 @@ const CityPage: React.FC = () => {
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
             <CardHeader className="relative">
               <div className="flex items-center gap-2">
-                <ArrowsUpFromLine className="h-5 w-5 text-primary" />
+                
                 <CardTitle>City Matcher</CardTitle>
               </div>
               <CardDescription className="text-base italic">
                 "I'm choosing my next exchange destination."
               </CardDescription>
-              <Button 
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-primary/10 hover:bg-primary/20 text-primary border-primary/30`}
-                onClick={() => navigate("/my-city-match")}
-              >
+              <Button variant="outline" size={isMobile ? "sm" : "default"} className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-primary/10 hover:bg-primary/20 text-primary border-primary/30`} onClick={() => navigate("/my-city-match")}>
                 <Sparkles className="h-4 w-4" />
                 {isMobile ? "View" : "My Match"}
               </Button>
@@ -60,10 +50,7 @@ const CityPage: React.FC = () => {
               <p>
                 Tell Olivia what matters to you — lifestyle, budget, weather, language, vibes — and she'll help you find your perfect match.
               </p>
-              <Button 
-                className="w-full"
-                onClick={() => handleChatRedirect("Find my City Match")}
-              >
+              <Button className="w-full" onClick={() => handleChatRedirect("Find my City Match")}>
                 Find My Match
               </Button>
             </CardContent>
@@ -72,18 +59,13 @@ const CityPage: React.FC = () => {
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
             <CardHeader className="relative">
               <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-primary" />
+                
                 <CardTitle>City Packer</CardTitle>
               </div>
               <CardDescription className="text-base italic">
                 "I know where I'm going. Now what do I need?"
               </CardDescription>
-              <Button 
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-secondary/15 hover:bg-secondary/25 text-secondary-dark border-secondary/30`}
-                onClick={() => navigate("/my-city-packer")}
-              >
+              <Button variant="outline" size={isMobile ? "sm" : "default"} className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-secondary/15 hover:bg-secondary/25 text-secondary-dark border-secondary/30`} onClick={() => navigate("/my-city-packer")}>
                 <Package className="h-4 w-4" />
                 {isMobile ? "View" : "My Checklist"}
               </Button>
@@ -92,11 +74,7 @@ const CityPage: React.FC = () => {
               <p>
                 Olivia will build your personalized moving checklist: visa requirements, SIM cards, health insurance, local apps, housing tips, and exactly what to pack.
               </p>
-              <Button 
-                className="w-full" 
-                variant="secondary"
-                onClick={() => handleChatRedirect("Create my moving checklist")}
-              >
+              <Button className="w-full" variant="secondary" onClick={() => handleChatRedirect("Create my moving checklist")}>
                 Create My Checklist
               </Button>
             </CardContent>
@@ -105,18 +83,13 @@ const CityPage: React.FC = () => {
           <Card className="border-primary/10 hover:shadow-md transition-shadow mb-4">
             <CardHeader className="relative">
               <div className="flex items-center gap-2">
-                <Map className="h-5 w-5 text-primary" />
+                
                 <CardTitle>City Explorer</CardTitle>
               </div>
               <CardDescription className="text-base italic">
                 "I've just arrived. Help me settle in!"
               </CardDescription>
-              <Button 
-                variant="outline"
-                size={isMobile ? "sm" : "default"}
-                className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-accent/10 hover:bg-accent/20 text-accent-dark border-accent/30`}
-                onClick={() => navigate("/my-city-explorer")}
-              >
+              <Button variant="outline" size={isMobile ? "sm" : "default"} className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-accent/10 hover:bg-accent/20 text-accent-dark border-accent/30`} onClick={() => navigate("/my-city-explorer")}>
                 <Map className="h-4 w-4" />
                 {isMobile ? "View" : "My Guide"}
               </Button>
@@ -125,19 +98,13 @@ const CityPage: React.FC = () => {
               <p>
                 Get Olivia's curated local guides, event suggestions, friend-finder features, must-know tips, and city-specific hacks to feel at home fast.
               </p>
-              <Button 
-                className="w-full" 
-                variant="accent"
-                onClick={() => handleChatRedirect("Help me explore my new city")}
-              >
+              <Button className="w-full" variant="accent" onClick={() => handleChatRedirect("Help me explore my new city")}>
                 Explore My City
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default CityPage;
