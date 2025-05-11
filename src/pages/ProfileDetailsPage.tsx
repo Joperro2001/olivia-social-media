@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronUp } from "lucide-react";
+import { ArrowLeft, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -29,8 +28,6 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStartY, setDragStartY] = useState(0);
   
   // Find profile from matched profiles data
   const profile = profileData || matchedProfiles.find(p => p.id === profileId);
@@ -81,29 +78,6 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
     ? `${profile.bio.substring(0, 100)}...` 
     : profile.bio;
   
-  // Handle swipe up gesture
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
-    setDragStartY(e.touches[0].clientY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    
-    const currentY = e.touches[0].clientY;
-    const diffY = dragStartY - currentY;
-    
-    // If swiped up by at least 50px, open the drawer
-    if (diffY > 50) {
-      setIsDrawerOpen(true);
-      setIsDragging(false);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
-  
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
       <ScrollArea className="h-full">
@@ -147,14 +121,8 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
           </div>
           
           <div className="mt-4 space-y-6 px-4">
-            {/* Interactive Profile Card - Click or swipe to see full details */}
-            <Card
-              onClick={() => setIsDrawerOpen(true)} 
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border relative transition-all hover:shadow-md active:scale-[0.99] cursor-pointer"
-            >
+            {/* Profile Card - No click action on the card itself */}
+            <Card className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border relative">
               <div className="space-y-5">
                 {/* Preview of User Information */}
                 <div className="flex items-center gap-3">
@@ -176,7 +144,7 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
                 </div>
                 
                 {/* Preview of Tags */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {profile.tags.slice(0, 3).map((tag: string) => (
                     <Badge 
                       key={tag} 
@@ -191,10 +159,16 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
                   )}
                 </div>
 
-                {/* Swipe up indicator */}
-                <div className="flex flex-col items-center justify-center mt-2">
-                  <ChevronUp className="h-4 w-4 text-primary animate-bounce" />
-                  <span className="text-xs text-gray-500">Tap or swipe up for details</span>
+                {/* Read More button - explicitly separate from card click */}
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={() => setIsDrawerOpen(true)}
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    Read More
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </Card>
