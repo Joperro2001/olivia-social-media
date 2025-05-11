@@ -62,7 +62,7 @@ const MyCityExplorerPage: React.FC = () => {
               
               <Button 
                 className="w-full" 
-                variant="secondary"
+                variant="accent"
                 onClick={handleChatRedirect}
               >
                 Update My Guide
@@ -88,7 +88,7 @@ const MyCityExplorerPage: React.FC = () => {
               
               <Button 
                 className="w-full" 
-                variant="secondary"
+                variant="accent"
                 onClick={handleChatRedirect}
               >
                 Explore My City

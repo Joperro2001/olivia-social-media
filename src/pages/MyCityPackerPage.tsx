@@ -62,7 +62,7 @@ const MyCityPackerPage: React.FC = () => {
             
             <Button 
               className="w-full" 
-              variant="accent"
+              variant="secondary"
               onClick={handleChatRedirect}
             >
               Create My Checklist

@@ -94,7 +94,7 @@ const CityPage: React.FC = () => {
               </p>
               <Button 
                 className="w-full" 
-                variant="accent"
+                variant="secondary"
                 onClick={() => handleChatRedirect("Create my moving checklist")}
               >
                 Create My Checklist
@@ -127,7 +127,7 @@ const CityPage: React.FC = () => {
               </p>
               <Button 
                 className="w-full" 
-                variant="secondary"
+                variant="accent"
                 onClick={() => handleChatRedirect("Help me explore my new city")}
               >
                 Explore My City
