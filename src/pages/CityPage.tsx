@@ -115,7 +115,7 @@ const CityPage: React.FC = () => {
               </TabsList>
               
               <ScrollArea className="flex-1 pb-0"> {/* Using ScrollArea component for better scrolling */}
-                <TabsContent value="city-match" className="mt-0 pb-28">
+                <TabsContent value="city-match" className="mt-0 pb-0\n">
                   <CityMatchSection />
                 </TabsContent>
                 
