@@ -13,6 +13,8 @@ import SettingsPage from "./pages/SettingsPage";
 import MyGroupsPage from "./pages/MyGroupsPage";
 import CityPage from "./pages/CityPage";
 import MyCityMatchPage from "./pages/MyCityMatchPage";
+import MyCityPackerPage from "./pages/MyCityPackerPage";
+import MyCityExplorerPage from "./pages/MyCityExplorerPage";
 import MatchesPage from "./pages/MatchesPage";
 import NotFound from "./pages/NotFound";
 import EventDetailsPage from "./pages/EventDetailsPage";
@@ -39,6 +41,8 @@ const App = () => (
           <Route path="/my-groups" element={<AppLayout><MyGroupsPage /></AppLayout>} />
           <Route path="/city" element={<AppLayout><CityPage /></AppLayout>} />
           <Route path="/my-city-match" element={<AppLayout><MyCityMatchPage /></AppLayout>} />
+          <Route path="/my-city-packer" element={<AppLayout><MyCityPackerPage /></AppLayout>} />
+          <Route path="/my-city-explorer" element={<AppLayout><MyCityExplorerPage /></AppLayout>} />
           <Route path="/matches" element={<AppLayout><MatchesPage /></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
           <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />

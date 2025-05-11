@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,7 @@ const CityPage: React.FC = () => {
           </Card>
           
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
-            <CardHeader>
+            <CardHeader className="relative">
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
                 <CardTitle>City Packer</CardTitle>
@@ -66,6 +67,15 @@ const CityPage: React.FC = () => {
               <CardDescription className="text-base italic">
                 "I know where I'm going. Now what do I need?"
               </CardDescription>
+              <Button 
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1 absolute top-6 right-6"
+                onClick={() => navigate("/my-city-packer")}
+              >
+                <Package className="h-4 w-4" />
+                My Checklist
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
@@ -82,7 +92,7 @@ const CityPage: React.FC = () => {
           </Card>
           
           <Card className="border-primary/10 hover:shadow-md transition-shadow mb-4">
-            <CardHeader>
+            <CardHeader className="relative">
               <div className="flex items-center gap-2">
                 <Map className="h-5 w-5 text-primary" />
                 <CardTitle>City Explorer</CardTitle>
@@ -90,6 +100,15 @@ const CityPage: React.FC = () => {
               <CardDescription className="text-base italic">
                 "I've just arrived. Help me settle in!"
               </CardDescription>
+              <Button 
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1 absolute top-6 right-6"
+                onClick={() => navigate("/my-city-explorer")}
+              >
+                <Map className="h-4 w-4" />
+                My Guide
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
