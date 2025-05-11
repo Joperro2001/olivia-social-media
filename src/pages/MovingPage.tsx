@@ -11,7 +11,7 @@ const MovingPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
-      <div className="flex items-center justify-center py-2">
+      <div className="flex items-center justify-start py-4 px-4">
         <h1 className="text-2xl font-bold">Moving</h1>
       </div>
       
