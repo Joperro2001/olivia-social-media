@@ -123,7 +123,7 @@ const CityPage: React.FC = () => {
                   <PackingSection />
                 </TabsContent>
                 
-                <TabsContent value="services" className="mt-0 pb-28">
+                <TabsContent value="services" className="mt-0 pb-0">
                   <BrandDiscoverySection />
                 </TabsContent>
               </ScrollArea>
