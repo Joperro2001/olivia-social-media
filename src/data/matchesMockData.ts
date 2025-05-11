@@ -1,4 +1,3 @@
-
 // Types for matched profiles, groups and events
 export interface MatchedProfile {
   id: string;
@@ -9,6 +8,7 @@ export interface MatchedProfile {
   bio: string;
   matchDate: string;
   tags: string[];
+  isPending?: boolean;
 }
 
 export interface MatchedGroup {
@@ -54,6 +54,28 @@ export const matchedProfiles: MatchedProfile[] = [
     matchDate: "1 week ago",
     tags: ["Digital Nomad", "Design", "Nature lover 🌿"],
   },
+  {
+    id: "profile3",
+    name: "Sophie",
+    age: 25,
+    location: "Amsterdam, Netherlands",
+    image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=1000",
+    bio: "Student looking to meet fellow art enthusiasts. I love visiting museums and going to exhibitions.",
+    matchDate: "Just now",
+    tags: ["Art", "Museums", "Photography"],
+    isPending: true,
+  },
+  {
+    id: "profile4",
+    name: "Liam",
+    age: 31,
+    location: "London, UK",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000",
+    bio: "Software engineer who recently moved to London. Looking for hiking buddies and tech meetups.",
+    matchDate: "Yesterday",
+    tags: ["Tech", "Hiking", "Craft beer"],
+    isPending: true,
+  }
 ];
 
 // Mock data for matched groups
