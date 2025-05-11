@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 interface ProfileCardProps {
@@ -24,6 +25,16 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
 }) => {
   // In a real app, this would use proper touch gestures
   // For now, we'll use buttons to simulate swipes
+
+  const handleSwipeRight = () => {
+    // Save the match to localStorage
+    const matches = JSON.parse(localStorage.getItem("matches") || "[]");
+    if (!matches.includes(id)) {
+      matches.push(id);
+      localStorage.setItem("matches", JSON.stringify(matches));
+    }
+    onSwipeRight(id);
+  };
 
   return <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
       <div className="absolute inset-0 bg-cover bg-center" style={{
@@ -55,7 +66,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             <path d="M6 6L18 18" stroke="#FF4A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <button onClick={() => onSwipeRight(id)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+        <button onClick={handleSwipeRight} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="url(#heart-gradient)" stroke="url(#heart-gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             <defs>

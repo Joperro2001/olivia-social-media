@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { matchedProfiles, matchedGroups, rsvpEvents } from "@/data/matchesMockData";
 
 // Import refactored components
 import ProfileNav from "@/components/profile/ProfileNav";
@@ -10,11 +11,17 @@ import UserInfoCard from "@/components/profile/UserInfoCard";
 import AboutMeCard from "@/components/profile/AboutMeCard";
 import RelocationCard from "@/components/profile/RelocationCard";
 import PremiumCard from "@/components/profile/PremiumCard";
+import ProfileStats from "@/components/profile/ProfileStats";
 
 const ProfilePage: React.FC = () => {
   const { toast } = useToast();
   const [userCity, setUserCity] = useState<string>("Berlin"); // Default city
   const [currentCity, setCurrentCity] = useState<string>("London");
+  
+  // Count of user's social activity
+  const rsvpEventsCount = rsvpEvents.length;
+  const matchesCount = matchedProfiles.filter(profile => !profile.isPending).length;
+  const groupsCount = matchedGroups.length;
   
   // Fetch the matched city from localStorage if available
   useEffect(() => {
@@ -36,7 +43,15 @@ const ProfilePage: React.FC = () => {
             userCity={userCity}
           />
           
-          <div className="mt-8 space-y-6 px-4">
+          <div className="px-4">
+            <ProfileStats
+              rsvpEventsCount={rsvpEventsCount}
+              matchesCount={matchesCount}
+              groupsCount={groupsCount}
+            />
+          </div>
+          
+          <div className="mt-4 space-y-6 px-4">
             <UserInfoCard 
               university="LSE"
               currentCity={currentCity}

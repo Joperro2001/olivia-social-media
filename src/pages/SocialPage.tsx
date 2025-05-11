@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import EventCard from "@/components/social/EventCard";
 import CategoryTabs from "@/components/social/CategoryTabs";
@@ -81,6 +81,13 @@ const SocialPage: React.FC = () => {
     console.log(`RSVP for event ${id}`);
     const event = events.find((e) => e.id === id);
     if (event) {
+      // Save the RSVP'd event to localStorage
+      const rsvpEvents = JSON.parse(localStorage.getItem("rsvpEvents") || "[]");
+      if (!rsvpEvents.includes(id)) {
+        rsvpEvents.push(id);
+        localStorage.setItem("rsvpEvents", JSON.stringify(rsvpEvents));
+      }
+      
       toast({
         title: "🎟️ RSVP'd!",
         description: `You're going to ${event.title}`,

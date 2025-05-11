@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +54,13 @@ const MyMatchesPage: React.FC = () => {
     console.log(`Join request for group ${groupId}`);
     const group = groupsWithCategories.find((g) => g.id === groupId);
     if (group) {
+      // Save the joined group to localStorage
+      const joinedGroups = JSON.parse(localStorage.getItem("joinedGroups") || "[]");
+      if (!joinedGroups.includes(groupId)) {
+        joinedGroups.push(groupId);
+        localStorage.setItem("joinedGroups", JSON.stringify(joinedGroups));
+      }
+      
       toast({
         title: "Join Request Sent!",
         description: `You've requested to join ${group.name}. We'll notify you when approved.`,
