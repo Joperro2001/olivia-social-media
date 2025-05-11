@@ -38,7 +38,7 @@ const ProfilePage: React.FC = () => {
           
           <div className="mt-8 space-y-6 px-4">
             <UserInfoCard 
-              university="Technical University of Berlin"
+              university="LSE"
               currentCity={currentCity}
               currentCountryFlag="🇬🇧"
               moveInCity={userCity}
