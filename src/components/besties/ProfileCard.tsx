@@ -2,7 +2,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Flag, Globe, University } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface ProfileCardProps {
   id: string;
@@ -12,11 +11,8 @@ interface ProfileCardProps {
   bio: string;
   image: string;
   tags: string[];
-  onSwipeLeft?: (id: string) => void;
-  onSwipeRight?: (id: string) => void;
-  university?: string;
-  nationality?: string;
-  clickable?: boolean;
+  onSwipeLeft: (id: string) => void;
+  onSwipeRight: (id: string) => void;
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({
@@ -28,13 +24,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   image,
   tags,
   onSwipeLeft,
-  onSwipeRight,
-  university = "University",
-  nationality = "British",
-  clickable = true
+  onSwipeRight
 }) => {
-  const navigate = useNavigate();
-
   // Get country flag from location
   const getCountryFlag = (location: string): string => {
     const countryMap: {[key: string]: string} = {
@@ -70,23 +61,14 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       matches.push(id);
       localStorage.setItem("matches", JSON.stringify(matches));
     }
-    onSwipeRight?.(id);
-  };
-
-  const handleCardClick = () => {
-    if (clickable) {
-      navigate(`/profile/${id}`);
-    }
+    onSwipeRight(id);
   };
 
   const city = getCity(location);
   const countryFlag = getCountryFlag(location);
 
   return (
-    <div 
-      className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl"
-      onClick={handleCardClick}
-    >
+    <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
       <div 
         className="absolute inset-0 bg-cover bg-center" 
         style={{ backgroundImage: `url(${image})` }}
@@ -100,23 +82,12 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           <span className="text-xl">{age}</span>
         </div>
         
-        {/* User Information Section */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2">
-            <University className="h-4 w-4" />
-            <p className="text-sm">{university}</p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            <p className="text-sm">{nationality}</p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Flag className="h-4 w-4" />
-            <p className="text-sm">{countryFlag} {city}</p>
-          </div>
+        <div className="flex items-center gap-2 mb-4">
+          <Flag className="h-4 w-4" />
+          <p className="text-sm">{countryFlag} {city}</p>
         </div>
+        
+        <p className="text-sm mb-4 line-clamp-3">{bio}</p>
         
         <div className="flex flex-wrap gap-2 mb-16">
           {tags.map(tag => (
@@ -130,39 +101,31 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
       </div>
 
-      {onSwipeLeft && onSwipeRight && (
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-8">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              onSwipeLeft(id);
-            }} 
-            className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M18 6L6 18" stroke="#FF4A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M6 6L18 18" stroke="#FF4A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSwipeRight();
-            }} 
-            className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="url(#heart-gradient)" stroke="url(#heart-gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <defs>
-                <linearGradient id="heart-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#FF416C" />
-                  <stop offset="100%" stopColor="#FF4B2B" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </button>
-        </div>
-      )}
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-8">
+        <button 
+          onClick={() => onSwipeLeft(id)} 
+          className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18" stroke="#FF4A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6 6L18 18" stroke="#FF4A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <button 
+          onClick={handleSwipeRight} 
+          className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="url(#heart-gradient)" stroke="url(#heart-gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <defs>
+              <linearGradient id="heart-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#FF416C" />
+                <stop offset="100%" stopColor="#FF4B2B" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };

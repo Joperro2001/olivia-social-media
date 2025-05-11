@@ -12,8 +12,6 @@ interface Profile {
   bio: string;
   image: string;
   tags: string[];
-  university?: string;
-  nationality?: string;
 }
 
 interface ProfileMatchingProps {
@@ -52,8 +50,6 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ profiles, onMatchFoun
         <ProfileCard
           key={profiles[currentIndex].id}
           {...profiles[currentIndex]}
-          university={profiles[currentIndex].university || "University"}
-          nationality={profiles[currentIndex].nationality || "British"}
           onSwipeLeft={handleSwipeLeft}
           onSwipeRight={handleSwipeRight}
         />
