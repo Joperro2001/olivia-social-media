@@ -4,19 +4,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronUp } from "lucide-react";
-import UserInfoCard from "@/components/profile/UserInfoCard";
-import AboutMeCard from "@/components/profile/AboutMeCard";
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { matchedProfiles } from "@/data/matchesMockData";
 import { 
   Drawer, 
-  DrawerContent, 
-  DrawerTrigger,
-  DrawerClose
+  DrawerContent,
+  DrawerClose,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerFooter
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Card } from "@/components/ui/card";
 
 interface ProfileDetailsPageProps {
   // Component can receive props to override profile data
@@ -27,7 +28,7 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   const { profileId } = useParams<{ profileId: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   
@@ -94,7 +95,7 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
     
     // If swiped up by at least 50px, open the drawer
     if (diffY > 50) {
-      setIsAboutExpanded(true);
+      setIsDrawerOpen(true);
       setIsDragging(false);
     }
   };
@@ -146,84 +147,144 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
           </div>
           
           <div className="mt-4 space-y-6 px-4">
-            {/* User Information Card */}
-            <UserInfoCard 
-              university="University"
-              currentCity={city}
-              currentCountryFlag={countryFlag}
-              moveInCity="Moving to Berlin"
-              moveInCountryFlag="🇩🇪"
-              nationality="British"
-            />
-            
-            {/* About Me Preview Section with swipe up gesture */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border relative"
+            {/* Interactive Profile Card - Click or swipe to see full details */}
+            <Card
+              onClick={() => setIsDrawerOpen(true)} 
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border relative transition-all hover:shadow-md active:scale-[0.99] cursor-pointer"
             >
-              <h3 className="font-semibold text-lg mb-3">About Me</h3>
-              <p className="text-gray-600">
-                {truncatedBio}
-              </p>
-              
-              <Drawer
-                open={isAboutExpanded}
-                onOpenChange={setIsAboutExpanded}
-              >
-                <DrawerTrigger asChild>
-                  <Button 
-                    variant="outline"
-                    className="w-full mt-4 flex items-center justify-center gap-2"
-                  >
-                    <span>Read More</span>
-                    <ChevronUp className="h-4 w-4 animate-bounce" />
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="p-6 max-h-[80vh] overflow-y-auto">
-                  <div className="mx-auto w-full max-w-sm">
-                    <h3 className="text-xl font-semibold mb-4">About {profile.name}</h3>
-                    <div className="mb-6">
-                      <p className="text-gray-700 whitespace-pre-wrap">
-                        {profile.bio}
-                      </p>
-                    </div>
-                    
-                    {/* Tags/Interests in expanded view */}
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium mb-2">Interests</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.tags.map((tag: string) => (
-                          <Badge 
-                            key={tag} 
-                            variant="secondary" 
-                            className="bg-lavender-light text-primary-dark hover:bg-lavender"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <DrawerClose asChild>
-                      <Button className="mt-6 w-full">Close</Button>
-                    </DrawerClose>
+              <div className="space-y-5">
+                {/* Preview of User Information */}
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary">📍</span>
                   </div>
-                </DrawerContent>
-              </Drawer>
-              
-              {/* Swipe indicator */}
-              <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
-                <div className="flex flex-col items-center">
-                  <ChevronUp className="h-4 w-4 text-gray-400 animate-bounce" />
-                  <span className="text-xs text-gray-400">Swipe up for more</span>
+                  <div>
+                    <p className="text-sm text-gray-500">Location</p>
+                    <p className="font-medium">{countryFlag} {profile.location}</p>
+                  </div>
+                </div>
+                
+                {/* Preview of About Me */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">About Me</h3>
+                  <p className="text-gray-600">
+                    {truncatedBio}
+                  </p>
+                </div>
+                
+                {/* Preview of Tags */}
+                <div className="flex flex-wrap gap-2">
+                  {profile.tags.slice(0, 3).map((tag: string) => (
+                    <Badge 
+                      key={tag} 
+                      variant="secondary" 
+                      className="bg-lavender-light text-primary-dark"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                  {profile.tags.length > 3 && (
+                    <Badge variant="outline">+{profile.tags.length - 3} more</Badge>
+                  )}
+                </div>
+
+                {/* Swipe up indicator */}
+                <div className="flex flex-col items-center justify-center mt-2">
+                  <ChevronUp className="h-4 w-4 text-primary animate-bounce" />
+                  <span className="text-xs text-gray-500">Tap or swipe up for details</span>
                 </div>
               </div>
-            </motion.div>
+            </Card>
+
+            {/* Full Profile Drawer */}
+            <Drawer 
+              open={isDrawerOpen}
+              onOpenChange={setIsDrawerOpen}
+            >
+              <DrawerContent className="max-h-[85vh] overflow-hidden">
+                <DrawerHeader className="px-6 pt-6 pb-2">
+                  <DrawerTitle className="text-xl font-semibold">{profile.name}'s Profile</DrawerTitle>
+                </DrawerHeader>
+                
+                <ScrollArea className="flex-grow overflow-y-auto px-6 pb-4">
+                  {/* User Info Section */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium mb-3">User Information</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span>🎓</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">University</p>
+                          <p className="font-medium">University</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span>🌎</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Nationality</p>
+                          <p className="font-medium">British</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span>{countryFlag}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Current City</p>
+                          <p className="font-medium">{profile.location}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span>🇩🇪</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Moving to</p>
+                          <p className="font-medium">Berlin</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* About Me Section */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium mb-3">About Me</h3>
+                    <p className="text-gray-700 whitespace-pre-wrap">
+                      {profile.bio}
+                    </p>
+                  </div>
+                  
+                  {/* Interests/Tags Section */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium mb-3">Interests</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.tags.map((tag: string) => (
+                        <Badge 
+                          key={tag} 
+                          variant="secondary" 
+                          className="bg-lavender-light text-primary-dark hover:bg-lavender"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </ScrollArea>
+                
+                <DrawerFooter className="px-6 py-4 border-t">
+                  <DrawerClose asChild>
+                    <Button className="w-full">Close</Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
           </div>
         </div>
       </ScrollArea>
