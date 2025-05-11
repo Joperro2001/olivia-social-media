@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Diamond, Heart, Plus, Sparkles, Users } from "lucide-react";
+import { Diamond, Heart, Sparkles, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
@@ -33,15 +33,6 @@ const BestiesPage: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">Social</h1>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleCreateGroup}
-            aria-label="Create Group"
-            className="bg-transparent"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
           <Button 
             variant="ghost" 
             size="icon"
