@@ -30,13 +30,12 @@ const BestiesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl font-bold text-black">Besties</h1>
+        <h1 className="text-2xl font-bold">Besties</h1>
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
             size="icon"
             onClick={handleCreateGroup}
-            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
             aria-label="Create Group"
           >
             <div className="relative">
@@ -49,7 +48,6 @@ const BestiesPage: React.FC = () => {
             variant="ghost" 
             size="icon"
             onClick={navigateToMyGroups}
-            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
             aria-label="View My Groups"
           >
             <Users className="h-5 w-5" />
@@ -58,7 +56,6 @@ const BestiesPage: React.FC = () => {
             variant="ghost" 
             size="icon"
             onClick={handleOpenMatches}
-            className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
             aria-label="View Matches"
           >
             <Heart className="h-5 w-5" />

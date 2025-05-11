@@ -103,9 +103,13 @@ const OliviaChat: React.FC = () => {
     });
   }, [messages, isTyping]);
 
-  return <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
-      <div className="flex items-center justify-start py-4 px-4">
+  return (
+    <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
+      <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
+        <div className="flex items-center gap-2">
+          {/* Placeholder for consistent spacing */}
+        </div>
       </div>
       
       <div className="flex-1 overflow-y-auto pb-2 px-4">
@@ -127,7 +131,8 @@ const OliviaChat: React.FC = () => {
       <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-[#FDF5EF] to-transparent pt-0">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default OliviaChat;

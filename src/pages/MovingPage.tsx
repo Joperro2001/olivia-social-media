@@ -11,8 +11,11 @@ const MovingPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
-      <div className="flex items-center justify-start py-4 px-4">
+      <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">Moving</h1>
+        <div className="flex items-center gap-2">
+          {/* Placeholder for consistent spacing */}
+        </div>
       </div>
       
       <div className="px-4 flex-1 overflow-auto">
