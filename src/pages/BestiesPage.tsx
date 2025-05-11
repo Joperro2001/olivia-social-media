@@ -31,7 +31,7 @@ const BestiesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl font-bold">Besties</h1>
+        <h1 className="text-2xl font-bold">Social</h1>
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
