@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/layout/AppLayout";
 import OliviaChat from "./pages/OliviaChat";
-import EventsPage from "./pages/EventsPage";
+import BestiesPage from "./pages/BestiesPage";
 import SocialPage from "./pages/SocialPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
@@ -32,7 +32,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AppLayout><OliviaChat /></AppLayout>} />
-          <Route path="/besties" element={<AppLayout><EventsPage /></AppLayout>} />
+          <Route path="/besties" element={<AppLayout><BestiesPage /></AppLayout>} />
           <Route path="/social" element={<AppLayout><SocialPage /></AppLayout>} />
           <Route path="/event/:eventId" element={<AppLayout><EventDetailsPage /></AppLayout>} />
           <Route path="/create-event" element={<AppLayout><CreateEventPage /></AppLayout>} />
