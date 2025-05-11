@@ -6,13 +6,13 @@ import CityMatchSection from "@/components/moving/CityMatchSection";
 import PackingSection from "@/components/moving/PackingSection";
 import BrandDiscoverySection from "@/components/moving/BrandDiscoverySection";
 
-const MovingPage: React.FC = () => {
+const CityPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("city-match");
 
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl font-bold">Moving</h1>
+        <h1 className="text-2xl font-bold">City</h1>
         <div className="flex items-center gap-2">
           {/* Placeholder for consistent spacing */}
         </div>
@@ -59,4 +59,4 @@ const MovingPage: React.FC = () => {
   );
 };
 
-export default MovingPage;
+export default CityPage;

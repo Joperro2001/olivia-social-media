@@ -11,7 +11,7 @@ import SocialPage from "./pages/SocialPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import MyGroupsPage from "./pages/MyGroupsPage";
-import MovingPage from "./pages/MovingPage";
+import CityPage from "./pages/CityPage";
 import MatchesPage from "./pages/MatchesPage";
 import NotFound from "./pages/NotFound";
 import EventDetailsPage from "./pages/EventDetailsPage";
@@ -36,7 +36,7 @@ const App = () => (
           <Route path="/saved-events" element={<AppLayout><SavedEventsPage /></AppLayout>} />
           <Route path="/attended-events" element={<AppLayout><AttendedEventsPage /></AppLayout>} />
           <Route path="/my-groups" element={<AppLayout><MyGroupsPage /></AppLayout>} />
-          <Route path="/moving" element={<AppLayout><MovingPage /></AppLayout>} />
+          <Route path="/city" element={<AppLayout><CityPage /></AppLayout>} />
           <Route path="/matches" element={<AppLayout><MatchesPage /></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
           <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />

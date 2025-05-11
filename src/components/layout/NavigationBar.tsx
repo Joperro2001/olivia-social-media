@@ -14,9 +14,9 @@ const NavigationBar = () => {
       path: "/",
     },
     {
-      name: "Moving",
+      name: "City",
       icon: Globe,
-      path: "/moving",
+      path: "/city",
     },
     {
       name: "Events",
@@ -64,6 +64,3 @@ const NavigationBar = () => {
       </nav>
     </div>
   );
-};
-
-export default NavigationBar;
