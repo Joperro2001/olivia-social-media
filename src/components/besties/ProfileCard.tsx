@@ -46,7 +46,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
         <p className="text-sm mb-4">{location}</p>
         <p className="text-sm mb-4 line-clamp-3">{bio}</p>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-16">
           {tags.map((tag) => (
             <Badge
               key={tag}
