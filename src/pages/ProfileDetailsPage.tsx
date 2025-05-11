@@ -1,15 +1,21 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft, ChevronUp } from "lucide-react";
 import UserInfoCard from "@/components/profile/UserInfoCard";
 import AboutMeCard from "@/components/profile/AboutMeCard";
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { matchedProfiles } from "@/data/matchesMockData";
+import { 
+  Drawer, 
+  DrawerContent, 
+  DrawerTrigger
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProfileDetailsPageProps {
   // Component can receive props to override profile data
@@ -19,6 +25,8 @@ interface ProfileDetailsPageProps {
 const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) => {
   const { profileId } = useParams<{ profileId: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   
   // Find profile from matched profiles data
   const profile = profileData || matchedProfiles.find(p => p.id === profileId);
@@ -63,6 +71,11 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   
   const city = getCity(profile.location);
   const countryFlag = getCountryFlag(profile.location);
+
+  // Truncated bio for preview
+  const truncatedBio = profile.bio && profile.bio.length > 100 
+    ? `${profile.bio.substring(0, 100)}...` 
+    : profile.bio;
   
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
@@ -79,16 +92,6 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-2xl font-bold text-left">Profile</h1>
-            
-            <div className="ml-auto">
-              <Button 
-                onClick={() => navigate(`/chat/${profile.id}`)}
-                className="bg-primary flex items-center gap-2"
-              >
-                <MessageSquare className="h-4 w-4" />
-                Message
-              </Button>
-            </div>
           </div>
           
           {/* User Header */}
@@ -127,7 +130,7 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
               nationality="British"
             />
             
-            {/* About Me Section with bio */}
+            {/* About Me Preview Section */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -136,30 +139,48 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
             >
               <h3 className="font-semibold text-lg mb-3">About Me</h3>
               <p className="text-gray-600">
-                {profile.bio}
+                {truncatedBio}
               </p>
               
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.3 }}
-                className="mt-4 space-y-2"
-              >
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {profile.tags.map((tag: string, index: number) => (
-                    <motion.div
-                      key={tag}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.9 + index * 0.1, duration: 0.3 }}
-                    >
-                      <Badge variant="secondary" className="bg-lavender-light text-primary-dark hover:bg-lavender">
-                        {tag}
-                      </Badge>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
+              {/* Read More Button - Opens the drawer */}
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="w-full mt-4 flex items-center justify-center gap-2"
+                    onClick={() => setIsAboutExpanded(true)}
+                  >
+                    <span>Read More</span>
+                    <ChevronUp className="h-4 w-4" />
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="p-6 max-h-[80vh] overflow-y-auto">
+                  <div className="mx-auto w-full max-w-sm">
+                    <h3 className="text-xl font-semibold mb-4">About {profile.name}</h3>
+                    <div className="mb-6">
+                      <p className="text-gray-700 whitespace-pre-wrap">
+                        {profile.bio}
+                      </p>
+                    </div>
+                    
+                    {/* Tags/Interests in expanded view */}
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium mb-2">Interests</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.tags.map((tag: string) => (
+                          <Badge 
+                            key={tag} 
+                            variant="secondary" 
+                            className="bg-lavender-light text-primary-dark hover:bg-lavender"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </DrawerContent>
+              </Drawer>
             </motion.div>
           </div>
         </div>
