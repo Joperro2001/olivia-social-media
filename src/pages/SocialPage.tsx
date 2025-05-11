@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EventCard from "@/components/social/EventCard";
 import CategoryTabs from "@/components/social/CategoryTabs";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Calendar, Plus } from "lucide-react";
+import { Heart, Calendar, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface Event {
@@ -51,7 +50,7 @@ const SocialPage: React.FC = () => {
       title: "Techno Tuesday @ Club Matrix",
       date: "Tue, 11:00 PM",
       location: "Club Matrix, Friedrichshain",
-      image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000",
+      image: "https://images.unsplash.com/photo-1516450360452-9a054b0db644?q=80&w=1000",
       tags: ["Nightlife", "Music"],
       attendees: 87,
       category: "Party",
@@ -98,6 +97,14 @@ const SocialPage: React.FC = () => {
     navigate("/attended-events");
   };
   
+  const handleAddEvent = () => {
+    toast({
+      title: "Premium Feature",
+      description: "Creating events is only available for premium users.",
+      variant: "destructive",
+    });
+  };
+  
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between py-4 px-4">
@@ -118,6 +125,15 @@ const SocialPage: React.FC = () => {
             className="rounded-full"
           >
             <Calendar className="h-5 w-5 text-primary" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleAddEvent}
+            className="rounded-full relative"
+          >
+            <PlusCircle className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 bg-accent text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">P</span>
           </Button>
         </div>
       </div>
