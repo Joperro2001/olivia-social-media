@@ -1,20 +1,32 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ChevronRight, Bell, Moon, Globe, Shield, CreditCard, LogOut } from "lucide-react";
+import { ChevronRight, Bell, Moon, Globe, Shield, CreditCard, LogOut, ArrowLeft } from "lucide-react";
 
 const SettingsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [nightMode, setNightMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [locationSharing, setLocationSharing] = useState(true);
   
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
-      <div className="flex items-center justify-center py-4">
-        <h1 className="text-2xl font-bold">Settings</h1>
+      <div className="flex items-center justify-between px-4 py-4">
+        <div className="flex items-center">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate("/profile")}
+            className="mr-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Settings</h1>
+        </div>
       </div>
       
       <div className="px-4 space-y-6 overflow-y-auto">
