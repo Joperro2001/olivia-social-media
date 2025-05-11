@@ -122,7 +122,7 @@ const SocialPage: React.FC = () => {
             onClick={handleViewAttendedEvents}
             className="rounded-full"
           >
-            <Calendar className="h-5 w-5 text-primary" />
+            <Calendar className="h-5 w-5 text-gray-600" />
           </Button>
           <Button
             onClick={handleCreateEvent}
