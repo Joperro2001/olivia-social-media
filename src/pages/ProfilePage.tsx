@@ -43,14 +43,6 @@ const ProfilePage: React.FC = () => {
             userCity={userCity}
           />
           
-          <div className="px-4">
-            <ProfileStats
-              rsvpEventsCount={rsvpEventsCount}
-              matchesCount={matchesCount}
-              groupsCount={groupsCount}
-            />
-          </div>
-          
           <div className="mt-4 space-y-6 px-4">
             <UserInfoCard 
               university="LSE"
@@ -64,6 +56,15 @@ const ProfilePage: React.FC = () => {
             <AboutMeCard />
             
             <RelocationCard />
+            
+            {/* Moved ProfileStats here between RelocationCard and PremiumCard */}
+            <div className="px-4 -mx-4">
+              <ProfileStats
+                rsvpEventsCount={rsvpEventsCount}
+                matchesCount={matchesCount}
+                groupsCount={groupsCount}
+              />
+            </div>
             
             <PremiumCard />
           </div>
