@@ -87,7 +87,7 @@ const ChatPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
+    <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-12">
       {/* Header */}
       <div className="flex items-center px-4 py-3 bg-white shadow-sm">
         <Button 
@@ -109,8 +109,8 @@ const ChatPage: React.FC = () => {
         </div>
       </div>
       
-      {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Chat messages - reduced bottom padding */}
+      <div className="flex-1 overflow-y-auto p-4 pb-2 space-y-4">
         {messages.map((message, index) => (
           <div 
             key={index} 
@@ -133,8 +133,8 @@ const ChatPage: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Message input */}
-      <div className="p-4 bg-white border-t">
+      {/* Message input - moved up by reducing padding above */}
+      <div className="p-3 bg-white border-t">
         <div className="flex gap-2">
           <Textarea
             placeholder={`Message ${profile.name}...`}
