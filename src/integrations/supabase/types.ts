@@ -9,6 +9,329 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_participants: {
+        Row: {
+          chat_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      event_attendees: {
+        Row: {
+          event_id: string
+          id: string
+          rsvp_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          rsvp_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          rsvp_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_tags: {
+        Row: {
+          event_id: string
+          id: string
+          tag: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          tag: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_tags_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          category: string | null
+          created_at: string
+          creator_id: string
+          date: string
+          description: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          creator_id: string
+          date: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          title: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          creator_id?: string
+          date?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      group_matches: {
+        Row: {
+          group_id: string
+          id: string
+          matched_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          matched_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          matched_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_matches_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_tags: {
+        Row: {
+          group_id: string
+          id: string
+          tag: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          tag: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_tags_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          member_count: number | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          member_count?: number | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          member_count?: number | null
+          name?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          chat_id: string
+          content: string
+          id: string
+          read_at: string | null
+          sender_id: string
+          sent_at: string
+        }
+        Insert: {
+          chat_id: string
+          content: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          sent_at?: string
+        }
+        Update: {
+          chat_id?: string
+          content?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_matches: {
+        Row: {
+          id: string
+          matched_at: string
+          status: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Insert: {
+          id?: string
+          matched_at?: string
+          status?: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Update: {
+          id?: string
+          matched_at?: string
+          status?: string
+          user_id_1?: string
+          user_id_2?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           about_me: string | null

@@ -11,7 +11,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
-  // If still loading, show nothing
+  // If still loading, show loading spinner
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // If not authenticated, redirect to signin
+  // If not authenticated, redirect to signin with return path
   if (!user) {
     return <Navigate to="/signin" state={{ from: location.pathname }} replace />;
   }

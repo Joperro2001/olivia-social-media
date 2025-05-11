@@ -15,6 +15,10 @@ const ProfileNav: React.FC = () => {
   const { signOut } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <div className="flex items-center justify-between px-4 py-4">
       <h1 className="text-2xl font-bold">Profile</h1>
@@ -63,7 +67,7 @@ const ProfileNav: React.FC = () => {
         <Button 
           variant="outline"
           size="icon"
-          onClick={signOut}
+          onClick={handleSignOut}
           aria-label="Sign Out"
           className="rounded-full border border-gray-200 bg-white shadow-sm w-10 h-10"
         >
