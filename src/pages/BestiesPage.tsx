@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Diamond, Heart, Plus, Sparkles, Users } from "lucide-react";
@@ -31,9 +30,6 @@ const BestiesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
-        <div className="w-10">
-          {/* Empty div for layout balance */}
-        </div>
         <h1 className="text-2xl font-bold text-black">Besties</h1>
         <div className="flex items-center gap-2">
           <Button 
