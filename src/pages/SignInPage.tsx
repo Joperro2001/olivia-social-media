@@ -21,7 +21,7 @@ type FormValues = z.infer<typeof formSchema>;
 const SignInPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, googleSignIn, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -42,7 +42,12 @@ const SignInPage = () => {
   const onSubmit = async (data: FormValues) => {
     try {
       setIsLoading(true);
-      await signIn(data.email, data.password);
+      const result = await signIn(data.email, data.password);
+      if (!result.success && result.message) {
+        form.setError("root", { 
+          message: result.message 
+        });
+      }
     } catch (error) {
       console.error("Sign in error:", error);
     } finally {
@@ -50,9 +55,12 @@ const SignInPage = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // For future Google auth implementation
-    alert("Google Sign In will be implemented in a future update.");
+  const handleGoogleSignIn = async () => {
+    try {
+      await googleSignIn();
+    } catch (error) {
+      console.error("Google sign in error:", error);
+    }
   };
 
   return (

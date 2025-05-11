@@ -27,7 +27,7 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const { signUp, user } = useAuth();
+  const { signUp, googleSignIn, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already logged in
@@ -50,9 +50,14 @@ const SignUpPage = () => {
   const onSubmit = async (data: FormValues) => {
     try {
       setIsLoading(true);
-      await signUp(data.email, data.password, {
+      const result = await signUp(data.email, data.password, {
         full_name: data.name,
       });
+      if (!result.success && result.message) {
+        form.setError("root", { 
+          message: result.message 
+        });
+      }
     } catch (error) {
       console.error("Sign up error:", error);
     } finally {
@@ -60,9 +65,12 @@ const SignUpPage = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // For future Google auth implementation
-    alert("Google Sign Up will be implemented in a future update.");
+  const handleGoogleSignIn = async () => {
+    try {
+      await googleSignIn();
+    } catch (error) {
+      console.error("Google sign up error:", error);
+    }
   };
 
   return (

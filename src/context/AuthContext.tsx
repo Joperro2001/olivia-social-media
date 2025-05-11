@@ -4,13 +4,16 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { handleSignOut } from "@/utils/auth";
+import { handleSignOut, handleEmailSignIn, handleEmailSignUp, handleGoogleSignIn } from "@/utils/auth";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  signUp: (email: string, password: string, userData?: any) => Promise<{ success: boolean; message?: string }>;
+  googleSignIn: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -61,11 +64,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     navigate("/signin");
   };
 
+  const signIn = async (email: string, password: string) => {
+    return await handleEmailSignIn(email, password);
+  };
+
+  const signUp = async (email: string, password: string, userData?: any) => {
+    return await handleEmailSignUp(email, password, userData);
+  };
+
+  const googleSignIn = async () => {
+    await handleGoogleSignIn();
+  };
+
   const value = {
     user,
     session,
     isLoading,
     signOut,
+    signIn,
+    signUp,
+    googleSignIn
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
