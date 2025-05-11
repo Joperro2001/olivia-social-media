@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Plus, X } from "lucide-react";
+import { CalendarIcon, MapPin, Plus, X, ImagePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CreateEventPage: React.FC = () => {
@@ -19,6 +19,8 @@ const CreateEventPage: React.FC = () => {
   const [tagInput, setTagInput] = useState("");
   const [image, setImage] = useState("");
   const [category, setCategory] = useState("Chill");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
   const categories = ["Chill", "Explore", "Party", "Learn"];
 
@@ -35,6 +37,25 @@ const CreateEventPage: React.FC = () => {
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+      setImage(""); // Clear the URL input when file is selected
+    }
+  };
+  
+  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImage(e.target.value);
+    // Clear the file selection when URL is entered
+    if (e.target.value) {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +71,8 @@ const CreateEventPage: React.FC = () => {
       });
       return;
     }
+    
+    // In a real app, you'd upload the image file to a server here
     
     toast({
       title: "Event Created!",
@@ -133,33 +156,77 @@ const CreateEventPage: React.FC = () => {
           </div>
           
           <div>
-            <label htmlFor="image" className="block text-sm font-medium mb-1">
-              Image URL
+            <label className="block text-sm font-medium mb-1">
+              Event Image
             </label>
-            <Input 
-              id="image" 
-              name="image" 
-              placeholder="Add an image URL for your event" 
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-            />
-            {image && (
-              <div className="mt-2 relative h-40 rounded-md overflow-hidden">
-                <img 
-                  src={image} 
-                  alt="Event preview" 
-                  className="w-full h-full object-cover"
-                  onError={() => {
-                    toast({
-                      title: "Invalid image URL",
-                      description: "Please provide a valid image URL",
-                      variant: "destructive",
-                    });
-                    setImage("");
-                  }}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('imageUpload')?.click()}
+                  className="flex gap-2"
+                >
+                  <ImagePlus className="h-4 w-4" />
+                  Upload Image
+                </Button>
+                <input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+                <span className="text-xs text-muted-foreground">or</span>
+                <Input 
+                  id="image" 
+                  name="image" 
+                  placeholder="Add an image URL instead" 
+                  value={image}
+                  onChange={handleImageUrlChange}
+                  className="flex-1"
                 />
               </div>
-            )}
+              
+              {(previewUrl || image) && (
+                <div className="mt-2 relative h-40 rounded-md overflow-hidden bg-muted">
+                  {previewUrl ? (
+                    <img 
+                      src={previewUrl} 
+                      alt="Event preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img 
+                      src={image} 
+                      alt="Event preview" 
+                      className="w-full h-full object-cover"
+                      onError={() => {
+                        toast({
+                          title: "Invalid image URL",
+                          description: "Please provide a valid image URL",
+                          variant: "destructive",
+                        });
+                        setImage("");
+                      }}
+                    />
+                  )}
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2 h-8 w-8 p-0"
+                    onClick={() => {
+                      setPreviewUrl(null);
+                      setSelectedFile(null);
+                      setImage("");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
           
           <div>
