@@ -64,7 +64,7 @@ const MyCityPackerPage: React.FC = () => {
               className="w-full" 
               onClick={handleChatRedirect}
             >
-              Ask Olivia to Create My Checklist
+              Create My Checklist
             </Button>
           </CardContent>
         </Card>
