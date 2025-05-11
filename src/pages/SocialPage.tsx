@@ -6,16 +6,15 @@ import CategoryTabs from "@/components/social/CategoryTabs";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Event } from "@/types/events";
 
 const SocialPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("Chill");
   
-  const categories: string[] = ["Chill", "Explore", "Party", "Learn"];
+  const categories = ["Chill", "Explore", "Party", "Learn"];
   
-  const events: Event[] = [
+  const events = [
     {
       id: "event1",
       title: "Expat Mixer @ Café Berlin",
