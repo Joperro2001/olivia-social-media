@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import EventCard from "@/components/social/EventCard";
 import CategoryTabs from "@/components/social/CategoryTabs";
 import { useToast } from "@/hooks/use-toast";
-import { Plus } from "lucide-react";
+import { Heart, Calendar, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const SocialPage: React.FC = () => {
   const { toast } = useToast();
@@ -76,10 +77,44 @@ const SocialPage: React.FC = () => {
     }
   };
   
+  const handleViewSavedEvents = () => {
+    console.log("Viewing saved events");
+    toast({
+      title: "Saved Events",
+      description: "This will show your saved events in the future",
+    });
+  };
+  
+  const handleViewAttendedEvents = () => {
+    console.log("Viewing attended events");
+    toast({
+      title: "Attended Events",
+      description: "This will show events you've attended in the future",
+    });
+  };
+  
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between py-4 px-4">
         <h1 className="text-2xl font-bold">Events</h1>
+        <div className="flex gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleViewSavedEvents}
+            className="rounded-full"
+          >
+            <Heart className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleViewAttendedEvents}
+            className="rounded-full"
+          >
+            <Calendar className="h-5 w-5 text-primary" />
+          </Button>
+        </div>
       </div>
       
       <div className="px-4">
