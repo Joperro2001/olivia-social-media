@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,12 +9,29 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const CityPage: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [hasChecklist, setHasChecklist] = useState<boolean>(false);
+  
+  // Check if user has a checklist
+  useEffect(() => {
+    // In a real app, this would check from API or localStorage
+    // For demo purposes, we'll check if there's any saved checklist data
+    const savedChecklist = localStorage.getItem("cityPackerData");
+    setHasChecklist(!!savedChecklist);
+  }, []);
 
   const handleChatRedirect = (message: string) => {
     // Store the message in session storage so it can be picked up by the chat page
     sessionStorage.setItem("autoSendMessage", message);
     // Navigate to the chat page
     navigate("/");
+  };
+
+  const handleCityPackerClick = () => {
+    if (hasChecklist) {
+      navigate("/my-city-packer");
+    } else {
+      handleChatRedirect("Create my moving checklist");
+    }
   };
 
   return (
@@ -73,7 +90,7 @@ const CityPage: React.FC = () => {
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
                 className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-secondary/15 hover:bg-secondary/25 text-secondary-dark border-secondary/30`}
-                onClick={() => navigate("/my-city-packer")}
+                onClick={handleCityPackerClick}
               >
                 <Package className="h-4 w-4" />
                 {isMobile ? "View" : "My Checklist"}

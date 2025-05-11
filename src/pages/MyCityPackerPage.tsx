@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Package } from "lucide-react";
@@ -7,6 +7,16 @@ import PackingSection from "@/components/moving/PackingSection";
 
 const MyCityPackerPage: React.FC = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    // When this page is visited, create an empty checklist if none exists
+    // This ensures the "My Checklist" button will navigate here in the future
+    if (!localStorage.getItem("cityPackerData")) {
+      localStorage.setItem("cityPackerData", JSON.stringify({
+        lastVisited: new Date().toISOString()
+      }));
+    }
+  }, []);
   
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
