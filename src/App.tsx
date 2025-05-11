@@ -12,6 +12,7 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import MyGroupsPage from "./pages/MyGroupsPage";
 import CityPage from "./pages/CityPage";
+import MyCityMatchPage from "./pages/MyCityMatchPage";
 import MatchesPage from "./pages/MatchesPage";
 import NotFound from "./pages/NotFound";
 import EventDetailsPage from "./pages/EventDetailsPage";
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/attended-events" element={<AppLayout><AttendedEventsPage /></AppLayout>} />
           <Route path="/my-groups" element={<AppLayout><MyGroupsPage /></AppLayout>} />
           <Route path="/city" element={<AppLayout><CityPage /></AppLayout>} />
+          <Route path="/my-city-match" element={<AppLayout><MyCityMatchPage /></AppLayout>} />
           <Route path="/matches" element={<AppLayout><MatchesPage /></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
           <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />

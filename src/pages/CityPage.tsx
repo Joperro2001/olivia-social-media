@@ -1,6 +1,6 @@
 
 import React from "react";
-import { ArrowsUpFromLine, Package, Map } from "lucide-react";
+import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,15 @@ const CityPage: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">City</h1>
         <div className="flex items-center gap-2">
-          {/* Placeholder for consistent spacing */}
+          <Button 
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => navigate("/my-city-match")}
+          >
+            <Sparkles className="h-4 w-4" />
+            My Match
+          </Button>
         </div>
       </div>
       

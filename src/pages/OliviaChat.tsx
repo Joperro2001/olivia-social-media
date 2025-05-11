@@ -85,8 +85,48 @@ const OliviaChat: React.FC = () => {
   const getOliviaResponse = (userMessage: string): string => {
     const lowerCaseMessage = userMessage.toLowerCase();
     
+    // When we detect a city recommendation, save it to localStorage
+    if (lowerCaseMessage.includes("you belong in")) {
+      const cityMatch = lowerCaseMessage.match(/you belong in ([a-z]+)/i);
+      if (cityMatch && cityMatch[1]) {
+        localStorage.setItem("matchedCity", cityMatch[1]);
+      }
+    }
+    
     if (lowerCaseMessage.includes("find my city match") || lowerCaseMessage.includes("city match")) {
       return "I'd be happy to help you find your perfect city match! Let's start by understanding your preferences. What climate do you prefer? Warm and sunny, moderate, or cooler temperatures?";
+    }
+    
+    if (lowerCaseMessage.includes("warm") || lowerCaseMessage.includes("sunny")) {
+      return "Great! Warm and sunny climates. Do you prefer coastal cities with beaches, or are you more interested in urban environments with lots of cultural activities?";
+    }
+    
+    if (lowerCaseMessage.includes("beaches") || lowerCaseMessage.includes("coastal")) {
+      return "Excellent! Based on your preferences for warm weather and coastal living, you belong in Barcelona! It offers beautiful beaches, amazing culture, and a relaxed Mediterranean lifestyle.";
+    }
+    
+    if (lowerCaseMessage.includes("urban") || lowerCaseMessage.includes("cultural")) {
+      localStorage.setItem("matchedCity", "Berlin");
+      return "Based on your preferences for cultural activities and urban environments, you belong in Berlin! It's a vibrant city with amazing arts, music, and a diverse cultural scene.";
+    }
+    
+    if (lowerCaseMessage.includes("moderate") || lowerCaseMessage.includes("mild")) {
+      localStorage.setItem("matchedCity", "London");
+      return "Based on your preference for moderate weather, you belong in London! It offers a temperate climate, rich history, and endless cultural opportunities.";
+    }
+    
+    if (lowerCaseMessage.includes("cool") || lowerCaseMessage.includes("cold")) {
+      return "Do you prefer a bustling city environment or somewhere with access to nature and outdoor activities?";
+    }
+    
+    if (lowerCaseMessage.includes("bustling") || lowerCaseMessage.includes("city environment")) {
+      localStorage.setItem("matchedCity", "New York");
+      return "Based on your preferences for cooler weather and vibrant city life, you belong in New York! It has incredible energy, diverse neighborhoods, and endless opportunities.";
+    }
+    
+    if (lowerCaseMessage.includes("nature") || lowerCaseMessage.includes("outdoor")) {
+      localStorage.setItem("matchedCity", "Tokyo");
+      return "Based on your preferences, you belong in Tokyo! While it's a massive city, it has excellent access to nature and outdoor activities nearby, plus a fascinating blend of traditional and ultramodern.";
     }
     
     if (lowerCaseMessage.includes("checklist") || lowerCaseMessage.includes("packer")) {
