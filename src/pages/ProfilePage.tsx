@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Edit, Settings, Bell, MapPin, University } from "lucide-react";
+import { Edit, Settings, Bell, MapPin, University, Flag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -23,6 +23,7 @@ const ProfilePage: React.FC = () => {
   const { unreadCount, markAllAsRead } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
   const [userCity, setUserCity] = useState<string>("Berlin"); // Default city
+  const [currentCity, setCurrentCity] = useState<string>("London");
   
   // Fetch the matched city from localStorage if available
   useEffect(() => {
@@ -101,7 +102,7 @@ const ProfilePage: React.FC = () => {
                 <span className="text-gray-500">• 27</span>
               </div>
               <div className="flex items-center justify-center mt-1">
-                <Badge className="bg-lavender-dark text-primary">🗺️ Wandering in {userCity}</Badge>
+                <Badge className="bg-lavender-dark text-primary">🗺️ Moving to {userCity}</Badge>
               </div>
             </div>
           </div>
@@ -124,11 +125,21 @@ const ProfilePage: React.FC = () => {
                 
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <MapPin className="h-4 w-4 text-primary" />
+                    <Flag className="h-4 w-4 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Current City</p>
-                    <p className="font-medium">{userCity}</p>
+                    <p className="font-medium">🇬🇧 {currentCity}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">City for Move-in</p>
+                    <p className="font-medium">🇩🇪 {userCity}</p>
                   </div>
                 </div>
               </div>
