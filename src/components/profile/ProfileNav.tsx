@@ -52,6 +52,7 @@ const ProfileNav: React.FC = () => {
         <Button 
           variant="outline"
           size="icon"
+          onClick={() => navigate("/edit-profile")}
           aria-label="Edit Profile"
           className="rounded-full border border-gray-200 bg-white shadow-sm w-10 h-10"
         >
