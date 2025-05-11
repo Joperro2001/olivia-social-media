@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,22 +19,14 @@ const CityPage: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">City</h1>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => navigate("/my-city-match")}
-          >
-            <Sparkles className="h-4 w-4" />
-            My Match
-          </Button>
+          {/* Removed from top header */}
         </div>
       </div>
       
       <div className="px-4 flex-1 overflow-auto pb-28"> 
         <div className="space-y-5">
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
-            <CardHeader>
+            <CardHeader className="relative">
               <div className="flex items-center gap-2">
                 <ArrowsUpFromLine className="h-5 w-5 text-primary" />
                 <CardTitle>City Matcher</CardTitle>
@@ -43,6 +34,15 @@ const CityPage: React.FC = () => {
               <CardDescription className="text-base italic">
                 "I'm choosing my next exchange destination."
               </CardDescription>
+              <Button 
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1 absolute top-6 right-6"
+                onClick={() => navigate("/my-city-match")}
+              >
+                <Sparkles className="h-4 w-4" />
+                My Match
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
