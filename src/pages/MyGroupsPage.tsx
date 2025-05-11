@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { matchedGroups } from "@/data/matchesMockData";
@@ -44,6 +44,13 @@ const MyGroupsPage: React.FC = () => {
   const handleGoBack = () => {
     navigate(-1);
   };
+  
+  const handleCreateGroup = () => {
+    toast({
+      title: "Premium Feature",
+      description: "Creating groups is available for premium users only!",
+    });
+  };
 
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
@@ -57,9 +64,15 @@ const MyGroupsPage: React.FC = () => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold">My Groups</h1>
-        <div className="w-10">
-          {/* Empty div for layout balance */}
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleCreateGroup}
+          className="text-gray-600"
+          aria-label="Create Group (Premium Feature)"
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
       </div>
       
       <div className="px-4 pb-4">
