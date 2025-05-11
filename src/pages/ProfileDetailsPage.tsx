@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageSquare } from "lucide-react";
-import { UserInfoCard } from "@/components/profile/UserInfoCard";
+import UserInfoCard from "@/components/profile/UserInfoCard";
 import AboutMeCard from "@/components/profile/AboutMeCard";
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
