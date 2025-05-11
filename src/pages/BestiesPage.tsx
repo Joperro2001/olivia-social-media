@@ -40,11 +40,7 @@ const BestiesPage: React.FC = () => {
             aria-label="Create Group"
             className="bg-transparent"
           >
-            <div className="relative">
-              <Plus className="h-5 w-5" />
-              <Diamond className="h-3 w-3 absolute -bottom-1 -right-1 text-amber-400 animate-pulse" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-yellow-300 to-amber-500 rounded-full animate-ping"></span>
-            </div>
+            <Plus className="h-5 w-5" />
           </Button>
           <Button 
             variant="ghost" 
