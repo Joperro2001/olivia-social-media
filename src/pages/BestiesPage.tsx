@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Diamond, Heart, Plus, Sparkles, Users } from "lucide-react";
@@ -37,6 +38,7 @@ const BestiesPage: React.FC = () => {
             size="icon"
             onClick={handleCreateGroup}
             aria-label="Create Group"
+            className="bg-transparent"
           >
             <div className="relative">
               <Plus className="h-5 w-5" />
