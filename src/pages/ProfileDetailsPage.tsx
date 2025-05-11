@@ -13,7 +13,8 @@ import { matchedProfiles } from "@/data/matchesMockData";
 import { 
   Drawer, 
   DrawerContent, 
-  DrawerTrigger
+  DrawerTrigger,
+  DrawerClose
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -27,6 +28,8 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
   
   // Find profile from matched profiles data
   const profile = profileData || matchedProfiles.find(p => p.id === profileId);
@@ -76,6 +79,29 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   const truncatedBio = profile.bio && profile.bio.length > 100 
     ? `${profile.bio.substring(0, 100)}...` 
     : profile.bio;
+  
+  // Handle swipe up gesture
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    setDragStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const currentY = e.touches[0].clientY;
+    const diffY = dragStartY - currentY;
+    
+    // If swiped up by at least 50px, open the drawer
+    if (diffY > 50) {
+      setIsAboutExpanded(true);
+      setIsDragging(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
   
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
@@ -130,28 +156,32 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
               nationality="British"
             />
             
-            {/* About Me Preview Section */}
+            {/* About Me Preview Section with swipe up gesture */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border"
+              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border relative"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               <h3 className="font-semibold text-lg mb-3">About Me</h3>
               <p className="text-gray-600">
                 {truncatedBio}
               </p>
               
-              {/* Read More Button - Opens the drawer */}
-              <Drawer>
+              <Drawer
+                open={isAboutExpanded}
+                onOpenChange={setIsAboutExpanded}
+              >
                 <DrawerTrigger asChild>
                   <Button 
                     variant="outline"
                     className="w-full mt-4 flex items-center justify-center gap-2"
-                    onClick={() => setIsAboutExpanded(true)}
                   >
                     <span>Read More</span>
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4 animate-bounce" />
                   </Button>
                 </DrawerTrigger>
                 <DrawerContent className="p-6 max-h-[80vh] overflow-y-auto">
@@ -178,9 +208,21 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
                         ))}
                       </div>
                     </div>
+
+                    <DrawerClose asChild>
+                      <Button className="mt-6 w-full">Close</Button>
+                    </DrawerClose>
                   </div>
                 </DrawerContent>
               </Drawer>
+              
+              {/* Swipe indicator */}
+              <div className="absolute bottom-2 left-0 right-0 flex justify-center pointer-events-none">
+                <div className="flex flex-col items-center">
+                  <ChevronUp className="h-4 w-4 text-gray-400 animate-bounce" />
+                  <span className="text-xs text-gray-400">Swipe up for more</span>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
