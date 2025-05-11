@@ -8,7 +8,7 @@ import ProfileMatching from "@/components/besties/ProfileMatching";
 import BestiesFilter from "@/components/besties/BestiesFilter";
 import { useNavigate } from "react-router-dom";
 
-const BestiesPage: React.FC = () => {
+const EventsPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
@@ -79,4 +79,4 @@ const BestiesPage: React.FC = () => {
   );
 };
 
-export default BestiesPage;
+export default EventsPage;
