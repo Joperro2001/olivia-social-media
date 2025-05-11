@@ -1,9 +1,9 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Maximize2 } from "lucide-react";
 import UserInfoCard from "@/components/profile/UserInfoCard";
 import AboutMeCard from "@/components/profile/AboutMeCard";
 import { motion } from "framer-motion";
@@ -12,6 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { matchedProfiles } from "@/data/matchesMockData";
 import { Card } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 interface ProfileDetailsPageProps {
   // Component can receive props to override profile data
@@ -22,6 +25,7 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   const { profileId } = useParams<{ profileId: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [fullScreenImage, setFullScreenImage] = useState(false);
   
   // Find profile from matched profiles data or use provided profileData
   // Use a default profile if none is found (to avoid "Profile Not Found" message)
@@ -55,6 +59,10 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   
   const city = getCity(profile.location);
   const countryFlag = getCountryFlag(profile.location);
+
+  // Component to display based on device size
+  const FullScreenComponent = isMobile ? Drawer : Dialog;
+  const FullScreenContent = isMobile ? DrawerContent : DialogContent;
   
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
@@ -77,13 +85,21 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
           <div className="px-3 mt-1">
             <Card className="overflow-hidden">
               <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'}`}>
-                {/* Profile Image */}
-                <div className={`${isMobile ? 'w-full h-60' : 'w-2/5 h-auto'}`}>
+                {/* Profile Image with full-screen button */}
+                <div className={`${isMobile ? 'w-full h-60' : 'w-2/5 h-auto'} relative group`}>
                   <img 
                     src={profile.image} 
                     alt={profile.name} 
                     className="w-full h-full object-cover"
                   />
+                  <div 
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => setFullScreenImage(true)}
+                  >
+                    <Button variant="secondary" size="icon" className="bg-white/70 hover:bg-white/90">
+                      <Maximize2 className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
                 
                 {/* Profile Info - More Compact for Mobile */}
@@ -127,6 +143,47 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
             </Card>
           </div>
         </div>
+
+        {/* Full-screen image modal/dialog */}
+        {isMobile ? (
+          <Drawer open={fullScreenImage} onOpenChange={setFullScreenImage}>
+            <DrawerContent className="h-[90vh]">
+              <div className="h-full relative">
+                <img 
+                  src={profile.image} 
+                  alt={profile.name} 
+                  className="w-full h-full object-contain" 
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                  <h2 className="text-xl font-bold text-white">{profile.name}, {profile.age}</h2>
+                  <div className="flex items-center gap-2 text-white/90">
+                    <span>{city}</span>
+                    <span>{countryFlag}</span>
+                  </div>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Dialog open={fullScreenImage} onOpenChange={setFullScreenImage}>
+            <DialogContent className="max-w-5xl w-[90vw] h-[80vh]">
+              <div className="h-full flex flex-col">
+                <img 
+                  src={profile.image} 
+                  alt={profile.name} 
+                  className="w-full h-full object-contain" 
+                />
+                <div className="mt-2">
+                  <h2 className="text-xl font-bold">{profile.name}, {profile.age}</h2>
+                  <div className="flex items-center gap-2">
+                    <span>{city}</span>
+                    <span>{countryFlag}</span>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </ScrollArea>
     </div>
   );
