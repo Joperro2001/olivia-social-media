@@ -9,6 +9,7 @@ import OliviaChat from "./pages/OliviaChat";
 import BestiesPage from "./pages/BestiesPage";
 import SocialPage from "./pages/SocialPage";
 import ProfilePage from "./pages/ProfilePage";
+import ProfileDetailsPage from "./pages/ProfileDetailsPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import MyGroupsPage from "./pages/MyGroupsPage";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/matches" element={<AppLayout><MatchesPage /></AppLayout>} />
             <Route path="/chat/:profileId" element={<AppLayout><ChatPage /></AppLayout>} />
             <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
+            <Route path="/profile/:profileId" element={<AppLayout><ProfileDetailsPage /></AppLayout>} />
             <Route path="/edit-profile" element={<AppLayout><EditProfilePage /></AppLayout>} />
             <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
             <Route path="/signin" element={<SignInPage />} />

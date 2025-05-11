@@ -27,7 +27,8 @@ const MatchesList: React.FC<MatchesListProps> = ({
 
   const handleCardClick = (profileId: string) => {
     if (!showRequests) {
-      navigate(`/chat/${profileId}`);
+      // Navigate to profile details instead of chat
+      navigate(`/profile/${profileId}`);
     }
   };
 
