@@ -3,20 +3,11 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import EventDetails from "@/components/events/EventDetails";
 import EventNotFound from "@/components/events/EventNotFound";
+import { Event } from "@/types/events";
 
-interface EventDetailsProps {
-  id: string;
-  title: string;
-  date: string;
-  location: string;
-  image: string;
-  description?: string;
-  tags: string[];
-  attendees: number;
-  isPremium?: boolean;
-}
+interface EventDetailsPageProps {}
 
-const eventDetails: Record<string, EventDetailsProps> = {
+const eventDetails: Record<string, Event> = {
   "event1": {
     id: "event1",
     title: "Expat Mixer @ Café Berlin",
@@ -26,6 +17,7 @@ const eventDetails: Record<string, EventDetailsProps> = {
     description: "Join fellow expats for a relaxed evening of conversation and networking. Meet people from around the world who have made Berlin their new home. First drink is on us!",
     tags: ["Social", "Networking"],
     attendees: 24,
+    category: "Chill",
     isPremium: true,
   },
   "event2": {
@@ -37,6 +29,7 @@ const eventDetails: Record<string, EventDetailsProps> = {
     description: "Explore the beautiful Grunewald Forest with a group of outdoor enthusiasts. The hike is approximately 10km with moderate difficulty. Don't forget to bring water and comfortable shoes!",
     tags: ["Outdoor", "Nature"],
     attendees: 12,
+    category: "Explore",
   },
   "event3": {
     id: "event3",
@@ -47,6 +40,7 @@ const eventDetails: Record<string, EventDetailsProps> = {
     description: "Experience Berlin's legendary nightlife with the best techno DJs in town. Special guest DJ this week: Stef Mendesidis. Entry is free before midnight with the app QR code.",
     tags: ["Nightlife", "Music"],
     attendees: 87,
+    category: "Party",
     isPremium: true,
   },
   "event4": {
@@ -58,10 +52,11 @@ const eventDetails: Record<string, EventDetailsProps> = {
     description: "Practice your German in a relaxed atmosphere. All levels welcome! This weekly meetup pairs German speakers with learners for conversation practice. Snacks and refreshments provided.",
     tags: ["Education", "Language"],
     attendees: 18,
+    category: "Learn",
   },
 };
 
-const EventDetailsPage: React.FC = () => {
+const EventDetailsPage: React.FC<EventDetailsPageProps> = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [isPremiumUser] = useState(false); // Simulating non-premium user by default
   
