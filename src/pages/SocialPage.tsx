@@ -7,6 +7,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Heart, Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  image: string;
+  tags: string[];
+  attendees: number;
+  category: string;
+}
+
 const SocialPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -79,18 +90,12 @@ const SocialPage: React.FC = () => {
   
   const handleViewSavedEvents = () => {
     console.log("Viewing saved events");
-    toast({
-      title: "Saved Events",
-      description: "This will show your saved events in the future",
-    });
+    navigate("/saved-events");
   };
   
   const handleViewAttendedEvents = () => {
     console.log("Viewing attended events");
-    toast({
-      title: "Attended Events",
-      description: "This will show events you've attended in the future",
-    });
+    navigate("/attended-events");
   };
   
   return (
