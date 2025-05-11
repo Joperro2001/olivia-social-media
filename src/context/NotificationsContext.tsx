@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export interface Notification {
   id: string;
@@ -38,7 +39,6 @@ export const useNotifications = () => {
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { toast } = useToast();
   
   // Calculate unread count
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -54,12 +54,26 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     
     setNotifications(prev => [newNotification, ...prev]);
     
-    // Show toast for new notification
-    toast({
-      title: notification.title,
+    // Show toast for new notification using Sonner toast
+    toast(notification.title, {
       description: notification.message,
-      className: "bg-primary text-white",
+      icon: getNotificationIcon(notification.type),
+      position: 'top-right',
     });
+  };
+  
+  // Return appropriate icon based on notification type
+  const getNotificationIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'connection':
+        return <div className="bg-lavender-light p-2 rounded-full"><UserPlus size={14} className="text-primary" /></div>;
+      case 'event-canceled':
+        return <div className="bg-peach-light p-2 rounded-full"><X size={14} className="text-accent" /></div>;
+      case 'event-today':
+        return <div className="bg-mint-light p-2 rounded-full"><Calendar size={14} className="text-mint-dark" /></div>;
+      default:
+        return null;
+    }
   };
   
   // Mark all notifications as read
@@ -118,8 +132,10 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     
     // Add these notifications with a slight delay to simulate receiving them
     const timer = setTimeout(() => {
-      initialNotifications.forEach(notification => {
-        addNotification(notification);
+      initialNotifications.forEach((notification, index) => {
+        setTimeout(() => {
+          addNotification(notification);
+        }, index * 1000); // Add each notification 1 second apart
       });
     }, 2000);
     
@@ -141,3 +157,5 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     </NotificationsContext.Provider>
   );
 };
+
+import { UserPlus, X, Calendar } from "lucide-react";
