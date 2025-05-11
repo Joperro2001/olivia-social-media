@@ -27,9 +27,9 @@ const ProfilePage: React.FC = () => {
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
       <ScrollArea className="h-full">
         <div className="flex flex-col pb-10">
-          <div className="flex items-center justify-between py-4 px-4">
+          <div className="flex items-center justify-between px-4 py-4">
             <h1 className="text-2xl font-bold">Profile</h1>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -43,16 +43,20 @@ const ProfilePage: React.FC = () => {
               </Button>
               <Button 
                 variant="ghost" 
-                size="sm" 
-                className="flex items-center gap-1"
+                size="icon"
                 onClick={() => navigate("/settings")}
+                className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+                aria-label="Settings"
               >
-                <Settings size={16} />
-                <span>Settings</span>
+                <Settings size={20} />
               </Button>
-              <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                <Edit size={16} />
-                <span>Edit</span>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
+                aria-label="Edit Profile"
+              >
+                <Edit size={20} />
               </Button>
             </div>
           </div>
