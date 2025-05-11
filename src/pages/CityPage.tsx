@@ -3,8 +3,18 @@ import React from "react";
 import { ArrowsUpFromLine, Package, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 const CityPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleChatRedirect = (message: string) => {
+    // Store the message in session storage so it can be picked up by the chat page
+    sessionStorage.setItem("autoSendMessage", message);
+    // Navigate to the chat page
+    navigate("/");
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
       <div className="flex items-center justify-between px-4 py-4">
@@ -30,7 +40,10 @@ const CityPage: React.FC = () => {
               <p>
                 Tell Olivia what matters to you — lifestyle, budget, weather, language, vibes — and she'll help you find your perfect match.
               </p>
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => handleChatRedirect("Find my City Match")}
+              >
                 Find My Match
               </Button>
             </CardContent>
@@ -50,7 +63,11 @@ const CityPage: React.FC = () => {
               <p>
                 Olivia will build your personalized moving checklist: visa requirements, SIM cards, health insurance, local apps, housing tips, and exactly what to pack.
               </p>
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => handleChatRedirect("Create my moving checklist")}
+              >
                 Create My Checklist
               </Button>
             </CardContent>
@@ -70,7 +87,11 @@ const CityPage: React.FC = () => {
               <p>
                 Get Olivia's curated local guides, event suggestions, friend-finder features, must-know tips, and city-specific hacks to feel at home fast.
               </p>
-              <Button className="w-full" variant="secondary">
+              <Button 
+                className="w-full" 
+                variant="secondary"
+                onClick={() => handleChatRedirect("Help me explore my new city")}
+              >
                 Explore My City
               </Button>
             </CardContent>

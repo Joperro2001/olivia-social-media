@@ -20,6 +20,7 @@ const OliviaChat: React.FC = () => {
   }]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const autoMessageSent = useRef<boolean>(false);
   
   const suggestedCards = [
     {
@@ -42,6 +43,22 @@ const OliviaChat: React.FC = () => {
       ctaText: "Explore Groups"
     }
   ];
+
+  useEffect(() => {
+    // Check if there's a message to auto-send
+    const autoMessage = sessionStorage.getItem("autoSendMessage");
+    
+    if (autoMessage && !autoMessageSent.current) {
+      // Small timeout to ensure the chat is loaded before sending
+      const timer = setTimeout(() => {
+        handleSendMessage(autoMessage);
+        sessionStorage.removeItem("autoSendMessage");
+        autoMessageSent.current = true;
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleSendMessage = (content: string) => {
     const userMessage: Message = {
@@ -67,6 +84,19 @@ const OliviaChat: React.FC = () => {
 
   const getOliviaResponse = (userMessage: string): string => {
     const lowerCaseMessage = userMessage.toLowerCase();
+    
+    if (lowerCaseMessage.includes("find my city match") || lowerCaseMessage.includes("city match")) {
+      return "I'd be happy to help you find your perfect city match! Let's start by understanding your preferences. What climate do you prefer? Warm and sunny, moderate, or cooler temperatures?";
+    }
+    
+    if (lowerCaseMessage.includes("checklist") || lowerCaseMessage.includes("packer")) {
+      return "I'll help you create a personalized moving checklist. Which city are you planning to move to?";
+    }
+    
+    if (lowerCaseMessage.includes("explore") || lowerCaseMessage.includes("settle in")) {
+      return "Welcome to your new city! To help you settle in and explore, I'll need to know which city you're in. Could you let me know where you've moved to?";
+    }
+    
     if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi")) {
       return "Hey there! 👋 How can I help with your relocation journey today? I can help you find housing, connect with like-minded people, or join groups with shared interests!";
     }
