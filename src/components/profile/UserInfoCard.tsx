@@ -21,7 +21,7 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
   const infoItems = [
     {
       icon: University,
-      label: "University",
+      label: "University in destination",
       value: university
     },
     {
