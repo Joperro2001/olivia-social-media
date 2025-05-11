@@ -55,8 +55,8 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ profiles, onMatchFoun
         />
       ) : (
         <div className="text-center px-4 py-10">
-          <h3 className="text-xl font-semibold mb-2">No more profiles</h3>
-          <p className="text-gray-500 mb-6">Check back later for new connections</p>
+          <h3 className="text-xl font-semibold mb-2">There are no more matches</h3>
+          <p className="text-gray-500 mb-6">Try again in a while to find new connections</p>
           <Button 
             onClick={() => setCurrentIndex(0)}
             className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
