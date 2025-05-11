@@ -1,3 +1,4 @@
+
 // Types for matched profiles, groups and events
 export interface MatchedProfile {
   id: string;
@@ -10,6 +11,7 @@ export interface MatchedProfile {
   tags: string[];
   isPending?: boolean;
   hasInitialMessage?: boolean;
+  messages?: string[]; // Added messages property
 }
 
 export interface MatchedGroup {
@@ -44,6 +46,7 @@ export const matchedProfiles: MatchedProfile[] = [
     bio: "Tech professional new to Berlin! Looking for friends to explore the city with.",
     matchDate: "2 days ago",
     tags: ["Tech", "Coffee lover", "Pride ally 🌈"],
+    messages: ["Hey! I saw we both love coffee. Any favorite cafes in Berlin?"]
   },
   {
     id: "profile2",
@@ -54,6 +57,7 @@ export const matchedProfiles: MatchedProfile[] = [
     bio: "Digital nomad working in graphic design. Currently looking for cool co-working buddies!",
     matchDate: "1 week ago",
     tags: ["Digital Nomad", "Design", "Nature lover 🌿"],
+    messages: ["Hi! I'm looking for good co-working spaces, any recommendations?", "I usually work at cafes but would love a more dedicated space."]
   },
   {
     id: "profile3",
@@ -64,7 +68,7 @@ export const matchedProfiles: MatchedProfile[] = [
     bio: "Student looking to meet fellow art enthusiasts. I love visiting museums and going to exhibitions.",
     matchDate: "Just now",
     tags: ["Art", "Museums", "Photography"],
-    isPending: true,
+    isPending: true
   },
   {
     id: "profile4",
@@ -75,7 +79,7 @@ export const matchedProfiles: MatchedProfile[] = [
     bio: "Software engineer who recently moved to London. Looking for hiking buddies and tech meetups.",
     matchDate: "Yesterday",
     tags: ["Tech", "Hiking", "Craft beer"],
-    isPending: true,
+    isPending: true
   }
 ];
 

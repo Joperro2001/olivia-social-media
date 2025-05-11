@@ -37,7 +37,7 @@ const ChatPage: React.FC = () => {
         foundProfile.messages.forEach((msg: string) => {
           initialMessages.push({
             text: msg,
-            isUser: true,
+            isUser: false, // Messages from the match
             timestamp: "Earlier"
           });
         });

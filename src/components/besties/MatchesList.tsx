@@ -68,7 +68,8 @@ const MatchesList: React.FC<MatchesListProps> = ({
   return (
     <div className="space-y-4">
       {profiles.map((profile) => {
-        const lastMessage = profile.messages && profile.messages.length > 0 
+        const hasMessages = profile.messages && profile.messages.length > 0;
+        const lastMessage = hasMessages
           ? profile.messages[profile.messages.length - 1] 
           : profile.hasInitialMessage 
             ? `You and ${profile.name} matched. Let's start messaging!` 
