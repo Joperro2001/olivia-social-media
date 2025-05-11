@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -93,7 +94,7 @@ const CityPage: React.FC = () => {
               </p>
               <Button 
                 className="w-full" 
-                variant="outline"
+                variant="accent"
                 onClick={() => handleChatRedirect("Create my moving checklist")}
               >
                 Create My Checklist
