@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Package } from "lucide-react";
-import PackingSection from "@/components/moving/PackingSection";
 
 const MyCityPackerPage: React.FC = () => {
   const navigate = useNavigate();
@@ -23,15 +22,6 @@ const MyCityPackerPage: React.FC = () => {
     sessionStorage.setItem("autoSendMessage", "Create my moving checklist");
     // Navigate to the chat page
     navigate("/");
-  };
-
-  // When a checklist is created through chat, ensure it's saved for future visits
-  const saveEmptyChecklist = () => {
-    if (!localStorage.getItem("cityPackerData")) {
-      localStorage.setItem("cityPackerData", JSON.stringify({
-        lastVisited: new Date().toISOString()
-      }));
-    }
   };
   
   return (
@@ -54,38 +44,30 @@ const MyCityPackerPage: React.FC = () => {
       </div>
       
       <div className="px-4 flex-1 overflow-auto pb-28">
-        {hasChecklist ? (
-          <PackingSection />
-        ) : (
-          <Card className="border-primary/10 hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-primary" />
-                <CardTitle>Create Your Moving Checklist</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>You haven't created a moving checklist yet. Let Olivia help you build a personalized checklist with everything you need for your move.</p>
-              
-              <img 
-                src="https://images.unsplash.com/photo-1622186477895-f2af6a0f5a97?auto=format&fit=crop&w=600&h=400&q=80" 
-                alt="Moving boxes and packing" 
-                className="rounded-lg mb-6 w-full max-w-md object-cover h-48 mx-auto"
-              />
-              
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={() => {
-                  saveEmptyChecklist();
-                  handleChatRedirect();
-                }}
-              >
-                Create My Checklist
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        <Card className="border-primary/10 hover:shadow-md transition-shadow">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-primary" />
+              <CardTitle>You Don't Have a Packing Checklist Yet</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p>You haven't created a moving checklist yet. Let Olivia help you build a personalized checklist with everything you need for your move.</p>
+            
+            <img 
+              src="https://images.unsplash.com/photo-1622186477895-f2af6a0f5a97?auto=format&fit=crop&w=600&h=400&q=80" 
+              alt="Moving boxes and packing" 
+              className="rounded-lg mb-6 w-full max-w-md object-cover h-48 mx-auto"
+            />
+            
+            <Button 
+              className="w-full" 
+              onClick={handleChatRedirect}
+            >
+              Ask Olivia to Create My Checklist
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
