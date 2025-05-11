@@ -34,7 +34,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
       {!isUser && (
         <Avatar className="w-8 h-8">
           <img
-            src={avatar || "https://api.dicebear.com/7.x/thumbs/svg?seed=olivia"}
+            src={avatar || "/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png"}
             alt="Olivia"
             className="w-full h-full object-cover"
           />
@@ -66,7 +66,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
         )}
         
         {timestamp && (
-          <div className={`text-[10px] mt-1 ${isUser ? "text-white/70" : "text-gray-500"}`}>
+          <div className={`text-xs mt-1 ${isUser ? "text-white/70" : "text-gray-500"}`}>
             {timestamp}
           </div>
         )}

@@ -7,7 +7,7 @@ const TypingIndicator: React.FC = () => {
     <div className="flex items-end gap-2 mb-4 justify-start">
       <Avatar className="w-8 h-8">
         <img
-          src="https://api.dicebear.com/7.x/thumbs/svg?seed=olivia"
+          src="/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png"
           alt="Olivia"
           className="w-full h-full object-cover"
         />

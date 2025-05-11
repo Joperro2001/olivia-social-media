@@ -21,25 +21,27 @@ const OliviaChat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const suggestedCards = [{
-    id: "card1",
-    title: "Find Your Perfect City",
-    description: "Take our City Match Quiz and discover where you'd thrive!",
-    image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=500",
-    ctaText: "Start Quiz"
-  }, {
-    id: "card2",
-    title: "Get a Local SIM Card",
-    description: "Stay connected with affordable mobile data options.",
-    image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=500",
-    ctaText: "View Options"
-  }, {
-    id: "card3",
-    title: "Join Group Matches",
-    description: "Connect with people who share your interests and goals.",
-    image: "https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?q=80&w=500",
-    ctaText: "Explore Groups"
-  }];
+  const suggestedCards = [
+    {
+      id: "card1",
+      title: "Find Your Perfect City",
+      description: "Take our City Match Quiz and discover where you'd thrive!",
+      image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=500",
+      ctaText: "Start Quiz"
+    }, {
+      id: "card2",
+      title: "Get a Local SIM Card",
+      description: "Stay connected with affordable mobile data options.",
+      image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=500",
+      ctaText: "View Options"
+    }, {
+      id: "card3",
+      title: "Join Group Matches",
+      description: "Connect with people who share your interests and goals.",
+      image: "https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?q=80&w=500",
+      ctaText: "Explore Groups"
+    }
+  ];
 
   const handleSendMessage = (content: string) => {
     const userMessage: Message = {
@@ -107,7 +109,13 @@ const OliviaChat: React.FC = () => {
       </div>
       
       <div className="flex-1 overflow-y-auto pb-2 px-4">
-        {messages.map(message => <ChatBubble key={message.id} message={message.content} isUser={message.isUser} timestamp={message.timestamp} avatar={!message.isUser ? "https://api.dicebear.com/7.x/thumbs/svg?seed=olivia" : undefined} />)}
+        {messages.map(message => <ChatBubble 
+          key={message.id} 
+          message={message.content} 
+          isUser={message.isUser} 
+          timestamp={message.timestamp} 
+          avatar={!message.isUser ? "/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png" : undefined} 
+        />)}
         
         {isTyping && <TypingIndicator />}
         
