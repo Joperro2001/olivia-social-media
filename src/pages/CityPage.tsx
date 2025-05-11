@@ -7,6 +7,7 @@ import PackingSection from "@/components/moving/PackingSection";
 import BrandDiscoverySection from "@/components/moving/BrandDiscoverySection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CityPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("");
@@ -15,11 +16,15 @@ const CityPage: React.FC = () => {
   const handleOptionSelect = (option: string) => {
     setActiveTab(option);
     setShowLanding(false);
+    // Scroll to top when changing tabs
+    window.scrollTo(0, 0);
   };
 
   const handleBackToOptions = () => {
     setActiveTab("");
     setShowLanding(true);
+    // Scroll to top when returning to landing page
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -31,7 +36,7 @@ const CityPage: React.FC = () => {
         </div>
       </div>
       
-      <div className="px-4 flex-1 overflow-auto">
+      <div className="px-4 flex-1 overflow-auto pb-28"> {/* Added padding bottom for better scrolling */}
         {showLanding ? (
           <div className="space-y-5">
             <div className="bg-white/80 p-4 rounded-lg shadow-sm">
@@ -134,19 +139,19 @@ const CityPage: React.FC = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <div className="flex-1 pb-4">
-                <TabsContent value="city-match" className="mt-0">
+              <ScrollArea className="flex-1 pb-32"> {/* Using ScrollArea component for better scrolling */}
+                <TabsContent value="city-match" className="mt-0 pb-28">
                   <CityMatchSection />
                 </TabsContent>
                 
-                <TabsContent value="packing" className="mt-0">
+                <TabsContent value="packing" className="mt-0 pb-28">
                   <PackingSection />
                 </TabsContent>
                 
-                <TabsContent value="services" className="mt-0">
+                <TabsContent value="services" className="mt-0 pb-28">
                   <BrandDiscoverySection />
                 </TabsContent>
-              </div>
+              </ScrollArea>
             </Tabs>
             
             <div className="fixed bottom-24 right-4">
