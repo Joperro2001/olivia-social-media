@@ -55,15 +55,17 @@ const MyGroupsPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between py-4 px-4">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={handleGoBack}
-          className="text-gray-600"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-2xl font-bold">My Groups</h1>
+        <div className="flex items-center">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleGoBack}
+            className="text-gray-600 mr-3"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">My Groups</h1>
+        </div>
         <Button
           variant="ghost"
           size="icon"
