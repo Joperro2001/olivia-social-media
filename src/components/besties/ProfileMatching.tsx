@@ -38,10 +38,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ profiles, onMatchFoun
       className: "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white border-none",
     });
     
-    if (onMatchFound) {
-      onMatchFound();
-    }
-    
+    // Simply move to the next profile instead of redirecting
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
