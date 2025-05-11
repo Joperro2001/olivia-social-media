@@ -1,17 +1,15 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { handleGoogleSignIn } from "@/utils/auth";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -22,7 +20,16 @@ type FormValues = z.infer<typeof formSchema>;
 
 const SignInPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { signIn, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -32,12 +39,20 @@ const SignInPage = () => {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Sign in data:", data);
-    toast({
-      title: "Sign in attempt",
-      description: "Authentication functionality will be implemented later.",
-    });
+  const onSubmit = async (data: FormValues) => {
+    try {
+      setIsLoading(true);
+      await signIn(data.email, data.password);
+    } catch (error) {
+      console.error("Sign in error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    // For future Google auth implementation
+    alert("Google Sign In will be implemented in a future update.");
   };
 
   return (
@@ -103,8 +118,15 @@ const SignInPage = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
+                    Signing In...
+                  </span>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
           </Form>

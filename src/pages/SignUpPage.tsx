@@ -1,17 +1,15 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, User } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { handleGoogleSignIn } from "@/utils/auth";
+import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -28,7 +26,16 @@ type FormValues = z.infer<typeof formSchema>;
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = React.useState(false);
+  const { signUp, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -40,12 +47,22 @@ const SignUpPage = () => {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Sign up data:", data);
-    toast({
-      title: "Account created",
-      description: "Your account has been created successfully.",
-    });
+  const onSubmit = async (data: FormValues) => {
+    try {
+      setIsLoading(true);
+      await signUp(data.email, data.password, {
+        full_name: data.name,
+      });
+    } catch (error) {
+      console.error("Sign up error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    // For future Google auth implementation
+    alert("Google Sign Up will be implemented in a future update.");
   };
 
   return (
@@ -162,8 +179,15 @@ const SignUpPage = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Create Account
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2 h-4 w-4 border-t-2 border-b-2 border-white rounded-full"></span>
+                    Creating Account...
+                  </span>
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </form>
           </Form>

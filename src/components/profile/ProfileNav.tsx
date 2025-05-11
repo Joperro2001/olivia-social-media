@@ -1,16 +1,18 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Settings, Edit, Bell } from "lucide-react";
+import { Settings, Edit, Bell, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "@/context/NotificationsContext";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import NotificationsPanel from "@/components/notifications/NotificationsPanel";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/context/AuthContext";
 
 const ProfileNav: React.FC = () => {
   const navigate = useNavigate();
   const { unreadCount } = useNotifications();
+  const { signOut } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   return (
@@ -57,6 +59,15 @@ const ProfileNav: React.FC = () => {
           className="rounded-full border border-gray-200 bg-white shadow-sm w-10 h-10"
         >
           <Edit size={18} className="text-gray-600" />
+        </Button>
+        <Button 
+          variant="outline"
+          size="icon"
+          onClick={signOut}
+          aria-label="Sign Out"
+          className="rounded-full border border-gray-200 bg-white shadow-sm w-10 h-10"
+        >
+          <LogOut size={18} className="text-gray-600" />
         </Button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -12,16 +13,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Badge } from "@/components/ui/badge";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/context/AuthContext";
 
 // Define form validation schema
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  full_name: z.string().min(2, "Name must be at least 2 characters"),
   age: z.coerce.number().min(18, "Must be at least 18 years old").max(100, "Age cannot exceed 100"),
   university: z.string().optional(),
   nationality: z.string().min(2, "Nationality is required"),
-  currentCity: z.string().min(2, "Current city is required"),
-  moveInCity: z.string().min(2, "Moving to city is required"),
-  aboutMe: z.string().min(10, "Please write at least 10 characters about yourself"),
+  current_city: z.string().min(2, "Current city is required"),
+  move_in_city: z.string().min(2, "Moving to city is required"),
+  about_me: z.string().min(10, "Please write at least 10 characters about yourself"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -29,68 +32,73 @@ type FormValues = z.infer<typeof formSchema>;
 const EditProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [interests, setInterests] = useState<string[]>([
-    "Technology", "Hiking", "Photography", "Local Cuisine", "Coworking", "Cycling"
-  ]);
+  const { user } = useAuth();
+  const { profile, interests, updateProfile, addInterest, removeInterest, isLoading } = useProfile();
   const [newInterest, setNewInterest] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Initialize form with validation
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "Alex Taylor",
-      age: 27,
-      university: "LSE",
-      nationality: "British",
-      currentCity: "London",
-      moveInCity: "Berlin",
-      aboutMe: "Tech professional exploring Berlin for 6 months. Looking to connect with fellow expats, find great workspaces, and explore the local culture.",
+      full_name: "",
+      age: 25,
+      university: "",
+      nationality: "",
+      current_city: "",
+      move_in_city: "",
+      about_me: "",
     },
   });
   
-  // Load saved profile data from localStorage if available
+  // Load profile data when available
   useEffect(() => {
-    const savedProfile = localStorage.getItem("userProfile");
-    if (savedProfile) {
-      const profileData = JSON.parse(savedProfile);
-      form.reset(profileData);
+    if (profile) {
+      form.reset({
+        full_name: profile.full_name || "",
+        age: profile.age || 25,
+        university: profile.university || "",
+        nationality: profile.nationality || "",
+        current_city: profile.current_city || "",
+        move_in_city: profile.move_in_city || "",
+        about_me: profile.about_me || "",
+      });
     }
-    
-    // Load interests if available
-    const savedInterests = localStorage.getItem("userInterests");
-    if (savedInterests) {
-      setInterests(JSON.parse(savedInterests));
-    }
-  }, [form]);
+  }, [profile, form]);
 
-  const addInterest = () => {
-    if (newInterest.trim() && !interests.includes(newInterest.trim())) {
-      const updatedInterests = [...interests, newInterest.trim()];
-      setInterests(updatedInterests);
-      localStorage.setItem("userInterests", JSON.stringify(updatedInterests));
+  const handleAddInterest = () => {
+    if (newInterest.trim()) {
+      addInterest(newInterest.trim());
       setNewInterest("");
     }
   };
 
-  const removeInterest = (interest: string) => {
-    const updatedInterests = interests.filter(item => item !== interest);
-    setInterests(updatedInterests);
-    localStorage.setItem("userInterests", JSON.stringify(updatedInterests));
+  const handleRemoveInterest = (interestId: string) => {
+    removeInterest(interestId);
   };
 
-  const onSubmit = (data: FormValues) => {
-    // Save profile data to localStorage
-    localStorage.setItem("userProfile", JSON.stringify(data));
-    localStorage.setItem("matchedCity", data.moveInCity);
-    
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been successfully updated.",
-    });
-    
-    // Navigate back to profile page
-    navigate("/profile");
+  const onSubmit = async (data: FormValues) => {
+    setIsSaving(true);
+    try {
+      const success = await updateProfile(data);
+      if (success) {
+        // Navigate back to profile page
+        navigate("/profile");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-[100vh] bg-[#FDF5EF] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
@@ -112,9 +120,19 @@ const EditProfilePage: React.FC = () => {
             <Button 
               onClick={form.handleSubmit(onSubmit)}
               className="flex items-center gap-1"
+              disabled={isSaving}
             >
-              <Save size={16} />
-              Save
+              {isSaving ? (
+                <>
+                  <span className="animate-spin h-4 w-4 border-t-2 border-b-2 border-white rounded-full mr-2"></span>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save size={16} />
+                  Save
+                </>
+              )}
             </Button>
           </div>
 
@@ -127,7 +145,7 @@ const EditProfilePage: React.FC = () => {
                   
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="full_name"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Full Name</FormLabel>
@@ -188,7 +206,7 @@ const EditProfilePage: React.FC = () => {
                   
                   <FormField
                     control={form.control}
-                    name="currentCity"
+                    name="current_city"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Current City</FormLabel>
@@ -202,7 +220,7 @@ const EditProfilePage: React.FC = () => {
                   
                   <FormField
                     control={form.control}
-                    name="moveInCity"
+                    name="move_in_city"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Moving To</FormLabel>
@@ -221,7 +239,7 @@ const EditProfilePage: React.FC = () => {
                   
                   <FormField
                     control={form.control}
-                    name="aboutMe"
+                    name="about_me"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Bio</FormLabel>
@@ -243,14 +261,14 @@ const EditProfilePage: React.FC = () => {
                   <h3 className="font-semibold text-lg">Interests</h3>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {interests.map((interest) => (
+                    {interests.map((interestItem) => (
                       <Badge 
-                        key={interest}
+                        key={interestItem.id}
                         variant="secondary" 
                         className="bg-lavender-light text-primary-dark hover:bg-lavender flex items-center gap-1"
-                        onClick={() => removeInterest(interest)}
+                        onClick={() => handleRemoveInterest(interestItem.id)}
                       >
-                        {interest}
+                        {interestItem.interest}
                         <span className="ml-1 cursor-pointer">×</span>
                       </Badge>
                     ))}
@@ -262,8 +280,14 @@ const EditProfilePage: React.FC = () => {
                       onChange={(e) => setNewInterest(e.target.value)}
                       placeholder="Add new interest"
                       className="flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddInterest();
+                        }
+                      }}
                     />
-                    <Button type="button" onClick={addInterest}>Add</Button>
+                    <Button type="button" onClick={handleAddInterest}>Add</Button>
                   </div>
                 </div>
               </form>

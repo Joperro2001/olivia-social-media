@@ -4,16 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Tag } from "lucide-react";
 
-const AboutMeCard: React.FC = () => {
-  const interests = [
-    "Technology", 
-    "Hiking", 
-    "Photography", 
-    "Local Cuisine", 
-    "Coworking", 
-    "Cycling"
-  ];
+interface AboutMeCardProps {
+  aboutMe: string;
+  interests: string[];
+}
 
+const AboutMeCard: React.FC<AboutMeCardProps> = ({ aboutMe, interests }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -23,7 +19,7 @@ const AboutMeCard: React.FC = () => {
     >
       <h3 className="font-semibold text-lg mb-3">About Me</h3>
       <p className="text-gray-600">
-        Tech professional exploring Berlin for 6 months. Looking to connect with fellow expats, find great workspaces, and explore the local culture.
+        {aboutMe || "No bio provided yet."}
       </p>
       
       <motion.div 
@@ -37,16 +33,20 @@ const AboutMeCard: React.FC = () => {
           <span className="text-sm font-medium">Interests</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {interests.map((interest, index) => (
-            <motion.div
-              key={interest}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.9 + index * 0.1, duration: 0.3 }}
-            >
-              <Badge variant="secondary" className="bg-lavender-light text-primary-dark hover:bg-lavender">{interest}</Badge>
-            </motion.div>
-          ))}
+          {interests.length > 0 ? (
+            interests.map((interest, index) => (
+              <motion.div
+                key={interest}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.9 + index * 0.1, duration: 0.3 }}
+              >
+                <Badge variant="secondary" className="bg-lavender-light text-primary-dark hover:bg-lavender">{interest}</Badge>
+              </motion.div>
+            ))
+          ) : (
+            <span className="text-sm text-gray-500">No interests added yet.</span>
+          )}
         </div>
       </motion.div>
     </motion.div>
