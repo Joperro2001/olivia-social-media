@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,6 @@ const ProfilePage: React.FC = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => navigate("/settings")}
-                className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
                 aria-label="Settings"
               >
                 <Settings size={20} />
@@ -53,7 +51,6 @@ const ProfilePage: React.FC = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="text-pink-500 hover:text-pink-600 hover:bg-pink-100"
                 aria-label="Edit Profile"
               >
                 <Edit size={20} />
