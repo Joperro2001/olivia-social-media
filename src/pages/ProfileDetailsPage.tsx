@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { matchedProfiles } from "@/data/matchesMockData";
 import { Card } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProfileDetailsPageProps {
   // Component can receive props to override profile data
@@ -20,6 +21,7 @@ interface ProfileDetailsPageProps {
 const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) => {
   const { profileId } = useParams<{ profileId: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   // Find profile from matched profiles data or use provided profileData
   // Use a default profile if none is found (to avoid "Profile Not Found" message)
@@ -59,7 +61,7 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
       <ScrollArea className="h-full">
         <div className="flex flex-col pb-10">
           {/* Header with navigation */}
-          <div className="flex items-center px-4 py-4">
+          <div className="flex items-center px-4 py-3">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -68,15 +70,15 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-bold text-left">Profile</h1>
+            <h1 className="text-xl font-bold text-left">Profile</h1>
           </div>
           
-          {/* Horizontal Profile Layout - Image Left, Info Right */}
-          <div className="px-4 mt-2">
+          {/* Profile Card - Responsive Layout */}
+          <div className="px-3 mt-1">
             <Card className="overflow-hidden">
-              <div className="flex flex-col md:flex-row">
-                {/* Left side - Profile Image */}
-                <div className="w-full md:w-2/5 h-64 md:h-auto">
+              <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'}`}>
+                {/* Profile Image */}
+                <div className={`${isMobile ? 'w-full h-60' : 'w-2/5 h-auto'}`}>
                   <img 
                     src={profile.image} 
                     alt={profile.name} 
@@ -84,34 +86,36 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
                   />
                 </div>
                 
-                {/* Right side - Profile Info */}
-                <div className="w-full md:w-3/5 p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <h2 className="text-2xl font-bold">{profile.name}</h2>
+                {/* Profile Info - More Compact for Mobile */}
+                <div className={`w-full ${isMobile ? 'p-4' : 'w-3/5 p-6'}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{profile.name}</h2>
                     <span className="text-gray-500">• {profile.age}</span>
                   </div>
                   
-                  <UserInfoCard 
-                    university="University"
-                    currentCity={city}
-                    currentCountryFlag={countryFlag}
-                    moveInCity="Moving to Berlin"
-                    moveInCountryFlag="🇩🇪"
-                    nationality="British"
-                  />
+                  {/* Compact User Info Card for Mobile */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{city}</span>
+                      <span>{countryFlag}</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Moving to Berlin 🇩🇪 • {profile.university || "University"}
+                    </div>
+                  </div>
                   
-                  <div className="mt-4">
-                    <h3 className="font-semibold text-lg mb-2">About Me</h3>
-                    <p className="text-gray-600 mb-3">
+                  <div className={`mt-3 ${isMobile ? 'space-y-2' : 'mt-4'}`}>
+                    <h3 className="font-semibold text-base mb-1">About Me</h3>
+                    <p className="text-gray-600 text-sm mb-3">
                       {profile.bio}
                     </p>
                     
-                    <div className="flex flex-wrap gap-2 mt-3">
+                    <div className="flex flex-wrap gap-1.5 mt-2">
                       {profile.tags.map((tag: string, index: number) => (
                         <Badge 
                           key={tag}
                           variant="secondary" 
-                          className="bg-lavender-light text-primary-dark hover:bg-lavender"
+                          className="bg-lavender-light text-primary-dark text-xs py-0.5 px-2"
                         >
                           {tag}
                         </Badge>
