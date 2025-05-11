@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNotifications } from "@/context/NotificationsContext";
 import { useToast } from "@/hooks/use-toast";
 
 // Import refactored components
@@ -14,8 +13,6 @@ import PremiumCard from "@/components/profile/PremiumCard";
 
 const ProfilePage: React.FC = () => {
   const { toast } = useToast();
-  const { unreadCount, markAllAsRead } = useNotifications();
-  const [showNotifications, setShowNotifications] = useState(false);
   const [userCity, setUserCity] = useState<string>("Berlin"); // Default city
   const [currentCity, setCurrentCity] = useState<string>("London");
   
@@ -27,20 +24,11 @@ const ProfilePage: React.FC = () => {
     }
   }, []);
   
-  const handleNotificationClick = () => {
-    setShowNotifications(prev => !prev);
-  };
-  
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
       <ScrollArea className="h-full">
         <div className="flex flex-col pb-10">
-          <ProfileNav 
-            unreadCount={unreadCount}
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-            handleNotificationClick={handleNotificationClick}
-          />
+          <ProfileNav />
           
           <UserHeader 
             userName="Alex Taylor" 
