@@ -1,20 +1,15 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Maximize2 } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import UserInfoCard from "@/components/profile/UserInfoCard";
 import AboutMeCard from "@/components/profile/AboutMeCard";
 import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { matchedProfiles } from "@/data/matchesMockData";
-import { Card } from "@/components/ui/card";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 interface ProfileDetailsPageProps {
   // Component can receive props to override profile data
@@ -24,12 +19,21 @@ interface ProfileDetailsPageProps {
 const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) => {
   const { profileId } = useParams<{ profileId: string }>();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [fullScreenImage, setFullScreenImage] = useState(false);
   
-  // Find profile from matched profiles data or use provided profileData
-  // Use a default profile if none is found (to avoid "Profile Not Found" message)
-  const profile = profileData || matchedProfiles.find(p => p.id === profileId) || matchedProfiles[0];
+  // Find profile from matched profiles data
+  const profile = profileData || matchedProfiles.find(p => p.id === profileId);
+  
+  if (!profile) {
+    return (
+      <div className="h-[100vh] bg-[#FDF5EF] flex items-center justify-center">
+        <div className="text-center p-8">
+          <h2 className="text-2xl font-semibold mb-4">Profile Not Found</h2>
+          <p className="mb-6 text-gray-600">The profile you're looking for doesn't exist or has been removed.</p>
+          <Button onClick={() => navigate("/besties")}>Return to Matches</Button>
+        </div>
+      </div>
+    );
+  }
 
   // Extract city and country from location
   const getCity = (location: string): string => {
@@ -59,17 +63,13 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
   
   const city = getCity(profile.location);
   const countryFlag = getCountryFlag(profile.location);
-
-  // Component to display based on device size
-  const FullScreenComponent = isMobile ? Drawer : Dialog;
-  const FullScreenContent = isMobile ? DrawerContent : DialogContent;
   
   return (
     <div className="h-[100vh] bg-[#FDF5EF] pb-16">
       <ScrollArea className="h-full">
         <div className="flex flex-col pb-10">
           {/* Header with navigation */}
-          <div className="flex items-center px-4 py-3">
+          <div className="flex items-center px-4 py-4">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -78,112 +78,91 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold text-left">Profile</h1>
+            <h1 className="text-2xl font-bold text-left">Profile</h1>
+            
+            <div className="ml-auto">
+              <Button 
+                onClick={() => navigate(`/chat/${profile.id}`)}
+                className="bg-primary flex items-center gap-2"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Message
+              </Button>
+            </div>
           </div>
           
-          {/* Profile Card - Responsive Layout */}
-          <div className="px-3 mt-1">
-            <Card className="overflow-hidden">
-              <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'}`}>
-                {/* Profile Image with full-screen button */}
-                <div className={`${isMobile ? 'w-full h-60' : 'w-2/5 h-auto'} relative group`}>
-                  <img 
-                    src={profile.image} 
-                    alt={profile.name} 
-                    className="w-full h-full object-cover"
-                  />
-                  <div 
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => setFullScreenImage(true)}
-                  >
-                    <Button variant="secondary" size="icon" className="bg-white/70 hover:bg-white/90">
-                      <Maximize2 className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Profile Info - More Compact for Mobile */}
-                <div className={`w-full ${isMobile ? 'p-4' : 'w-3/5 p-6'}`}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{profile.name}</h2>
-                    <span className="text-gray-500">• {profile.age}</span>
-                  </div>
-                  
-                  {/* Compact User Info Card for Mobile */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{city}</span>
-                      <span>{countryFlag}</span>
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Moving to Berlin 🇩🇪 • {profile.university || "University"}
-                    </div>
-                  </div>
-                  
-                  <div className={`mt-3 ${isMobile ? 'space-y-2' : 'mt-4'}`}>
-                    <h3 className="font-semibold text-base mb-1">About Me</h3>
-                    <p className="text-gray-600 text-sm mb-3">
-                      {profile.bio}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {profile.tags.map((tag: string, index: number) => (
-                        <Badge 
-                          key={tag}
-                          variant="secondary" 
-                          className="bg-lavender-light text-primary-dark text-xs py-0.5 px-2"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+          {/* User Header */}
+          <div className="flex flex-col items-center mt-2">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Avatar className="w-28 h-28 border-4 border-white shadow-md">
+                <img src={profile.image} alt={profile.name} className="w-full h-full object-cover" />
+              </Avatar>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="mt-4 text-center"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-xl font-bold">{profile.name}</h2>
+                <span className="text-gray-500">• {profile.age}</span>
               </div>
-            </Card>
+            </motion.div>
+          </div>
+          
+          <div className="mt-4 space-y-6 px-4">
+            {/* User Information Card */}
+            <UserInfoCard 
+              university="University"
+              currentCity={city}
+              currentCountryFlag={countryFlag}
+              moveInCity="Moving to Berlin"
+              moveInCountryFlag="🇩🇪"
+              nationality="British"
+            />
+            
+            {/* About Me Section with bio */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border"
+            >
+              <h3 className="font-semibold text-lg mb-3">About Me</h3>
+              <p className="text-gray-600">
+                {profile.bio}
+              </p>
+              
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.3 }}
+                className="mt-4 space-y-2"
+              >
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {profile.tags.map((tag: string, index: number) => (
+                    <motion.div
+                      key={tag}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.9 + index * 0.1, duration: 0.3 }}
+                    >
+                      <Badge variant="secondary" className="bg-lavender-light text-primary-dark hover:bg-lavender">
+                        {tag}
+                      </Badge>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
-
-        {/* Full-screen image modal/dialog */}
-        {isMobile ? (
-          <Drawer open={fullScreenImage} onOpenChange={setFullScreenImage}>
-            <DrawerContent className="h-[90vh]">
-              <div className="h-full relative">
-                <img 
-                  src={profile.image} 
-                  alt={profile.name} 
-                  className="w-full h-full object-contain" 
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <h2 className="text-xl font-bold text-white">{profile.name}, {profile.age}</h2>
-                  <div className="flex items-center gap-2 text-white/90">
-                    <span>{city}</span>
-                    <span>{countryFlag}</span>
-                  </div>
-                </div>
-              </div>
-            </DrawerContent>
-          </Drawer>
-        ) : (
-          <Dialog open={fullScreenImage} onOpenChange={setFullScreenImage}>
-            <DialogContent className="max-w-5xl w-[90vw] h-[80vh]">
-              <div className="h-full flex flex-col">
-                <img 
-                  src={profile.image} 
-                  alt={profile.name} 
-                  className="w-full h-full object-contain" 
-                />
-                <div className="mt-2">
-                  <h2 className="text-xl font-bold">{profile.name}, {profile.age}</h2>
-                  <div className="flex items-center gap-2">
-                    <span>{city}</span>
-                    <span>{countryFlag}</span>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
       </ScrollArea>
     </div>
   );
