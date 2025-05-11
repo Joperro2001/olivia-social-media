@@ -1,6 +1,6 @@
 
 import React from "react";
-import { University, Flag, MapPin } from "lucide-react";
+import { University, Flag, MapPin, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface UserInfoCardProps {
@@ -9,6 +9,7 @@ interface UserInfoCardProps {
   currentCountryFlag: string;
   moveInCity: string;
   moveInCountryFlag: string;
+  nationality?: string;
 }
 
 const UserInfoCard: React.FC<UserInfoCardProps> = ({ 
@@ -16,13 +17,19 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
   currentCity, 
   currentCountryFlag,
   moveInCity,
-  moveInCountryFlag 
+  moveInCountryFlag,
+  nationality = "British" // Default value
 }) => {
   const infoItems = [
     {
       icon: University,
       label: "University in destination",
       value: university
+    },
+    {
+      icon: Globe,
+      label: "Nationality",
+      value: nationality
     },
     {
       icon: Flag,

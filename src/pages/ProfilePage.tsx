@@ -55,6 +55,7 @@ const ProfilePage: React.FC = () => {
               currentCountryFlag="🇬🇧"
               moveInCity={userCity}
               moveInCountryFlag="🇩🇪"
+              nationality="British"
             />
             
             <AboutMeCard />

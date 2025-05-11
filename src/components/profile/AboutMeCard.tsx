@@ -38,33 +38,6 @@ const AboutMeCard: React.FC = () => {
           ))}
         </div>
       </motion.div>
-      
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.3 }}
-        className="mt-4 space-y-2"
-      >
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">Languages</span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { lang: "English", level: "Native" },
-            { lang: "German", level: "Basic" },
-            { lang: "Spanish", level: "Intermediate" }
-          ].map((item, index) => (
-            <motion.div
-              key={item.lang}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.9 + index * 0.1, duration: 0.3 }}
-            >
-              <Badge variant="secondary">{`${item.lang} (${item.level})`}</Badge>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
     </motion.div>
   );
 };
