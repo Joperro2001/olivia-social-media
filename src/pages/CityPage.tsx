@@ -32,11 +32,7 @@ const CityPage: React.FC = () => {
       
       <div className="px-4 flex-1 overflow-auto pb-28"> {/* Added padding bottom for better scrolling */}
         {showLanding ? <div className="space-y-5">
-            <div className="bg-white/80 p-4 rounded-lg shadow-sm">
-              <p className="text-center text-lg">
-                Whether you're planning, preparing, or already exploring your new exchange city, Olivia is here to help. Choose your journey:
-              </p>
-            </div>
+            
             
             <Card className="border-primary/10 hover:shadow-md transition-shadow">
               <CardHeader>
