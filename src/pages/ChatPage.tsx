@@ -114,7 +114,7 @@ const ChatPage: React.FC = () => {
       </div>
       
       {/* Message input - moved up significantly by reducing padding above */}
-      <div className="p-2 mt-2 bg-white border-t my-12">
+      <div className="p-4 mt-2 bg-white border-t my-12">
         <div className="flex gap-2">
           <Textarea placeholder={`Message ${profile.name}...`} value={currentMessage} onChange={e => setCurrentMessage(e.target.value)} className="resize-none" rows={1} onKeyDown={e => {
           if (e.key === 'Enter' && !e.shiftKey) {
