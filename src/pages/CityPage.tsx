@@ -1,3 +1,4 @@
+
 import React from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,15 @@ const CityPage: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">City</h1>
         <div className="flex items-center gap-2">
-          {/* Removing the My Match button from here */}
+          <Button 
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => navigate("/my-city-match")}
+          >
+            <Sparkles className="h-4 w-4" />
+            My Match
+          </Button>
         </div>
       </div>
       
@@ -39,23 +48,12 @@ const CityPage: React.FC = () => {
               <p>
                 Tell Olivia what matters to you — lifestyle, budget, weather, language, vibes — and she'll help you find your perfect match.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button 
-                  className="w-full"
-                  onClick={() => handleChatRedirect("Find my City Match")}
-                >
-                  Find My Match
-                </Button>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1 w-full sm:w-auto"
-                  onClick={() => navigate("/my-city-match")}
-                >
-                  <Sparkles className="h-4 w-4" />
-                  My Match
-                </Button>
-              </div>
+              <Button 
+                className="w-full"
+                onClick={() => handleChatRedirect("Find my City Match")}
+              >
+                Find My Match
+              </Button>
             </CardContent>
           </Card>
           
