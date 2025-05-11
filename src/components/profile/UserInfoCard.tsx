@@ -24,7 +24,7 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
     {
       icon: University,
       label: "University",
-      value: "LSE"
+      value: university
     },
     {
       icon: Globe,
@@ -33,8 +33,13 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
     },
     {
       icon: Flag,
-      label: "City",
+      label: "Current City",
       value: `${currentCountryFlag} ${currentCity}`
+    },
+    {
+      icon: Flag,
+      label: "Moving to",
+      value: `${moveInCountryFlag} ${moveInCity}`
     }
   ];
 
