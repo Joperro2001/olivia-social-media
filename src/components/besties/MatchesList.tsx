@@ -1,13 +1,13 @@
 
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, X, Send, Check, UserCheck, UserX } from "lucide-react";
+import { UserCheck, UserX } from "lucide-react";
 import { MatchedProfile } from "@/data/matchesMockData";
 import { useToast } from "@/hooks/use-toast";
-import { Textarea } from "@/components/ui/textarea";
 
 interface MatchesListProps {
   profiles: MatchedProfile[];
@@ -23,43 +23,16 @@ const MatchesList: React.FC<MatchesListProps> = ({
   onDeclineMatch
 }) => {
   const { toast } = useToast();
-  const [activeChat, setActiveChat] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Record<string, string[]>>({});
-  const [currentMessage, setCurrentMessage] = useState("");
+  const navigate = useNavigate();
 
-  const handleMessageClick = (id: string) => {
-    // Toggle chat open/close
-    setActiveChat(activeChat === id ? null : id);
-    
-    // Check if this is the first time opening the chat and it has an initial message
-    const profile = profiles.find(p => p.id === id);
-    if (profile?.hasInitialMessage && !messages[id]) {
-      setMessages(prev => ({
-        ...prev,
-        [id]: [`You and ${profile.name} matched. Let's start messaging!`]
-      }));
+  const handleCardClick = (profileId: string) => {
+    if (!showRequests) {
+      navigate(`/chat/${profileId}`);
     }
   };
 
-  const handleSendMessage = (profileId: string, name: string) => {
-    if (!currentMessage.trim()) return;
-
-    // Add message to chat history
-    setMessages(prev => ({
-      ...prev,
-      [profileId]: [...(prev[profileId] || []), currentMessage]
-    }));
-
-    toast({
-      title: "Message Sent",
-      description: `Your message was sent to ${name}`,
-      className: "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white border-none",
-    });
-    
-    setCurrentMessage("");
-  };
-
-  const handleAcceptMatch = (profileId: string, name: string) => {
+  const handleAcceptMatch = (e: React.MouseEvent, profileId: string, name: string) => {
+    e.stopPropagation();
     onAcceptMatch?.(profileId);
     toast({
       title: "Match Accepted",
@@ -68,21 +41,13 @@ const MatchesList: React.FC<MatchesListProps> = ({
     });
   };
 
-  const handleDenyMatch = (profileId: string, name: string) => {
+  const handleDenyMatch = (e: React.MouseEvent, profileId: string, name: string) => {
+    e.stopPropagation();
     onDeclineMatch?.(profileId);
     toast({
       title: "Match Declined",
       description: `You declined the match request from ${name}.`,
     });
-  };
-
-  const getLastMessage = (profileId: string, name: string) => {
-    if (!messages[profileId] || messages[profileId].length === 0) {
-      return profile => profile.hasInitialMessage 
-        ? `You and ${name} matched. Let's start messaging!` 
-        : "No messages yet. Start chatting!";
-    }
-    return messages[profileId][messages[profileId].length - 1];
   };
 
   if (profiles.length === 0) {
@@ -103,18 +68,19 @@ const MatchesList: React.FC<MatchesListProps> = ({
   return (
     <div className="space-y-4">
       {profiles.map((profile) => {
-        const lastMessage = messages[profile.id]?.length > 0 
-          ? messages[profile.id][messages[profile.id].length - 1]
+        const lastMessage = profile.messages && profile.messages.length > 0 
+          ? profile.messages[profile.messages.length - 1] 
           : profile.hasInitialMessage 
             ? `You and ${profile.name} matched. Let's start messaging!` 
             : "No messages yet. Start chatting!";
             
         return (
-          <Card key={profile.id} className="bg-white/80 backdrop-blur-sm p-4">
-            <div 
-              className="flex items-start cursor-pointer" 
-              onClick={() => !showRequests && handleMessageClick(profile.id)}
-            >
+          <Card 
+            key={profile.id} 
+            className={`bg-white/80 backdrop-blur-sm p-4 ${!showRequests ? "cursor-pointer" : ""}`}
+            onClick={() => !showRequests && handleCardClick(profile.id)}
+          >
+            <div className="flex items-start">
               <Avatar className="h-12 w-12">
                 <img src={profile.image} alt={profile.name} />
               </Avatar>
@@ -154,12 +120,12 @@ const MatchesList: React.FC<MatchesListProps> = ({
               </div>
             </div>
 
-            {showRequests ? (
+            {showRequests && (
               <div className="flex justify-end gap-2 mt-3">
                 <Button 
                   size="sm" 
                   variant="outline"
-                  onClick={() => handleDenyMatch(profile.id, profile.name)}
+                  onClick={(e) => handleDenyMatch(e, profile.id, profile.name)}
                   className="text-red-500 border-red-200 hover:bg-red-50"
                 >
                   <UserX className="h-4 w-4 mr-1" />
@@ -168,73 +134,10 @@ const MatchesList: React.FC<MatchesListProps> = ({
                 <Button 
                   size="sm"
                   className="bg-primary"
-                  onClick={() => handleAcceptMatch(profile.id, profile.name)}
+                  onClick={(e) => handleAcceptMatch(e, profile.id, profile.name)}
                 >
                   <UserCheck className="h-4 w-4 mr-1" />
                   Accept
-                </Button>
-              </div>
-            ) : activeChat === profile.id ? (
-              <div className="mt-3">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="text-sm font-medium">Chat with {profile.name}</h4>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveChat(null);
-                    }} 
-                    className="h-6 w-6"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                {/* Chat messages */}
-                {messages[profile.id] && messages[profile.id].length > 0 && (
-                  <div className="bg-gray-50 p-3 rounded-md mb-2 max-h-[120px] overflow-y-auto">
-                    {messages[profile.id].map((msg, idx) => (
-                      <div key={idx} className="text-sm mb-1">
-                        {msg}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                <Textarea
-                  placeholder={`Send a message to ${profile.name}...`}
-                  value={currentMessage}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => setCurrentMessage(e.target.value)}
-                  className="min-h-[80px] mb-2"
-                />
-                <div className="flex justify-end">
-                  <Button 
-                    className="bg-primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSendMessage(profile.id, profile.name);
-                    }}
-                    disabled={!currentMessage.trim()}
-                  >
-                    <Send className="h-4 w-4 mr-1" />
-                    Send
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex justify-end mt-3">
-                <Button 
-                  size="sm" 
-                  className="bg-primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleMessageClick(profile.id);
-                  }}
-                >
-                  <MessageCircle className="h-4 w-4 mr-1" />
-                  Message
                 </Button>
               </div>
             )}

@@ -16,11 +16,13 @@ import MyCityMatchPage from "./pages/MyCityMatchPage";
 import MyCityPackerPage from "./pages/MyCityPackerPage";
 import MyCityExplorerPage from "./pages/MyCityExplorerPage";
 import MatchesPage from "./pages/MatchesPage";
+import ChatPage from "./pages/ChatPage";
 import NotFound from "./pages/NotFound";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import SavedEventsPage from "./pages/SavedEventsPage";
 import AttendedEventsPage from "./pages/AttendedEventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
+import MyMatchesPage from "./pages/MyMatchesPage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,7 @@ const App = () => (
           <Route path="/my-city-packer" element={<AppLayout><MyCityPackerPage /></AppLayout>} />
           <Route path="/my-city-explorer" element={<AppLayout><MyCityExplorerPage /></AppLayout>} />
           <Route path="/matches" element={<AppLayout><MatchesPage /></AppLayout>} />
+          <Route path="/chat/:profileId" element={<AppLayout><ChatPage /></AppLayout>} />
           <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
           <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
