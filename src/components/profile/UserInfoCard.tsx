@@ -1,6 +1,7 @@
 
 import React from "react";
 import { University, Flag, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface UserInfoCardProps {
   university: string;
@@ -17,42 +18,57 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
   moveInCity,
   moveInCountryFlag 
 }) => {
+  const infoItems = [
+    {
+      icon: University,
+      label: "University",
+      value: university
+    },
+    {
+      icon: Flag,
+      label: "Current City",
+      value: `${currentCountryFlag} ${currentCity}`
+    },
+    {
+      icon: MapPin,
+      label: "City for Move-in",
+      value: `${moveInCountryFlag} ${moveInCity}`
+    }
+  ];
+
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3, duration: 0.5 }}
+      className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border"
+    >
       <h3 className="font-semibold text-lg mb-3">User Information</h3>
       
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <University className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">University</p>
-            <p className="font-medium">{university}</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <Flag className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Current City</p>
-            <p className="font-medium">{currentCountryFlag} {currentCity}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <MapPin className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">City for Move-in</p>
-            <p className="font-medium">{moveInCountryFlag} {moveInCity}</p>
-          </div>
-        </div>
+        {infoItems.map((item, index) => (
+          <motion.div 
+            key={item.label}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + index * 0.15, duration: 0.4 }}
+            className="flex items-center gap-3"
+          >
+            <motion.div 
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center"
+            >
+              <item.icon className="h-4 w-4 text-primary" />
+            </motion.div>
+            <div>
+              <p className="text-sm text-gray-500">{item.label}</p>
+              <p className="font-medium">{item.value}</p>
+            </div>
+          </motion.div>
+        ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
