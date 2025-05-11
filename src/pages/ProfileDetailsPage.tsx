@@ -3,7 +3,7 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import UserInfoCard from "@/components/profile/UserInfoCard";
 import AboutMeCard from "@/components/profile/AboutMeCard";
 import { motion } from "framer-motion";
@@ -69,16 +69,6 @@ const ProfileDetailsPage: React.FC<ProfileDetailsPageProps> = ({ profileData }) 
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-2xl font-bold text-left">Profile</h1>
-            
-            <div className="ml-auto">
-              <Button 
-                onClick={() => navigate(`/chat/${profile.id}`)}
-                className="bg-primary flex items-center gap-2"
-              >
-                <MessageSquare className="h-4 w-4" />
-                Message
-              </Button>
-            </div>
           </div>
           
           {/* Horizontal Profile Layout - Image Left, Info Right */}
