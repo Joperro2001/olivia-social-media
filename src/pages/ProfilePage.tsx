@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Edit, Settings, Bell } from "lucide-react";
+import { Edit, Settings, Bell, MapPin, University } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/context/NotificationsContext";
@@ -21,6 +22,15 @@ const ProfilePage: React.FC = () => {
   const { toast } = useToast();
   const { unreadCount, markAllAsRead } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [userCity, setUserCity] = useState<string>("Berlin"); // Default city
+  
+  // Fetch the matched city from localStorage if available
+  useEffect(() => {
+    const savedCity = localStorage.getItem("matchedCity");
+    if (savedCity) {
+      setUserCity(savedCity);
+    }
+  }, []);
   
   const handleNotificationClick = () => {
     setShowNotifications(prev => !prev);
@@ -86,14 +96,44 @@ const ProfilePage: React.FC = () => {
             </Avatar>
             
             <div className="mt-4 text-center">
-              <h2 className="text-xl font-bold">Alex Taylor</h2>
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-xl font-bold">Alex Taylor</h2>
+                <span className="text-gray-500">• 27</span>
+              </div>
               <div className="flex items-center justify-center mt-1">
-                <Badge className="bg-lavender-dark text-primary">🗺️ Wandering in Berlin</Badge>
+                <Badge className="bg-lavender-dark text-primary">🗺️ Wandering in {userCity}</Badge>
               </div>
             </div>
           </div>
           
           <div className="mt-8 space-y-6 px-4">
+            {/* User Info Card */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border">
+              <h3 className="font-semibold text-lg mb-3">User Information</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <University className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">University</p>
+                    <p className="font-medium">Technical University of Berlin</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Current City</p>
+                    <p className="font-medium">{userCity}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border">
               <h3 className="font-semibold text-lg mb-3">About Me</h3>
               <p className="text-gray-600">
