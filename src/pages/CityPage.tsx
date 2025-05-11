@@ -1,8 +1,8 @@
-
 import React from "react";
 import { ArrowsUpFromLine, Package, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import CityMatchSection from "@/components/moving/CityMatchSection";
 
 const CityPage: React.FC = () => {
   return (
@@ -16,25 +16,7 @@ const CityPage: React.FC = () => {
       
       <div className="px-4 flex-1 overflow-auto pb-28"> 
         <div className="space-y-5">
-          <Card className="border-primary/10 hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <ArrowsUpFromLine className="h-5 w-5 text-primary" />
-                <CardTitle>City Matcher</CardTitle>
-              </div>
-              <CardDescription className="text-base italic">
-                "I'm choosing my next exchange destination."
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                Tell Olivia what matters to you — lifestyle, budget, weather, language, vibes — and she'll help you find your perfect match.
-              </p>
-              <Button className="w-full">
-                Find My Match
-              </Button>
-            </CardContent>
-          </Card>
+          <CityMatchSection />
           
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
             <CardHeader>
