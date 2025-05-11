@@ -28,7 +28,8 @@ const MatchesList: React.FC<MatchesListProps> = ({
   const [currentMessage, setCurrentMessage] = useState("");
 
   const handleMessageClick = (id: string) => {
-    setActiveChat(id);
+    // Toggle chat open/close
+    setActiveChat(activeChat === id ? null : id);
     
     // Check if this is the first time opening the chat and it has an initial message
     const profile = profiles.find(p => p.id === id);
@@ -75,6 +76,15 @@ const MatchesList: React.FC<MatchesListProps> = ({
     });
   };
 
+  const getLastMessage = (profileId: string, name: string) => {
+    if (!messages[profileId] || messages[profileId].length === 0) {
+      return profile => profile.hasInitialMessage 
+        ? `You and ${name} matched. Let's start messaging!` 
+        : "No messages yet. Start chatting!";
+    }
+    return messages[profileId][messages[profileId].length - 1];
+  };
+
   if (profiles.length === 0) {
     return (
       <div className="text-center py-10">
@@ -92,113 +102,145 @@ const MatchesList: React.FC<MatchesListProps> = ({
 
   return (
     <div className="space-y-4">
-      {profiles.map((profile) => (
-        <Card key={profile.id} className="bg-white/80 backdrop-blur-sm p-4">
-          <div className="flex items-start">
-            <Avatar className="h-12 w-12">
-              <img src={profile.image} alt={profile.name} />
-            </Avatar>
-            <div className="ml-3 flex-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">{profile.name}</h3>
-                  <p className="text-xs text-gray-500">{profile.location}</p>
+      {profiles.map((profile) => {
+        const lastMessage = messages[profile.id]?.length > 0 
+          ? messages[profile.id][messages[profile.id].length - 1]
+          : profile.hasInitialMessage 
+            ? `You and ${profile.name} matched. Let's start messaging!` 
+            : "No messages yet. Start chatting!";
+            
+        return (
+          <Card key={profile.id} className="bg-white/80 backdrop-blur-sm p-4">
+            <div 
+              className="flex items-start cursor-pointer" 
+              onClick={() => !showRequests && handleMessageClick(profile.id)}
+            >
+              <Avatar className="h-12 w-12">
+                <img src={profile.image} alt={profile.name} />
+              </Avatar>
+              <div className="ml-3 flex-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">{profile.name}</h3>
+                    <p className="text-xs text-gray-500">{profile.location}</p>
+                  </div>
+                  {showRequests ? (
+                    <span className="text-xs font-medium text-amber-500">Match Request</span>
+                  ) : (
+                    <span className="text-xs text-gray-400">Matched {profile.matchDate}</span>
+                  )}
                 </div>
-                {showRequests ? (
-                  <span className="text-xs font-medium text-amber-500">Match Request</span>
-                ) : (
-                  <span className="text-xs text-gray-400">Matched {profile.matchDate}</span>
-                )}
-              </div>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {profile.tags.slice(0, 3).map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-sm mt-2 text-gray-600 line-clamp-2">
-                {profile.bio}
-              </p>
-            </div>
-          </div>
-
-          {showRequests ? (
-            <div className="flex justify-end gap-2 mt-3">
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => handleDenyMatch(profile.id, profile.name)}
-                className="text-red-500 border-red-200 hover:bg-red-50"
-              >
-                <UserX className="h-4 w-4 mr-1" />
-                Decline
-              </Button>
-              <Button 
-                size="sm"
-                className="bg-primary"
-                onClick={() => handleAcceptMatch(profile.id, profile.name)}
-              >
-                <UserCheck className="h-4 w-4 mr-1" />
-                Accept
-              </Button>
-            </div>
-          ) : activeChat === profile.id ? (
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="text-sm font-medium">Chat with {profile.name}</h4>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setActiveChat(null)} 
-                  className="h-6 w-6"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {/* Chat messages */}
-              {messages[profile.id] && messages[profile.id].length > 0 && (
-                <div className="bg-gray-50 p-3 rounded-md mb-2 max-h-[120px] overflow-y-auto">
-                  {messages[profile.id].map((msg, idx) => (
-                    <div key={idx} className="text-sm mb-1">
-                      {msg}
-                    </div>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {profile.tags.slice(0, 3).map((tag) => (
+                    <Badge key={tag} variant="outline" className="text-xs">
+                      {tag}
+                    </Badge>
                   ))}
                 </div>
-              )}
-              
-              <Textarea
-                placeholder={`Send a message to ${profile.name}...`}
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                className="min-h-[80px] mb-2"
-              />
-              <div className="flex justify-end">
-                <Button 
-                  className="bg-primary"
-                  onClick={() => handleSendMessage(profile.id, profile.name)}
-                  disabled={!currentMessage.trim()}
-                >
-                  <Send className="h-4 w-4 mr-1" />
-                  Send
-                </Button>
+                
+                {/* Show last message if this is in the messages tab */}
+                {!showRequests && (
+                  <p className="text-sm mt-2 text-gray-600 line-clamp-1">
+                    {lastMessage}
+                  </p>
+                )}
+                
+                {/* Show bio in requests tab */}
+                {showRequests && (
+                  <p className="text-sm mt-2 text-gray-600 line-clamp-2">
+                    {profile.bio}
+                  </p>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="flex justify-end mt-3">
-              <Button 
-                size="sm" 
-                className="bg-primary"
-                onClick={() => handleMessageClick(profile.id)}
-              >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                Message
-              </Button>
-            </div>
-          )}
-        </Card>
-      ))}
+
+            {showRequests ? (
+              <div className="flex justify-end gap-2 mt-3">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleDenyMatch(profile.id, profile.name)}
+                  className="text-red-500 border-red-200 hover:bg-red-50"
+                >
+                  <UserX className="h-4 w-4 mr-1" />
+                  Decline
+                </Button>
+                <Button 
+                  size="sm"
+                  className="bg-primary"
+                  onClick={() => handleAcceptMatch(profile.id, profile.name)}
+                >
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  Accept
+                </Button>
+              </div>
+            ) : activeChat === profile.id ? (
+              <div className="mt-3">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium">Chat with {profile.name}</h4>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveChat(null);
+                    }} 
+                    className="h-6 w-6"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {/* Chat messages */}
+                {messages[profile.id] && messages[profile.id].length > 0 && (
+                  <div className="bg-gray-50 p-3 rounded-md mb-2 max-h-[120px] overflow-y-auto">
+                    {messages[profile.id].map((msg, idx) => (
+                      <div key={idx} className="text-sm mb-1">
+                        {msg}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <Textarea
+                  placeholder={`Send a message to ${profile.name}...`}
+                  value={currentMessage}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => setCurrentMessage(e.target.value)}
+                  className="min-h-[80px] mb-2"
+                />
+                <div className="flex justify-end">
+                  <Button 
+                    className="bg-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSendMessage(profile.id, profile.name);
+                    }}
+                    disabled={!currentMessage.trim()}
+                  >
+                    <Send className="h-4 w-4 mr-1" />
+                    Send
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-end mt-3">
+                <Button 
+                  size="sm" 
+                  className="bg-primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMessageClick(profile.id);
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 mr-1" />
+                  Message
+                </Button>
+              </div>
+            )}
+          </Card>
+        );
+      })}
     </div>
   );
 };
