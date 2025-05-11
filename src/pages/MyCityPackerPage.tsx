@@ -1,22 +1,38 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Package } from "lucide-react";
 import PackingSection from "@/components/moving/PackingSection";
 
 const MyCityPackerPage: React.FC = () => {
   const navigate = useNavigate();
+  const [hasChecklist, setHasChecklist] = useState<boolean>(false);
   
   useEffect(() => {
-    // When this page is visited, create an empty checklist if none exists
-    // This ensures the "My Checklist" button will navigate here in the future
+    // Check if user has already created a packing checklist
+    const savedChecklist = localStorage.getItem("cityPackerData");
+    if (savedChecklist) {
+      setHasChecklist(true);
+    }
+  }, []);
+  
+  const handleChatRedirect = () => {
+    // Store the message in session storage so it can be picked up by the chat page
+    sessionStorage.setItem("autoSendMessage", "Create my moving checklist");
+    // Navigate to the chat page
+    navigate("/");
+  };
+
+  // When a checklist is created through chat, ensure it's saved for future visits
+  const saveEmptyChecklist = () => {
     if (!localStorage.getItem("cityPackerData")) {
       localStorage.setItem("cityPackerData", JSON.stringify({
         lastVisited: new Date().toISOString()
       }));
     }
-  }, []);
+  };
   
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
@@ -38,7 +54,38 @@ const MyCityPackerPage: React.FC = () => {
       </div>
       
       <div className="px-4 flex-1 overflow-auto pb-28">
-        <PackingSection />
+        {hasChecklist ? (
+          <PackingSection />
+        ) : (
+          <Card className="border-primary/10 hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-primary" />
+                <CardTitle>Create Your Moving Checklist</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p>You haven't created a moving checklist yet. Let Olivia help you build a personalized checklist with everything you need for your move.</p>
+              
+              <img 
+                src="https://images.unsplash.com/photo-1622186477895-f2af6a0f5a97?auto=format&fit=crop&w=600&h=400&q=80" 
+                alt="Moving boxes and packing" 
+                className="rounded-lg mb-6 w-full max-w-md object-cover h-48 mx-auto"
+              />
+              
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => {
+                  saveEmptyChecklist();
+                  handleChatRedirect();
+                }}
+              >
+                Create My Checklist
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,14 +23,6 @@ const CityPage: React.FC = () => {
     sessionStorage.setItem("autoSendMessage", message);
     // Navigate to the chat page
     navigate("/");
-  };
-
-  const handleCityPackerClick = () => {
-    if (hasChecklist) {
-      navigate("/my-city-packer");
-    } else {
-      handleChatRedirect("Create my moving checklist");
-    }
   };
 
   return (
@@ -90,7 +81,7 @@ const CityPage: React.FC = () => {
                 variant="outline"
                 size={isMobile ? "sm" : "default"}
                 className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-secondary/15 hover:bg-secondary/25 text-secondary-dark border-secondary/30`}
-                onClick={handleCityPackerClick}
+                onClick={() => navigate("/my-city-packer")}
               >
                 <Package className="h-4 w-4" />
                 {isMobile ? "View" : "My Checklist"}
