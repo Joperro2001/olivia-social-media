@@ -21,7 +21,7 @@ const MatchesPage: React.FC = () => {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold flex-1 text-center pr-8">My Matches</h1>
+        <h1 className="text-2xl font-bold text-left">My Matches</h1>
       </div>
 
       <div className="px-4 pb-4 flex-1 overflow-y-auto">
