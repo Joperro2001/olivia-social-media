@@ -9,6 +9,7 @@ export interface MatchedProfile {
   matchDate: string;
   tags: string[];
   isPending?: boolean;
+  hasInitialMessage?: boolean;
 }
 
 export interface MatchedGroup {
