@@ -24,6 +24,8 @@ import AttendedEventsPage from "./pages/AttendedEventsPage";
 import CreateEventPage from "./pages/CreateEventPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import { NotificationsProvider } from "./context/NotificationsContext";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,8 @@ const App = () => (
             <Route path="/chat/:profileId" element={<AppLayout><ChatPage /></AppLayout>} />
             <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
             <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
+            <Route path="/signin" element={<SignInPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

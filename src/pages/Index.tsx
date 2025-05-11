@@ -1,9 +1,15 @@
 
-import React from "react";
-import OliviaChat from "./OliviaChat";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  return <OliviaChat />;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate("/signin");
+  }, [navigate]);
+
+  return null;
 };
 
 export default Index;
