@@ -64,7 +64,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
     
     // Subscribe to new messages in this chat
     const channel = supabase
-      .channel(`chat:${chatId}`) // Changed channel name pattern to fix type error
+      .channel(`chat_${chatId}`) // Changed channel name format to avoid type error
       .on(
         'postgres_changes',
         {
