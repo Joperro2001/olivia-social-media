@@ -41,36 +41,60 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     }
 
     try {
-      // Create a match request
-      const { error } = await supabase.from('profile_matches').insert({
-        user_id_1: user.id,
-        user_id_2: id,
-        status: 'pending'
-      });
-
-      if (error) {
-        if (error.code === '23505') { // Unique violation error
-          toast({
-            title: "Already sent",
-            description: "You've already sent a match request to this user",
-          });
-        } else {
-          console.error("Error creating match:", error);
-          toast({
-            title: "Error",
-            description: "Failed to send match request",
-            variant: "destructive",
-          });
-        }
+      // Determine which user ID should be user_id_1 and which should be user_id_2
+      // to satisfy the constraint that user_id_1 < user_id_2
+      let user_id_1, user_id_2;
+      
+      // Compare the UUIDs as strings
+      if (user.id < id) {
+        user_id_1 = user.id;
+        user_id_2 = id;
       } else {
+        user_id_1 = id;
+        user_id_2 = user.id;
+      }
+
+      // Check if a match already exists
+      const { data: existingMatch, error: checkError } = await supabase
+        .from('profile_matches')
+        .select('id, status')
+        .eq('user_id_1', user_id_1)
+        .eq('user_id_2', user_id_2)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Error checking existing match:", checkError);
+        throw new Error("Failed to check for existing match");
+      }
+
+      if (existingMatch) {
         toast({
-          title: "It's a match! 🎉",
-          description: `You've sent a match request to ${profiles[currentIndex].full_name}!`,
-          className: "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white border-none",
+          title: "Match already exists",
+          description: existingMatch.status === 'pending' 
+            ? "You've already sent a match request to this user" 
+            : "You're already matched with this user",
         });
-        
-        if (onMatchFound) {
-          onMatchFound();
+      } else {
+        // Create a new match request
+        const { error } = await supabase.from('profile_matches').insert({
+          user_id_1,
+          user_id_2,
+          status: 'pending'
+        });
+
+        if (error) {
+          console.error("Error creating match:", error);
+          throw new Error("Failed to send match request");
+        } else {
+          toast({
+            title: "It's a match! 🎉",
+            description: `You've sent a match request to ${profiles[currentIndex].full_name}!`,
+            className: "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white border-none",
+          });
+          
+          if (onMatchFound) {
+            onMatchFound();
+          }
         }
       }
     } catch (error) {

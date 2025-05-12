@@ -2,7 +2,6 @@
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Profile } from "@/types/Profile";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 export interface MatchProfile {
   id: string;
@@ -44,14 +43,15 @@ export const formatMatchDate = (timestamp: string) => {
 export const fetchMatchedProfiles = async (userId: string) => {
   try {
     // Fetch all matches related to the current user
+    // Since we enforce user_id_1 < user_id_2, we need to check both scenarios
     const { data: matchesAsUser1, error: error1 } = await supabase
       .from('profile_matches')
-      .select('id, status, matched_at, user_id_2')
+      .select('id, status, matched_at, user_id_1, user_id_2')
       .eq('user_id_1', userId);
 
     const { data: matchesAsUser2, error: error2 } = await supabase
       .from('profile_matches')
-      .select('id, status, matched_at, user_id_1')
+      .select('id, status, matched_at, user_id_1, user_id_2')
       .eq('user_id_2', userId);
 
     if (error1 || error2) {
@@ -69,7 +69,7 @@ export const fetchMatchedProfiles = async (userId: string) => {
           id: match.id,
           status: match.status,
           matched_at: match.matched_at,
-          user_id_1: userId,
+          user_id_1: match.user_id_1,
           user_id_2: match.user_id_2,
           otherUserId: match.user_id_2
         });
@@ -84,7 +84,7 @@ export const fetchMatchedProfiles = async (userId: string) => {
           status: match.status,
           matched_at: match.matched_at,
           user_id_1: match.user_id_1,
-          user_id_2: userId,
+          user_id_2: match.user_id_2,
           otherUserId: match.user_id_1
         });
         otherUserIds.push(match.user_id_1);
@@ -92,7 +92,7 @@ export const fetchMatchedProfiles = async (userId: string) => {
     }
 
     if (otherUserIds.length === 0) {
-      return { matches, profiles: [] };
+      return { matches, profilesData: [] };
     }
 
     // Fetch all profiles for the matched users

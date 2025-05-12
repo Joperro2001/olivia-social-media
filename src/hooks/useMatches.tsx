@@ -22,6 +22,7 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<MatchProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [matchData, setMatchData] = useState<ProfileMatch[]>([]);
 
   const fetchMatchesData = useCallback(async () => {
     if (!userId) {
@@ -37,6 +38,7 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
       
       console.log('Formatted profiles:', formattedProfiles);
       setProfiles(formattedProfiles);
+      setMatchData(matches);
     } catch (error) {
       console.error('Error fetching matches:', error);
       toast({
@@ -61,18 +63,16 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
   const acceptedProfiles = profiles.filter(profile => !profile.isPending);
   const pendingProfiles = profiles.filter(profile => profile.isPending);
 
+  // Find match entry for a specific profile ID
+  const findMatchForProfile = (profileId: string): ProfileMatch | undefined => {
+    return matchData.find(match => match.otherUserId === profileId);
+  };
+
   // Handler for accepting a match request
   const handleAcceptMatch = async (profileId: string) => {
     try {
-      // Find the match in the database
-      const { data: matchData, error: findError } = await supabase
-        .from('profile_matches')
-        .select('id')
-        .or(`and(user_id_1.eq.${profileId},user_id_2.eq.${userId}),and(user_id_1.eq.${userId},user_id_2.eq.${profileId})`)
-        .single();
-
-      if (findError) {
-        console.error('Error finding match:', findError);
+      const matchEntry = findMatchForProfile(profileId);
+      if (!matchEntry) {
         throw new Error('Could not find the match request');
       }
 
@@ -80,7 +80,7 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
       const { error: updateError } = await supabase
         .from('profile_matches')
         .update({ status: 'accepted' })
-        .eq('id', matchData.id);
+        .eq('id', matchEntry.id);
 
       if (updateError) {
         console.error('Error accepting match:', updateError);
@@ -93,6 +93,15 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
           profile.id === profileId 
             ? { ...profile, isPending: false, hasInitialMessage: true } 
             : profile
+        )
+      );
+
+      // Update matchData state
+      setMatchData(prevMatches => 
+        prevMatches.map(match => 
+          match.id === matchEntry.id 
+            ? { ...match, status: 'accepted' } 
+            : match
         )
       );
 
@@ -114,15 +123,8 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
   // Handler for declining a match request
   const handleDeclineMatch = async (profileId: string) => {
     try {
-      // Find the match in the database
-      const { data: matchData, error: findError } = await supabase
-        .from('profile_matches')
-        .select('id')
-        .or(`and(user_id_1.eq.${profileId},user_id_2.eq.${userId}),and(user_id_1.eq.${userId},user_id_2.eq.${profileId})`)
-        .single();
-
-      if (findError) {
-        console.error('Error finding match:', findError);
+      const matchEntry = findMatchForProfile(profileId);
+      if (!matchEntry) {
         throw new Error('Could not find the match request');
       }
 
@@ -130,7 +132,7 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
       const { error: deleteError } = await supabase
         .from('profile_matches')
         .delete()
-        .eq('id', matchData.id);
+        .eq('id', matchEntry.id);
 
       if (deleteError) {
         console.error('Error declining match:', deleteError);
@@ -140,6 +142,11 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
       // Update the local state
       setProfiles(prevProfiles => 
         prevProfiles.filter(profile => profile.id !== profileId)
+      );
+
+      // Update matchData state
+      setMatchData(prevMatches =>
+        prevMatches.filter(match => match.id !== matchEntry.id)
       );
 
       toast({
