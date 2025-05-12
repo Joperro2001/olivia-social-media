@@ -46,12 +46,16 @@ const MatchesList: React.FC<MatchesListProps> = ({
 
   const handleAcceptMatch = (e: React.MouseEvent, profileId: string, name: string) => {
     e.stopPropagation();
-    onAcceptMatch?.(profileId);
+    if (onAcceptMatch) {
+      onAcceptMatch(profileId);
+    }
   };
 
   const handleDenyMatch = (e: React.MouseEvent, profileId: string, name: string) => {
     e.stopPropagation();
-    onDeclineMatch?.(profileId);
+    if (onDeclineMatch) {
+      onDeclineMatch(profileId);
+    }
   };
 
   if (profiles.length === 0) {

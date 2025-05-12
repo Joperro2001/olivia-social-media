@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { Profile } from "@/types/Profile";
 
 // Define profile type
 interface MatchProfile {
@@ -23,6 +24,14 @@ interface MatchProfile {
   isPending?: boolean;
   hasInitialMessage?: boolean;
   messages?: string[];
+}
+
+interface ProfileMatch {
+  id: string;
+  status: string;
+  matched_at: string;
+  user_id_1: string;
+  user_id_2: string;
 }
 
 const MatchesPage: React.FC = () => {
@@ -42,42 +51,15 @@ const MatchesPage: React.FC = () => {
   const fetchMatchedProfiles = async () => {
     setIsLoading(true);
     try {
-      // Fetch matches where current user is user_id_1
-      const { data: matches1, error: error1 } = await supabase
+      // Fetch all matches related to the current user
+      const { data: matchesAsUser1, error: error1 } = await supabase
         .from('profile_matches')
-        .select(`
-          id, 
-          status,
-          matched_at,
-          user_id_2,
-          profiles!profile_matches_user_id_2_fkey(
-            id, 
-            full_name, 
-            avatar_url, 
-            age, 
-            current_city, 
-            about_me
-          )
-        `)
+        .select('id, status, matched_at, user_id_2')
         .eq('user_id_1', user.id);
 
-      // Fetch matches where current user is user_id_2
-      const { data: matches2, error: error2 } = await supabase
+      const { data: matchesAsUser2, error: error2 } = await supabase
         .from('profile_matches')
-        .select(`
-          id, 
-          status,
-          matched_at,
-          user_id_1,
-          profiles!profile_matches_user_id_1_fkey(
-            id, 
-            full_name, 
-            avatar_url, 
-            age, 
-            current_city, 
-            about_me
-          )
-        `)
+        .select('id, status, matched_at, user_id_1')
         .eq('user_id_2', user.id);
 
       if (error1 || error2) {
@@ -85,51 +67,79 @@ const MatchesPage: React.FC = () => {
         throw new Error(error1?.message || error2?.message);
       }
 
-      // Transform matches data to the required format
-      const formattedProfiles: MatchProfile[] = [];
+      // Combine both match sets
+      const matches: any[] = [];
       
-      // Process matches where user is user_id_1
-      if (matches1?.length) {
-        matches1.forEach(match => {
-          if (match.profiles) {
-            const profile = match.profiles;
-            formattedProfiles.push({
-              id: profile.id,
-              name: profile.full_name || 'Anonymous',
-              age: profile.age || 0,
-              location: profile.current_city || 'Unknown location',
-              image: profile.avatar_url || '',
-              bio: profile.about_me || '',
-              matchDate: formatMatchDate(match.matched_at),
-              tags: [],
-              isPending: match.status === 'pending',
-              hasInitialMessage: match.status === 'accepted',
-            });
-          }
+      // Get other user IDs from user1's perspective
+      const otherUserIds: string[] = [];
+      
+      if (matchesAsUser1?.length) {
+        matchesAsUser1.forEach(match => {
+          matches.push({
+            id: match.id,
+            status: match.status,
+            matched_at: match.matched_at,
+            otherUserId: match.user_id_2
+          });
+          otherUserIds.push(match.user_id_2);
         });
       }
       
-      // Process matches where user is user_id_2
-      if (matches2?.length) {
-        matches2.forEach(match => {
-          if (match.profiles) {
-            const profile = match.profiles;
-            formattedProfiles.push({
-              id: profile.id,
-              name: profile.full_name || 'Anonymous',
-              age: profile.age || 0,
-              location: profile.current_city || 'Unknown location',
-              image: profile.avatar_url || '',
-              bio: profile.about_me || '',
-              matchDate: formatMatchDate(match.matched_at),
-              tags: [],
-              isPending: match.status === 'pending',
-              hasInitialMessage: match.status === 'accepted',
-            });
-          }
+      // Get other user IDs from user2's perspective
+      if (matchesAsUser2?.length) {
+        matchesAsUser2.forEach(match => {
+          matches.push({
+            id: match.id,
+            status: match.status,
+            matched_at: match.matched_at,
+            otherUserId: match.user_id_1
+          });
+          otherUserIds.push(match.user_id_1);
         });
       }
 
+      if (otherUserIds.length === 0) {
+        setProfiles([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Now fetch all profiles for the matched users
+      const { data: matchedProfilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', otherUserIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw new Error(profilesError.message);
+      }
+
+      // Map the profiles to our desired format
+      const formattedProfiles: MatchProfile[] = matches.map(match => {
+        // Find the corresponding profile
+        const profile = matchedProfilesData?.find(p => p.id === match.otherUserId);
+        
+        if (!profile) {
+          console.warn(`Profile not found for user ID: ${match.otherUserId}`);
+          return null;
+        }
+        
+        return {
+          id: profile.id,
+          name: profile.full_name || 'Anonymous',
+          age: profile.age || 0,
+          location: profile.current_city || 'Unknown location',
+          image: profile.avatar_url || '',
+          bio: profile.about_me || '',
+          matchDate: formatMatchDate(match.matched_at),
+          tags: [],
+          isPending: match.status === 'pending',
+          hasInitialMessage: match.status === 'accepted',
+        };
+      }).filter(Boolean) as MatchProfile[];
+
+      console.log('Formatted profiles:', formattedProfiles);
       setProfiles(formattedProfiles);
     } catch (error) {
       console.error('Error fetching matches:', error);
@@ -192,7 +202,7 @@ const MatchesPage: React.FC = () => {
       // Find the match in the database
       const { data: matchData, error: findError } = await supabase
         .from('profile_matches')
-        .select('id, user_id_1, user_id_2')
+        .select('id')
         .or(`and(user_id_1.eq.${user.id},user_id_2.eq.${profileId}),and(user_id_1.eq.${profileId},user_id_2.eq.${user.id})`)
         .single();
 
