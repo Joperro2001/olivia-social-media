@@ -64,7 +64,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
     
     // Subscribe to new messages in this chat
     const channel = supabase
-      .channel(`chat_messages_${chatId}`)
+      .channel(`chat_messages:${chatId}`) // Changed to a typed string with interpolation
       .on(
         'postgres_changes',
         {
