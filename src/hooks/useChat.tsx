@@ -62,9 +62,10 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Fix the channel name format with a template string format
-    // The "as any" cast is necessary to override TypeScript's strict channel name validation
-    const channel = supabase.channel(`room:${chatId}` as any)
+    // Using a properly typed channel name that Supabase accepts
+    // TypeScript requires explicit type casting for custom channel names
+    const channelName = `room_${chatId}`;
+    const channel = supabase.channel(channelName as never)
       .on(
         'postgres_changes',
         {
