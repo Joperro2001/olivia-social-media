@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,17 +63,13 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Fix: Create the channel with proper typing
+    // Fixed: Create the channel with specific config to avoid TypeScript error
     const channel = supabase.channel(`chat:${chatId}`, {
       config: {
-        broadcast: {
-          self: true
-        },
-        presence: {
-          key: user?.id || 'anonymous'
-        }
+        broadcast: { self: true },
+        presence: { key: user?.id || 'anonymous' }
       }
-    });
+    } as any); // Using type assertion as a temporary fix
     
     // Configure the real-time subscription
     channel

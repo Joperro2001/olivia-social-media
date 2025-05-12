@@ -2,14 +2,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Send, Paperclip, MoreVertical, Image, Mic } from "lucide-react";
+import { ArrowLeft, MoreVertical } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { supabase } from "@/integrations/supabase/client";
+import ChatInput from "@/components/olivia/ChatInput";
 
 interface Profile {
   id: string;
@@ -24,7 +24,6 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [currentMessage, setCurrentMessage] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -74,13 +73,8 @@ const ChatPage: React.FC = () => {
     });
   }, [messages]);
   
-  const handleSendMessage = async () => {
-    if (!currentMessage.trim()) return;
-    
-    const success = await sendMessage(currentMessage);
-    if (success) {
-      setCurrentMessage("");
-    }
+  const handleSendMessage = async (content: string) => {
+    await sendMessage(content);
   };
 
   if (!user) {
@@ -180,49 +174,9 @@ const ChatPage: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Message input area */}
-      <div className="p-3 bg-white border-t">
-        <div className="flex items-center gap-2 bg-[#F8F8F8] rounded-full py-1 px-3">
-          <Button variant="ghost" size="icon" className="rounded-full text-gray-500">
-            <Paperclip className="h-5 w-5" />
-          </Button>
-          
-          <Textarea 
-            placeholder={`Message ${profile.name}...`} 
-            value={currentMessage} 
-            onChange={e => setCurrentMessage(e.target.value)} 
-            className="resize-none border-0 focus-visible:ring-0 bg-transparent flex-1 py-2 min-h-0 h-10"
-            onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }} 
-          />
-          
-          <Button 
-            variant="ghost"
-            size="icon"
-            className="rounded-full text-gray-500"
-            disabled={currentMessage.trim().length === 0}
-          >
-            <Image className="h-5 w-5" />
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className={`rounded-full ${currentMessage.trim().length ? 'bg-primary text-white' : 'bg-primary/20 text-primary'}`}
-            onClick={handleSendMessage}
-            disabled={currentMessage.trim().length === 0}
-          >
-            {currentMessage.trim().length ? (
-              <Send className="h-4 w-4" />
-            ) : (
-              <Mic className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
+      {/* Message input area - using our ChatInput component */}
+      <div className="p-3 bg-white">
+        <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
   );
