@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar } from "@/components/ui/avatar";
@@ -7,23 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { UserCheck, UserX, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface MatchedProfile {
-  id: string;
-  name: string;
-  age: number;
-  location: string;
-  image: string;
-  bio: string;
-  matchDate: string;
-  tags: string[];
-  isPending?: boolean;
-  hasInitialMessage?: boolean;
-  messages?: string[];
-}
+import { MatchProfile } from "@/utils/matchHelpers";
 
 interface MatchesListProps {
-  profiles: MatchedProfile[];
+  profiles: MatchProfile[];
   showRequests?: boolean;
   onAcceptMatch?: (profileId: string) => void;
   onDeclineMatch?: (profileId: string) => void;
