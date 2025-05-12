@@ -62,9 +62,12 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
+    // Use a workaround for channel name to resolve the type error
+    const channelName = `chat_messages_${chatId}` as unknown as `realtime:${string}`; 
+    
     // Subscribe to new messages in this chat
     const channel = supabase
-      .channel(`chat_${chatId}`) // Changed channel name format to avoid type error
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
