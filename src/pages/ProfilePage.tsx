@@ -51,7 +51,6 @@ const ProfilePage: React.FC = () => {
           <ProfileNav />
           
           <UserHeader 
-            userName={profile.full_name || "User"}
             userAge={profile.age || 0}
           />
           

@@ -2,13 +2,16 @@
 import React from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
+import { useProfile } from "@/hooks/useProfile";
 
 interface UserHeaderProps {
-  userName: string;
   userAge: number;
 }
 
-const UserHeader: React.FC<UserHeaderProps> = ({ userName, userAge }) => {
+const UserHeader: React.FC<UserHeaderProps> = ({ userAge }) => {
+  const { profile } = useProfile();
+  const userName = profile?.full_name || "User";
+  
   return (
     <div className="flex flex-col items-center mt-2">
       <motion.div
