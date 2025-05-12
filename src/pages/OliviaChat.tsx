@@ -60,26 +60,36 @@ const OliviaChat: React.FC = () => {
     }
   }, []);
 
-  const handleSendMessage = (content: string) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content,
-      isUser: true,
-      timestamp: "Just now"
-    };
-    setMessages(prev => [...prev, userMessage]);
-
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      const oliviaResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: getOliviaResponse(content),
-        isUser: false,
+  const handleSendMessage = async (content: string): Promise<boolean> => {
+    try {
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content,
+        isUser: true,
         timestamp: "Just now"
       };
-      setMessages(prev => [...prev, oliviaResponse]);
-    }, 1500);
+      setMessages(prev => [...prev, userMessage]);
+
+      setIsTyping(true);
+      
+      // Return a Promise that resolves after the typing delay
+      return new Promise(resolve => {
+        setTimeout(() => {
+          setIsTyping(false);
+          const oliviaResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            content: getOliviaResponse(content),
+            isUser: false,
+            timestamp: "Just now"
+          };
+          setMessages(prev => [...prev, oliviaResponse]);
+          resolve(true); // Resolve with true to indicate success
+        }, 1500);
+      });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      return Promise.resolve(false); // Return false on error
+    }
   };
 
   const getOliviaResponse = (userMessage: string): string => {
@@ -161,9 +171,13 @@ const OliviaChat: React.FC = () => {
   const handleCardAction = (id: string) => {
     console.log(`Card ${id} action triggered`);
     if (id === "card1") {
-      handleSendMessage("I'd like to take the City Match Quiz");
+      handleSendMessage("I'd like to take the City Match Quiz").catch(error => {
+        console.error("Error handling card action:", error);
+      });
     } else if (id === "card3") {
-      handleSendMessage("I'm interested in joining group matches");
+      handleSendMessage("I'm interested in joining group matches").catch(error => {
+        console.error("Error handling card action:", error);
+      });
     }
   };
 
