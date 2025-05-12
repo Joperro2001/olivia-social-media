@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,12 +61,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Use a workaround for channel name to resolve the type error
-    const channelName = `chat_messages_${chatId}` as unknown as `realtime:${string}`; 
-    
-    // Subscribe to new messages in this chat
-    const channel = supabase
-      .channel(channelName)
+    // Create the channel with the correct typing
+    const channel = supabase.channel('room_' + chatId)
       .on(
         'postgres_changes',
         {
