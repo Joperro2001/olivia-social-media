@@ -3,15 +3,16 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Diamond, Heart, Sparkles, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
 import BestiesFilter from "@/components/besties/BestiesFilter";
 import { useNavigate } from "react-router-dom";
+import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
+  const { profiles, isLoading } = useOtherProfiles();
   
   const handleOpenMatches = () => {
     navigate("/matches");
@@ -61,10 +62,16 @@ const BestiesPage: React.FC = () => {
         </div>
 
         {showFilters && <BestiesFilter />}
-        <ProfileMatching 
-          profiles={profiles} 
-          onMatchFound={handleOpenMatches}
-        />
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <ProfileMatching 
+            profiles={profiles} 
+            onMatchFound={handleOpenMatches}
+          />
+        )}
       </div>
     </div>
   );
