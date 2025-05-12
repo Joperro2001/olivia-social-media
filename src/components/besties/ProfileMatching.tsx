@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { Profile } from "@/types/Profile";
-import { Loader } from "lucide-react";
+import { Loader, Users } from "lucide-react";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -60,17 +60,31 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     );
   }
 
+  if (profiles.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <div className="p-4 rounded-full bg-gray-100 mb-4">
+          <Users className="h-8 w-8 text-gray-400" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">No other profiles yet</h3>
+        <p className="text-gray-500 mb-6">
+          Invite your friends or wait for more people to join!
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4">
-      {profiles.length > 0 && currentIndex < profiles.length ? (
+      {currentIndex < profiles.length ? (
         <ProfileCard
           key={profiles[currentIndex].id}
           {...mapProfileToCardProps(profiles[currentIndex])}
         />
       ) : (
         <div className="text-center px-4 py-10">
-          <h3 className="text-xl font-semibold mb-2">There are no more profiles</h3>
-          <p className="text-gray-500 mb-6">Try again in a while to find new connections</p>
+          <h3 className="text-xl font-semibold mb-2">You've seen all profiles</h3>
+          <p className="text-gray-500 mb-6">Check back later for new connections</p>
           <Button 
             onClick={() => setCurrentIndex(0)}
             className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
