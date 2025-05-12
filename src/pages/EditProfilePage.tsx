@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -37,6 +36,7 @@ const EditProfilePage: React.FC = () => {
   const { profile, interests, updateProfile, addInterest, removeInterest, isLoading } = useProfile();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const MAX_INTERESTS = 4;
 
   // Initialize form with validation
   const form = useForm<FormValues>({
@@ -77,7 +77,17 @@ const EditProfilePage: React.FC = () => {
       if (prev.includes(interest)) {
         return prev.filter(item => item !== interest);
       } else {
-        return [...prev, interest];
+        // Only add if we haven't reached the maximum
+        if (prev.length < MAX_INTERESTS) {
+          return [...prev, interest];
+        }
+        // Show toast notification if max limit reached
+        toast({
+          title: "Maximum interests reached",
+          description: `You can select up to ${MAX_INTERESTS} interests.`,
+          variant: "destructive",
+        });
+        return prev;
       }
     });
   };
@@ -289,10 +299,12 @@ const EditProfilePage: React.FC = () => {
                   />
                 </div>
                 
-                {/* Interests - Updated to selection-based UI */}
+                {/* Interests - Updated with max limit indication */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border space-y-4">
                   <h3 className="font-semibold text-lg">Interests</h3>
-                  <p className="text-sm text-gray-500 mb-3">Select your interests from the options below</p>
+                  <p className="text-sm text-gray-500 mb-3">
+                    Select up to {MAX_INTERESTS} interests from the options below
+                  </p>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
                     {selectedInterests.length > 0 ? (
@@ -320,10 +332,15 @@ const EditProfilePage: React.FC = () => {
                           id={`interest-${interest}`} 
                           checked={selectedInterests.includes(interest)}
                           onCheckedChange={() => handleInterestToggle(interest)}
+                          disabled={!selectedInterests.includes(interest) && selectedInterests.length >= MAX_INTERESTS}
                         />
                         <label 
                           htmlFor={`interest-${interest}`}
-                          className="text-sm cursor-pointer"
+                          className={`text-sm cursor-pointer ${
+                            !selectedInterests.includes(interest) && selectedInterests.length >= MAX_INTERESTS 
+                              ? "text-gray-400" 
+                              : ""
+                          }`}
                         >
                           {interest}
                         </label>
