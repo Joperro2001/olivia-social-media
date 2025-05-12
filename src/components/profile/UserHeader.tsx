@@ -1,14 +1,20 @@
 
 import React from "react";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
 
 interface UserHeaderProps {
   userAge: number;
+  showUploadButton?: boolean;
+  onImageClick?: () => void;
 }
 
-const UserHeader: React.FC<UserHeaderProps> = ({ userAge }) => {
+const UserHeader: React.FC<UserHeaderProps> = ({ 
+  userAge, 
+  showUploadButton = false, 
+  onImageClick 
+}) => {
   const { profile } = useProfile();
   const userName = profile?.full_name || "User";
   
@@ -18,10 +24,28 @@ const UserHeader: React.FC<UserHeaderProps> = ({ userAge }) => {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
+        onClick={onImageClick}
+        className={showUploadButton ? "cursor-pointer relative" : ""}
       >
         <Avatar className="w-28 h-28 border-4 border-white shadow-md">
-          <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=user" alt="User profile" className="w-full h-full object-cover" />
+          {profile?.avatar_url ? (
+            <AvatarImage src={profile.avatar_url} alt={`${userName}'s profile`} />
+          ) : (
+            <AvatarImage 
+              src="https://api.dicebear.com/7.x/thumbs/svg?seed=user" 
+              alt="User profile"
+            />
+          )}
+          <AvatarFallback>
+            {userName.substring(0, 2).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
+        
+        {showUploadButton && (
+          <div className="absolute inset-0 rounded-full flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity">
+            <span className="text-white text-sm font-medium">Change photo</span>
+          </div>
+        )}
       </motion.div>
       
       <motion.div 
