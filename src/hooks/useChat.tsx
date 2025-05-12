@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,8 +62,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Create the channel with the correct type
-    const channel = supabase.channel(`chat:${chatId}`);
+    // Create a channel for real-time updates
+    const channelName = `chat:${chatId}`;
+    const channel = supabase.channel(channelName);
     
     // Configure the real-time subscription
     channel
