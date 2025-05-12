@@ -12,12 +12,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage
 }) => {
   const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
-      onSendMessage(message);
-      setMessage("");
+    if (message.trim() && !isSending) {
+      setIsSending(true);
+      
+      try {
+        console.log("Sending message:", message);
+        await onSendMessage(message);
+        setMessage("");
+      } catch (error) {
+        console.error("Error sending message:", error);
+      } finally {
+        setIsSending(false);
+      }
     }
   };
   
@@ -46,9 +56,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
         type="submit" 
         size="icon" 
         className="rounded-full bg-primary"
-        disabled={!message.trim()}
+        disabled={!message.trim() || isSending}
       >
         <Send className="h-4 w-4" />
+        <span className="sr-only">Send message</span>
       </Button>
     </form>
   );

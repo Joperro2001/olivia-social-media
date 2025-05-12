@@ -27,7 +27,7 @@ const ChatPage: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { messages, isLoading, sendMessage } = useChat({ 
+  const { messages, isLoading, sendMessage, usingLocalMode } = useChat({ 
     profileId: profileId || '' 
   });
 
@@ -74,7 +74,15 @@ const ChatPage: React.FC = () => {
   }, [messages]);
   
   const handleSendMessage = async (content: string) => {
-    await sendMessage(content);
+    const success = await sendMessage(content);
+    if (!success) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    }
+    return success;
   };
 
   if (!user) {
@@ -147,6 +155,12 @@ const ChatPage: React.FC = () => {
           backgroundImage: "url('data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 16c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zm33.414-6l5.95-5.95L45.95.636 40 6.586 34.05.636 32.636 2.05 38.586 8l-5.95 5.95 1.414 1.414L40 9.414l5.95 5.95 1.414-1.414L41.414 8zM40 48c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zM9.414 40l5.95-5.95-1.414-1.414L8 38.586l-5.95-5.95L.636 34.05 6.586 40l-5.95 5.95 1.414 1.414L8 41.414l5.95 5.95 1.414-1.414L9.414 40z' fill='%23B892FF' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E"
         }}
       >
+        {usingLocalMode && (
+          <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-4">
+            Using local mode due to database connectivity issues. Messages may not be saved.
+          </div>
+        )}
+
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 text-center">No messages yet. Say hello!</p>
