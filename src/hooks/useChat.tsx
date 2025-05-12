@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,8 +62,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Create the channel with the correct typing
-    const channel = supabase.channel('room_' + chatId)
+    // Fix the channel name format with a template string format
+    // The "as any" cast is necessary to override TypeScript's strict channel name validation
+    const channel = supabase.channel(`room:${chatId}` as any)
       .on(
         'postgres_changes',
         {
