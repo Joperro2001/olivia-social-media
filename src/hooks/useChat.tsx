@@ -63,9 +63,17 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Create the channel with the updated typing - use a simple string
-    // The specific format of the channel name is important for Supabase
-    const channel = supabase.channel(`private:${chatId}`);
+    // The channel must be created with proper configuration to satisfy the TypeScript type
+    const channel = supabase.channel('private:' + chatId, {
+      config: {
+        broadcast: {
+          self: true
+        },
+        presence: {
+          key: user?.id || 'anonymous'
+        }
+      }
+    });
     
     // Configure the real-time subscription
     channel
@@ -93,7 +101,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [chatId]);
+  }, [chatId, user?.id]);
 
   // Fetch existing messages
   const fetchMessages = async (chatIdToUse: string) => {
