@@ -174,8 +174,8 @@ const ChatPage: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Message input area - positioned at bottom */}
-      <div className="p-3 bg-transparent">
+      {/* Message input area - positioned at bottom, with prominent styling */}
+      <div className="p-4 bg-white border-t shadow-sm">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
