@@ -1,4 +1,5 @@
 
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,7 @@ import MyCityPackerPage from "./pages/MyCityPackerPage";
 import MyCityExplorerPage from "./pages/MyCityExplorerPage";
 import MatchesPage from "./pages/MatchesPage";
 import ChatPage from "./pages/ChatPage";
+import AIChatPage from "./pages/AIChatPage";
 import NotFound from "./pages/NotFound";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import SavedEventsPage from "./pages/SavedEventsPage";
@@ -109,6 +111,16 @@ const App = () => (
               <Route path="/chat/:profileId" element={
                 <ProtectedRoute>
                   <AppLayout><ChatPage /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/ai-chat" element={
+                <ProtectedRoute>
+                  <AppLayout><AIChatPage /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/ai-chat/:conversationId" element={
+                <ProtectedRoute>
+                  <AppLayout><AIChatPage /></AppLayout>
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={
