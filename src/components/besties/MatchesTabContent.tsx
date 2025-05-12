@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import MatchesList from "@/components/besties/MatchesList";
 import SearchInput from "@/components/besties/SearchInput";
+import { useAuth } from "@/context/AuthContext";
 import { MatchProfile } from "@/utils/matchHelpers";
 
 interface MatchesTabContentProps {
@@ -10,6 +11,7 @@ interface MatchesTabContentProps {
 
 const MatchesTabContent: React.FC<MatchesTabContentProps> = ({ profiles }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
   
   // Filter profiles based on search query
   const filteredProfiles = searchQuery 
@@ -37,7 +39,11 @@ const MatchesTabContent: React.FC<MatchesTabContentProps> = ({ profiles }) => {
         />
       </div>
       
-      {searchQuery && filteredProfiles.length === 0 ? (
+      {!user ? (
+        <div className="text-center py-6">
+          <p className="text-gray-500">Please log in to view your matches</p>
+        </div>
+      ) : searchQuery && filteredProfiles.length === 0 ? (
         <div className="text-center py-6">
           <p className="text-gray-500">No matches found for "{searchQuery}"</p>
         </div>

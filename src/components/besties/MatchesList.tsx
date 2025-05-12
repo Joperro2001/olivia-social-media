@@ -4,7 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { UserCheck, UserX, User, Circle, CircleDot } from "lucide-react";
+import { UserCheck, UserX, Circle, CircleDot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MatchProfile } from "@/utils/matchHelpers";
 
@@ -131,7 +131,7 @@ const MatchesList: React.FC<MatchesListProps> = ({
     );
   }
 
-  // New WhatsApp-like UI for messages
+  // WhatsApp-like UI for messages
   return (
     <div className="space-y-0 divide-y divide-gray-100">
       {profiles.map((profile) => {
@@ -142,8 +142,8 @@ const MatchesList: React.FC<MatchesListProps> = ({
             ? `You and ${profile.name} matched. Let's start messaging!` 
             : "No messages yet. Start chatting!";
         
-        // Simulate some unread messages randomly - in a real app this would come from API
-        const unreadCount = hasMessages ? Math.floor(Math.random() * 3) : 0;
+        // In a real app, unread count would come from the API
+        const unreadCount = 0;
         const timestamp = profile.matchDate;
             
         return (
