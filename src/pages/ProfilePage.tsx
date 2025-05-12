@@ -58,9 +58,9 @@ const ProfilePage: React.FC = () => {
             <UserInfoCard 
               university={profile.university || ""}
               currentCity={profile.current_city || ""}
-              currentCountryFlag={profile.current_city ? "🇬🇧" : ""}
+              currentCountryFlag=""
               moveInCity={profile.move_in_city || ""}
-              moveInCountryFlag={profile.move_in_city ? "🇩🇪" : ""}
+              moveInCountryFlag=""
               nationality={profile.nationality || ""}
             />
             

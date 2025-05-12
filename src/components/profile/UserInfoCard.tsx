@@ -34,12 +34,12 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
     {
       icon: Flag,
       label: "Current City",
-      value: `${currentCountryFlag} ${currentCity}`
+      value: currentCity
     },
     {
       icon: Flag,
       label: "Moving to",
-      value: `${moveInCountryFlag} ${moveInCity}`
+      value: moveInCity
     }
   ];
 

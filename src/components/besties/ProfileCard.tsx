@@ -26,28 +26,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onSwipeLeft,
   onSwipeRight
 }) => {
-  // Get country flag from location
-  const getCountryFlag = (location: string): string => {
-    const countryMap: {[key: string]: string} = {
-      'Germany': '🇩🇪',
-      'Spain': '🇪🇸',
-      'Netherlands': '🇳🇱',
-      'UK': '🇬🇧',
-      'United Kingdom': '🇬🇧',
-      'France': '🇫🇷',
-      'Italy': '🇮🇹'
-    };
-    
-    // Check if location contains any country name
-    for (const country in countryMap) {
-      if (location && location.includes(country)) {
-        return countryMap[country];
-      }
-    }
-    
-    return '🌍'; // Default globe emoji if no match
-  };
-
   // Extract city from location
   const getCity = (location: string): string => {
     if (!location) return "Unknown location";
@@ -70,7 +48,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   const displayImage = image || defaultImage;
 
   const city = getCity(location);
-  const countryFlag = getCountryFlag(location);
 
   return (
     <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
@@ -89,7 +66,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         
         <div className="flex items-center gap-2 mb-4">
           <Flag className="h-4 w-4" />
-          <p className="text-sm">{countryFlag} {city}</p>
+          <p className="text-sm">{city}</p>
         </div>
         
         <p className="text-sm mb-4 line-clamp-3">{bio || "No bio available"}</p>
