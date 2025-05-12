@@ -51,7 +51,7 @@ export const useProfile = () => {
 
       if (interestsError) throw interestsError;
 
-      setProfile(profileData);
+      setProfile(profileData as Profile);
       setInterests(interestsData || []);
     } catch (error: any) {
       console.error("Error fetching profile:", error);
