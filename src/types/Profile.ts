@@ -1,3 +1,4 @@
+
 export type Profile = {
   about_me: string;
   age: number;

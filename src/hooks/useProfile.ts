@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -39,7 +40,8 @@ export const useProfile = () => {
 
       if (interestsError) throw interestsError;
 
-      // Convert profileData to Profile type, including the avatar_url
+      // Convert profileData to Profile type
+      // Explicitly include all fields from Profile type
       setProfile({
         about_me: profileData.about_me,
         age: profileData.age,
@@ -51,7 +53,7 @@ export const useProfile = () => {
         nationality: profileData.nationality,
         university: profileData.university,
         updated_at: profileData.updated_at,
-        avatar_url: profileData.avatar_url || null,
+        avatar_url: profileData.avatar_url || undefined
       });
       
       setInterests(interestsData || []);
