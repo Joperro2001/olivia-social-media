@@ -63,13 +63,11 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Fix: Properly type the channel to resolve the TypeScript error
-    const channel = supabase.channel(`room_${chatId}`, {
-      config: {
-        broadcast: { self: false },
-        presence: { key: '' },
-      }
-    })
+    // Fix: Provide proper type information for the channel
+    const channel = supabase.channel(`chat:${chatId}`);
+    
+    // Configure the real-time subscription
+    channel
       .on(
         'postgres_changes',
         {
