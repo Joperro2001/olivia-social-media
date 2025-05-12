@@ -8,11 +8,14 @@ import { useChatReducer } from "./useChatReducer";
 import {
   saveLocalMessages,
   loadLocalMessages,
+  deleteLocalMessages,
   fetchChatMessages,
   getOrCreateChat,
   sendMessageToDatabase,
   createLocalMessage,
-  subscribeToChat
+  subscribeToChat,
+  sendMultipleMessagesToDatabase,
+  testDatabaseConnection
 } from "@/utils/chatUtils";
 
 interface UseChatProps {
@@ -24,6 +27,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
   const { toast } = useToast();
   const [retryCount, setRetryCount] = useState(0);
   const [state, dispatch] = useChatReducer();
+  const [syncAttemptInProgress, setSyncAttemptInProgress] = useState(false);
   
   const { 
     messages, 
@@ -55,6 +59,11 @@ export const useChat = ({ profileId }: UseChatProps) => {
         
         // Fetch existing messages
         await fetchMessages(chatIdFromDB);
+        
+        // If we have local messages and we're now connected, try to sync them
+        if (localMessages.length > 0) {
+          synchronizeLocalMessages().catch(console.error);
+        }
       } catch (error) {
         console.error('Error initializing chat:', error);
         toast({
@@ -90,6 +99,32 @@ export const useChat = ({ profileId }: UseChatProps) => {
     saveLocalMessages(user?.id, profileId, localMessages);
   }, [localMessages, user, profileId]);
 
+  // Periodic sync attempt when in local mode
+  useEffect(() => {
+    if (!usingLocalMode || !localMessages.length || !chatId || syncAttemptInProgress) return;
+    
+    // Try to sync every 30 seconds when in local mode
+    const syncInterval = setInterval(async () => {
+      try {
+        setSyncAttemptInProgress(true);
+        const isConnected = await testDatabaseConnection();
+        
+        if (isConnected) {
+          console.log("Database connection restored, attempting to sync messages");
+          await synchronizeLocalMessages();
+          dispatch({ type: 'SET_USING_LOCAL_MODE', payload: false });
+          clearInterval(syncInterval);
+        }
+      } catch (error) {
+        console.log("Auto-sync attempt failed:", error);
+      } finally {
+        setSyncAttemptInProgress(false);
+      }
+    }, 30000);  // 30 seconds
+    
+    return () => clearInterval(syncInterval);
+  }, [usingLocalMode, localMessages, chatId, syncAttemptInProgress]);
+
   // Fetch existing messages
   const fetchMessages = async (chatIdToUse: string) => {
     try {
@@ -114,38 +149,25 @@ export const useChat = ({ profileId }: UseChatProps) => {
 
   // Synchronize local messages to database if possible
   const synchronizeLocalMessages = async () => {
-    if (!chatId || localMessages.length === 0) return false;
+    if (!chatId || localMessages.length === 0 || !user) return false;
 
     try {
       // Try to save all local messages to the database
-      for (const message of localMessages) {
-        const { error } = await supabase
-          .from('messages')
-          .insert([{
-            chat_id: chatId,
-            sender_id: message.sender_id,
-            content: message.content,
-            sent_at: message.sent_at
-          }]);
-          
-        if (error) {
-          console.error('Error synchronizing message:', error);
-          return false;
-        }
+      const success = await sendMultipleMessagesToDatabase(chatId, localMessages);
+      
+      if (success) {
+        // If successful, clear local messages
+        dispatch({ type: 'CLEAR_LOCAL_MESSAGES' });
+        deleteLocalMessages(user.id, profileId);
+        dispatch({ type: 'SET_USING_LOCAL_MODE', payload: false });
+        
+        // Refresh messages from database
+        await fetchMessages(chatId);
+        
+        return true;
+      } else {
+        return false;
       }
-      
-      // If successful, clear local messages
-      dispatch({ type: 'CLEAR_LOCAL_MESSAGES' });
-      localStorage.removeItem(`chat_local_${user?.id}_${profileId}`);
-      dispatch({ type: 'SET_USING_LOCAL_MODE', payload: false });
-      
-      toast({
-        title: "Success",
-        description: `Synchronized ${localMessages.length} messages to the database.`,
-        variant: "default",
-      });
-      
-      return true;
     } catch (error) {
       console.error('Error synchronizing messages:', error);
       return false;
@@ -166,7 +188,13 @@ export const useChat = ({ profileId }: UseChatProps) => {
       // Try to synchronize with database if we have a chatId
       if (chatId) {
         setTimeout(() => {
-          synchronizeLocalMessages().catch(console.error);
+          testDatabaseConnection()
+            .then(isConnected => {
+              if (isConnected) {
+                synchronizeLocalMessages().catch(console.error);
+              }
+            })
+            .catch(console.error);
         }, 2000);
       }
       
@@ -176,7 +204,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
     // Use database if available
     if (chatId) {
       try {
-        await sendMessageToDatabase(chatId, user.id, content);
+        const newMessage = await sendMessageToDatabase(chatId, user.id, content);
+        dispatch({ type: 'ADD_MESSAGE', payload: newMessage });
         return true;
       } catch (error) {
         console.error('Error sending message:', error);

@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MoreVertical } from "lucide-react";
+import { ArrowLeft, MoreVertical, CloudSync, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -25,8 +26,17 @@ const ChatPage: React.FC = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   
-  const { messages, isLoading, sendMessage, usingLocalMode } = useChat({ 
+  const { 
+    messages, 
+    isLoading, 
+    sendMessage, 
+    usingLocalMode, 
+    retryDatabaseConnection,
+    synchronizeLocalMessages,
+    hasLocalMessages
+  } = useChat({ 
     profileId: profileId || '' 
   });
 
@@ -97,6 +107,47 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const handleSyncMessages = async () => {
+    if (!hasLocalMessages) return;
+    
+    setIsSyncing(true);
+    try {
+      const success = await synchronizeLocalMessages();
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Your messages have been synchronized to the database.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to synchronize messages. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error synchronizing messages:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred during synchronization.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleRetryConnection = async () => {
+    toast({
+      title: "Reconnecting",
+      description: "Attempting to reconnect to the database...",
+      variant: "default",
+    });
+    
+    retryDatabaseConnection();
+  };
+
   if (!user) {
     return (
       <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
@@ -149,6 +200,18 @@ const ChatPage: React.FC = () => {
         </div>
         
         <div className="flex items-center space-x-2">
+          {usingLocalMode && hasLocalMessages && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSyncMessages}
+              disabled={isSyncing}
+              className="text-xs"
+            >
+              <CloudSync className="h-4 w-4 mr-1" />
+              {isSyncing ? 'Syncing...' : 'Sync Messages'}
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="text-gray-500">
             <MoreVertical className="h-5 w-5" />
           </Button>
@@ -169,7 +232,20 @@ const ChatPage: React.FC = () => {
       >
         {usingLocalMode && (
           <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-4">
-            Using local mode due to database connectivity issues. Messages may not be saved permanently.
+            <div className="flex items-center">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              <div className="flex-1">
+                Using local mode due to database connectivity issues. Messages may not be saved permanently.
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRetryConnection}
+                className="ml-2 text-xs"
+              >
+                Retry Connection
+              </Button>
+            </div>
           </div>
         )}
 

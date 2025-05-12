@@ -13,6 +13,7 @@ export const saveLocalMessages = (
   try {
     const savedLocalKey = `chat_local_${userId}_${profileId}`;
     localStorage.setItem(savedLocalKey, JSON.stringify(messages));
+    console.log(`Saved ${messages.length} messages to local storage`);
   } catch (error) {
     console.error('Error saving local messages:', error);
   }
@@ -43,6 +44,22 @@ export const loadLocalMessages = (
   return [];
 };
 
+// Delete local messages from localStorage
+export const deleteLocalMessages = (
+  userId: string | undefined,
+  profileId: string
+): void => {
+  if (!userId || !profileId) return;
+  
+  try {
+    const savedLocalKey = `chat_local_${userId}_${profileId}`;
+    localStorage.removeItem(savedLocalKey);
+    console.log('Deleted local messages from storage');
+  } catch (error) {
+    console.error('Error deleting local messages:', error);
+  }
+};
+
 // Fetch messages for a specific chat
 export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
   console.log('Fetching messages for chat:', chatId);
@@ -58,7 +75,7 @@ export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
     throw error;
   }
   
-  console.log('Fetched messages:', data);
+  console.log('Fetched messages:', data?.length);
   return data || [];
 };
 
@@ -66,18 +83,23 @@ export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
 export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
-  const { data, error } = await supabase
-    .rpc('get_or_create_private_chat', {
-      other_user_id: profileId
-    });
+  try {
+    const { data, error } = await supabase
+      .rpc('get_or_create_private_chat', {
+        other_user_id: profileId
+      });
+      
+    if (error) {
+      console.error('Error in get_or_create_private_chat:', error);
+      throw error;
+    }
     
-  if (error) {
-    console.error('Error in get_or_create_private_chat:', error);
+    console.log('Chat ID:', data);
+    return data;
+  } catch (error) {
+    console.error('Failed to get or create chat:', error);
     throw error;
   }
-  
-  console.log('Chat ID:', data);
-  return data;
 };
 
 // Send message to database
@@ -85,7 +107,7 @@ export const sendMessageToDatabase = async (
   chatId: string,
   userId: string,
   content: string
-): Promise<boolean> => {
+): Promise<Message> => {
   console.log('Sending message to chat:', chatId);
   
   const newMessage = {
@@ -94,17 +116,18 @@ export const sendMessageToDatabase = async (
     content: content.trim()
   };
   
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('messages')
     .insert([newMessage])
-    .select();
+    .select()
+    .single();
   
   if (error) {
     console.error('Error sending message:', error);
     throw error;
   }
   
-  return true;
+  return data as Message;
 };
 
 // Create a new local message
@@ -150,4 +173,59 @@ export const subscribeToChat = (
     });
     
   return channel;
+};
+
+// Batch send multiple messages to the database
+export const sendMultipleMessagesToDatabase = async (
+  chatId: string,
+  messages: Message[]
+): Promise<boolean> => {
+  if (!messages.length) return true;
+  
+  console.log(`Attempting to send ${messages.length} messages to database`);
+  
+  try {
+    const formattedMessages = messages.map(msg => ({
+      chat_id: chatId,
+      sender_id: msg.sender_id,
+      content: msg.content,
+      sent_at: msg.sent_at
+    }));
+    
+    const { error } = await supabase
+      .from('messages')
+      .insert(formattedMessages);
+      
+    if (error) {
+      console.error('Error batch sending messages:', error);
+      return false;
+    }
+    
+    console.log(`Successfully synchronized ${messages.length} messages`);
+    return true;
+  } catch (error) {
+    console.error('Error in batch message send:', error);
+    return false;
+  }
+};
+
+// Test database connectivity
+export const testDatabaseConnection = async (): Promise<boolean> => {
+  try {
+    // Simple query to test connection
+    const { error } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1);
+    
+    if (error) {
+      console.error('Database connection test failed:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Database connection test error:', error);
+    return false;
+  }
 };
