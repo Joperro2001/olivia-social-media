@@ -63,8 +63,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
     if (!chatId) return;
     
     // Create a channel for real-time updates
-    const channelName = `chat:${chatId}`;
-    const channel = supabase.channel(channelName);
+    const channel = supabase.channel(`chat:${chatId}`);
     
     // Configure the real-time subscription
     channel
