@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { Profile } from "@/types/Profile";
 import { Loader, Users, UserPlus, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -13,6 +15,7 @@ interface ProfileMatchingProps {
 
 const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { profiles, isLoading, refetchProfiles } = useOtherProfiles();
 
@@ -27,14 +30,58 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     }
   };
 
-  const handleSwipeRight = (id: string) => {
-    console.log(`Swiped right on ${id}`);
-    toast({
-      title: "It's a match! 🎉",
-      description: `You and ${profiles[currentIndex].full_name} might be a good fit! We'll notify them.`,
-      className: "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white border-none",
-    });
-    
+  const handleSwipeRight = async (id: string) => {
+    if (!user) {
+      toast({
+        title: "You need to be logged in",
+        description: "Please sign in to send match requests",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Create a match request
+      const { error } = await supabase.from('profile_matches').insert({
+        user_id_1: user.id,
+        user_id_2: id,
+        status: 'pending'
+      });
+
+      if (error) {
+        if (error.code === '23505') { // Unique violation error
+          toast({
+            title: "Already sent",
+            description: "You've already sent a match request to this user",
+          });
+        } else {
+          console.error("Error creating match:", error);
+          toast({
+            title: "Error",
+            description: "Failed to send match request",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "It's a match! 🎉",
+          description: `You've sent a match request to ${profiles[currentIndex].full_name}!`,
+          className: "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white border-none",
+        });
+        
+        if (onMatchFound) {
+          onMatchFound();
+        }
+      }
+    } catch (error) {
+      console.error("Error sending match request:", error);
+      toast({
+        title: "Error",
+        description: "Something went wrong while sending the match request",
+        variant: "destructive",
+      });
+    }
+
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }

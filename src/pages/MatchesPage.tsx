@@ -19,8 +19,30 @@ const MatchesPage: React.FC = () => {
     acceptedProfiles, 
     pendingProfiles,
     handleAcceptMatch,
-    handleDeclineMatch
+    handleDeclineMatch,
+    refreshMatches
   } = useMatches({ userId: user?.id || '' });
+
+  if (!user) {
+    return (
+      <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
+        <div className="flex items-center px-4 py-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/besties")}
+            className="mr-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold text-left">My Matches</h1>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Please log in to view your matches</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -67,6 +89,7 @@ const MatchesPage: React.FC = () => {
               profiles={pendingProfiles}
               onAcceptMatch={handleAcceptMatch}
               onDeclineMatch={handleDeclineMatch}
+              isLoading={isLoading}
             />
           </TabsContent>
         </Tabs>

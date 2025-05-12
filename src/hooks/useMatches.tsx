@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchProfile, ProfileMatch, fetchMatchedProfiles, mapProfilesToMatchProfiles } from "@/utils/matchHelpers";
@@ -23,7 +23,13 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
   const [profiles, setProfiles] = useState<MatchProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchMatchesData = async () => {
+  const fetchMatchesData = useCallback(async () => {
+    if (!userId) {
+      console.log("No user ID provided for fetching matches");
+      setIsLoading(false);
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const { matches, profilesData } = await fetchMatchedProfiles(userId);
@@ -41,13 +47,15 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, toast]);
 
   useEffect(() => {
     if (userId) {
       fetchMatchesData();
+    } else {
+      setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, fetchMatchesData]);
 
   // Separate profiles into accepted and pending
   const acceptedProfiles = profiles.filter(profile => !profile.isPending);
@@ -60,7 +68,7 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
       const { data: matchData, error: findError } = await supabase
         .from('profile_matches')
         .select('id')
-        .or(`and(user_id_1.eq.${userId},user_id_2.eq.${profileId}),and(user_id_1.eq.${profileId},user_id_2.eq.${userId})`)
+        .or(`and(user_id_1.eq.${profileId},user_id_2.eq.${userId}),and(user_id_1.eq.${userId},user_id_2.eq.${profileId})`)
         .single();
 
       if (findError) {
@@ -110,7 +118,7 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
       const { data: matchData, error: findError } = await supabase
         .from('profile_matches')
         .select('id')
-        .or(`and(user_id_1.eq.${userId},user_id_2.eq.${profileId}),and(user_id_1.eq.${profileId},user_id_2.eq.${userId})`)
+        .or(`and(user_id_1.eq.${profileId},user_id_2.eq.${userId}),and(user_id_1.eq.${userId},user_id_2.eq.${profileId})`)
         .single();
 
       if (findError) {

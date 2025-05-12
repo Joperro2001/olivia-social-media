@@ -7,26 +7,54 @@ import ProfileMatching from "@/components/besties/ProfileMatching";
 import BestiesFilter from "@/components/besties/BestiesFilter";
 import { useNavigate } from "react-router-dom";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
+import { useAuth } from "@/context/AuthContext";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { refetchProfiles } = useOtherProfiles();
+  const { user } = useAuth();
   
   const handleOpenMatches = () => {
+    if (!user) {
+      setShowLoginDialog(true);
+      return;
+    }
     navigate("/matches");
   };
 
   const navigateToMyGroups = () => {
+    if (!user) {
+      setShowLoginDialog(true);
+      return;
+    }
     navigate('/my-groups');
   };
   
   const handleCreateGroup = () => {
+    if (!user) {
+      setShowLoginDialog(true);
+      return;
+    }
     toast({
       title: "Creating a new group",
       description: "You'll be able to create your own group in the full version!",
     });
+  };
+
+  const handleMatchFound = () => {
+    // Only navigate if user is logged in
+    if (user) {
+      navigate("/matches");
+    }
+  };
+
+  const handleLogin = () => {
+    setShowLoginDialog(false);
+    navigate("/signin");
   };
 
   useEffect(() => {
@@ -81,8 +109,23 @@ const BestiesPage: React.FC = () => {
         </div>
 
         {showFilters && <BestiesFilter />}
-        <ProfileMatching onMatchFound={handleOpenMatches} />
+        <ProfileMatching onMatchFound={handleMatchFound} />
       </div>
+
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign in required</DialogTitle>
+            <DialogDescription>
+              You need to be signed in to use this feature.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowLoginDialog(false)}>Cancel</Button>
+            <Button onClick={handleLogin}>Sign in</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
