@@ -66,9 +66,9 @@ const MatchesPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-left">My Matches</h1>
       </div>
 
-      <div className="px-4 pb-4 flex-1 overflow-y-auto">
+      <div className="px-4 pt-4 pb-4 flex-1 overflow-y-auto">
         <Tabs defaultValue="messages" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4 bg-white">
+          <TabsList className="grid w-full grid-cols-2 mb-4 bg-white mt-2 rounded-md shadow-sm">
             <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="requests">
               Requests
