@@ -53,7 +53,7 @@ const MatchesPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[100vh] bg-[#F1F1F1]">
+    <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
       <div className="flex items-center px-4 py-4 bg-white shadow-sm">
         <Button 
           variant="ghost" 
