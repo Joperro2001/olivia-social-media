@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronLeft, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +15,7 @@ import * as z from "zod";
 import { Badge } from "@/components/ui/badge";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/context/AuthContext";
+import { interestOptions } from "@/data/interestOptions";
 
 // Define form validation schema
 const formSchema = z.object({
@@ -34,8 +35,8 @@ const EditProfilePage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { profile, interests, updateProfile, addInterest, removeInterest, isLoading } = useProfile();
-  const [newInterest, setNewInterest] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
   // Initialize form with validation
   const form = useForm<FormValues>({
@@ -64,24 +65,56 @@ const EditProfilePage: React.FC = () => {
         about_me: profile.about_me || "",
       });
     }
-  }, [profile, form]);
-
-  const handleAddInterest = () => {
-    if (newInterest.trim()) {
-      addInterest(newInterest.trim());
-      setNewInterest("");
+    
+    // Set initially selected interests
+    if (interests && interests.length > 0) {
+      setSelectedInterests(interests.map(interest => interest.interest));
     }
+  }, [profile, interests, form]);
+
+  const handleInterestToggle = (interest: string) => {
+    setSelectedInterests(prev => {
+      if (prev.includes(interest)) {
+        return prev.filter(item => item !== interest);
+      } else {
+        return [...prev, interest];
+      }
+    });
   };
 
-  const handleRemoveInterest = (interestId: string) => {
-    removeInterest(interestId);
+  const syncInterests = async () => {
+    // Remove interests that are no longer selected
+    const interestsToRemove = interests.filter(
+      interest => !selectedInterests.includes(interest.interest)
+    );
+    
+    for (const interest of interestsToRemove) {
+      await removeInterest(interest.id);
+    }
+    
+    // Add new interests
+    const existingInterests = interests.map(i => i.interest);
+    const interestsToAdd = selectedInterests.filter(
+      interest => !existingInterests.includes(interest)
+    );
+    
+    for (const interest of interestsToAdd) {
+      await addInterest(interest);
+    }
+    
+    return true;
   };
 
   const onSubmit = async (data: FormValues) => {
     setIsSaving(true);
     try {
-      const success = await updateProfile(data);
-      if (success) {
+      // First update profile
+      const profileUpdated = await updateProfile(data);
+      
+      // Then sync interests
+      const interestsUpdated = await syncInterests();
+      
+      if (profileUpdated && interestsUpdated) {
         // Navigate back to profile page
         navigate("/profile");
       }
@@ -256,38 +289,46 @@ const EditProfilePage: React.FC = () => {
                   />
                 </div>
                 
-                {/* Interests */}
+                {/* Interests - Updated to selection-based UI */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border space-y-4">
                   <h3 className="font-semibold text-lg">Interests</h3>
+                  <p className="text-sm text-gray-500 mb-3">Select your interests from the options below</p>
                   
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {interests.map((interestItem) => (
-                      <Badge 
-                        key={interestItem.id}
-                        variant="secondary" 
-                        className="bg-lavender-light text-primary-dark hover:bg-lavender flex items-center gap-1"
-                        onClick={() => handleRemoveInterest(interestItem.id)}
-                      >
-                        {interestItem.interest}
-                        <span className="ml-1 cursor-pointer">×</span>
-                      </Badge>
-                    ))}
+                    {selectedInterests.length > 0 ? (
+                      selectedInterests.map((interest) => (
+                        <Badge 
+                          key={interest}
+                          variant="secondary" 
+                          className="bg-lavender-light text-primary-dark"
+                        >
+                          {interest}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No interests selected yet.</p>
+                    )}
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Input
-                      value={newInterest}
-                      onChange={(e) => setNewInterest(e.target.value)}
-                      placeholder="Add new interest"
-                      className="flex-1"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddInterest();
-                        }
-                      }}
-                    />
-                    <Button type="button" onClick={handleAddInterest}>Add</Button>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {interestOptions.map((interest) => (
+                      <div 
+                        key={interest} 
+                        className="flex items-center space-x-2"
+                      >
+                        <Checkbox 
+                          id={`interest-${interest}`} 
+                          checked={selectedInterests.includes(interest)}
+                          onCheckedChange={() => handleInterestToggle(interest)}
+                        />
+                        <label 
+                          htmlFor={`interest-${interest}`}
+                          className="text-sm cursor-pointer"
+                        >
+                          {interest}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </form>
