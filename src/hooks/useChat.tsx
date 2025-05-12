@@ -3,14 +3,17 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  sent_at: string;
-  read_at: string | null;
-}
+import { Message } from "@/types/Chat";
+import { useChatReducer } from "./useChatReducer";
+import {
+  saveLocalMessages,
+  loadLocalMessages,
+  fetchChatMessages,
+  getOrCreateChat,
+  sendMessageToDatabase,
+  createLocalMessage,
+  subscribeToChat
+} from "@/utils/chatUtils";
 
 interface UseChatProps {
   profileId: string;
@@ -19,32 +22,24 @@ interface UseChatProps {
 export const useChat = ({ profileId }: UseChatProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [chatId, setChatId] = useState<string | null>(null);
-  const [localMessages, setLocalMessages] = useState<Message[]>([]);
-  const [usingLocalMode, setUsingLocalMode] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [state, dispatch] = useChatReducer();
+  
+  const { 
+    messages, 
+    localMessages, 
+    isLoading, 
+    usingLocalMode, 
+    chatId,
+    hasLocalMessages
+  } = state;
 
   // Load persisted local messages on component mount
   useEffect(() => {
     if (!user || !profileId) return;
     
-    try {
-      // Try to load any saved local messages from localStorage
-      const savedLocalKey = `chat_local_${user.id}_${profileId}`;
-      const savedMessages = localStorage.getItem(savedLocalKey);
-      
-      if (savedMessages) {
-        const parsedMessages = JSON.parse(savedMessages);
-        if (Array.isArray(parsedMessages)) {
-          setLocalMessages(parsedMessages);
-          console.log('Loaded saved local messages:', parsedMessages.length);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading saved local messages:', error);
-    }
+    const loadedMessages = loadLocalMessages(user.id, profileId);
+    dispatch({ type: 'SET_LOCAL_MESSAGES', payload: loadedMessages });
   }, [user, profileId]);
 
   // Get or create chat with the matched profile
@@ -53,27 +48,13 @@ export const useChat = ({ profileId }: UseChatProps) => {
       if (!user || !profileId) return;
       
       try {
-        setIsLoading(true);
+        dispatch({ type: 'SET_LOADING', payload: true });
         
-        // Get or create a chat with this profile
-        const { data, error } = await supabase
-          .rpc('get_or_create_private_chat', {
-            other_user_id: profileId
-          });
-          
-        if (error) {
-          console.error('Error in get_or_create_private_chat:', error);
-          // Enable local message mode if we can't get a chat ID
-          setUsingLocalMode(true);
-          setIsLoading(false);
-          return;
-        }
-        
-        setChatId(data);
-        console.log('Chat ID:', data);
+        const chatIdFromDB = await getOrCreateChat(profileId);
+        dispatch({ type: 'SET_CHAT_ID', payload: chatIdFromDB });
         
         // Fetch existing messages
-        await fetchMessages(data);
+        await fetchMessages(chatIdFromDB);
       } catch (error) {
         console.error('Error initializing chat:', error);
         toast({
@@ -81,9 +62,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
           description: "Failed to load chat. Using local mode instead.",
           variant: "destructive",
         });
-        setUsingLocalMode(true);
+        dispatch({ type: 'SET_USING_LOCAL_MODE', payload: true });
       } finally {
-        setIsLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
     
@@ -94,36 +75,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId || usingLocalMode) return;
     
-    console.log('Setting up real-time subscription for chat:', chatId);
-    
-    // Create a channel for real-time updates
-    const channel = supabase.channel(`chat:${chatId}`);
-    
-    // Configure the real-time subscription
-    channel
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_id=eq.${chatId}`
-        },
-        (payload) => {
-          console.log('Received new message:', payload);
-          const newMessage = payload.new as Message;
-          setMessages(prevMessages => {
-            // Check if message already exists
-            if (prevMessages.find(msg => msg.id === newMessage.id)) {
-              return prevMessages;
-            }
-            return [...prevMessages, newMessage];
-          });
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+    const channel = subscribeToChat(chatId, (newMessage) => {
+      dispatch({ type: 'ADD_MESSAGE', payload: newMessage });
+    });
     
     return () => {
       console.log('Removing channel');
@@ -133,35 +87,14 @@ export const useChat = ({ profileId }: UseChatProps) => {
 
   // Save local messages to localStorage when they change
   useEffect(() => {
-    if (!user || !profileId || localMessages.length === 0) return;
-    
-    try {
-      const savedLocalKey = `chat_local_${user.id}_${profileId}`;
-      localStorage.setItem(savedLocalKey, JSON.stringify(localMessages));
-    } catch (error) {
-      console.error('Error saving local messages:', error);
-    }
+    saveLocalMessages(user?.id, profileId, localMessages);
   }, [localMessages, user, profileId]);
 
   // Fetch existing messages
   const fetchMessages = async (chatIdToUse: string) => {
     try {
-      console.log('Fetching messages for chat:', chatIdToUse);
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatIdToUse)
-        .order('sent_at', { ascending: true });
-      
-      if (error) {
-        console.error('Error fetching messages:', error);
-        // If database error, switch to local mode
-        setUsingLocalMode(true);
-        return;
-      }
-      
-      console.log('Fetched messages:', data);
-      setMessages(data || []);
+      const messagesData = await fetchChatMessages(chatIdToUse);
+      dispatch({ type: 'SET_MESSAGES', payload: messagesData });
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -169,13 +102,13 @@ export const useChat = ({ profileId }: UseChatProps) => {
         description: "Failed to load messages. Using local mode.",
         variant: "destructive",
       });
-      setUsingLocalMode(true);
+      dispatch({ type: 'SET_USING_LOCAL_MODE', payload: true });
     }
   };
 
   // Retry database connection
   const retryDatabaseConnection = () => {
-    setUsingLocalMode(false);
+    dispatch({ type: 'SET_USING_LOCAL_MODE', payload: false });
     setRetryCount(prev => prev + 1);
   };
 
@@ -202,9 +135,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
       }
       
       // If successful, clear local messages
-      setLocalMessages([]);
+      dispatch({ type: 'CLEAR_LOCAL_MESSAGES' });
       localStorage.removeItem(`chat_local_${user?.id}_${profileId}`);
-      setUsingLocalMode(false);
+      dispatch({ type: 'SET_USING_LOCAL_MODE', payload: false });
       
       toast({
         title: "Success",
@@ -225,16 +158,10 @@ export const useChat = ({ profileId }: UseChatProps) => {
     
     // If we're in local mode due to database issues, just add to local state
     if (usingLocalMode) {
-      const localMessage = {
-        id: Date.now().toString(),
-        content: content.trim(),
-        sender_id: user.id,
-        sent_at: new Date().toISOString(),
-        read_at: null
-      };
-      setLocalMessages(prev => [...prev, localMessage]);
-      // Also update the main messages array to display the message
-      setMessages(prev => [...prev, localMessage]);
+      const localMessage = createLocalMessage(content, user.id);
+      
+      dispatch({ type: 'ADD_LOCAL_MESSAGE', payload: localMessage });
+      dispatch({ type: 'ADD_MESSAGE', payload: localMessage });
       
       // Try to synchronize with database if we have a chatId
       if (chatId) {
@@ -249,58 +176,18 @@ export const useChat = ({ profileId }: UseChatProps) => {
     // Use database if available
     if (chatId) {
       try {
-        console.log('Sending message to chat:', chatId);
-        const newMessage = {
-          chat_id: chatId,
-          sender_id: user.id,
-          content: content.trim()
-        };
-        
-        const { error, data } = await supabase
-          .from('messages')
-          .insert([newMessage])
-          .select();
-        
-        if (error) {
-          console.error('Error sending message:', error);
-          // Fall back to local mode if database fails
-          setUsingLocalMode(true);
-          // Add message to local state
-          const localMessage = {
-            id: Date.now().toString(),
-            content: content.trim(),
-            sender_id: user.id,
-            sent_at: new Date().toISOString(),
-            read_at: null
-          };
-          setLocalMessages(prev => [...prev, localMessage]);
-          // Also update the messages array to show the message
-          setMessages(prev => [...prev, localMessage]);
-          
-          toast({
-            title: "Warning",
-            description: "Message sent in local mode only (saved to your device)",
-            variant: "default",
-          });
-          
-          return true;
-        }
-        
-        console.log('Message sent successfully:', data);
+        await sendMessageToDatabase(chatId, user.id, content);
         return true;
       } catch (error) {
         console.error('Error sending message:', error);
+        
         // Fall back to local mode
-        setUsingLocalMode(true);
-        const localMessage = {
-          id: Date.now().toString(),
-          content: content.trim(),
-          sender_id: user.id,
-          sent_at: new Date().toISOString(),
-          read_at: null
-        };
-        setLocalMessages(prev => [...prev, localMessage]);
-        setMessages(prev => [...prev, localMessage]);
+        dispatch({ type: 'SET_USING_LOCAL_MODE', payload: true });
+        
+        // Add message to local state
+        const localMessage = createLocalMessage(content, user.id);
+        dispatch({ type: 'ADD_LOCAL_MESSAGE', payload: localMessage });
+        dispatch({ type: 'ADD_MESSAGE', payload: localMessage });
         
         toast({
           title: "Warning",
@@ -312,15 +199,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
       }
     } else {
       // No chatId available, use local mode
-      const localMessage = {
-        id: Date.now().toString(),
-        content: content.trim(),
-        sender_id: user.id,
-        sent_at: new Date().toISOString(),
-        read_at: null
-      };
-      setLocalMessages(prev => [...prev, localMessage]);
-      setMessages(prev => [...prev, localMessage]);
+      const localMessage = createLocalMessage(content, user.id);
+      dispatch({ type: 'ADD_LOCAL_MESSAGE', payload: localMessage });
+      dispatch({ type: 'ADD_MESSAGE', payload: localMessage });
       return true;
     }
   };
@@ -340,6 +221,6 @@ export const useChat = ({ profileId }: UseChatProps) => {
     usingLocalMode,
     retryDatabaseConnection,
     synchronizeLocalMessages,
-    hasLocalMessages: localMessages.length > 0
+    hasLocalMessages
   };
 };
