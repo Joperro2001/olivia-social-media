@@ -24,7 +24,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   console.log("ChatInput rendered"); // Debug log to confirm component is rendering
   
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-white p-2 border-2 border-gray-200 shadow-sm rounded-full">
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-white p-2 border-2 border-primary shadow-md rounded-full">
       <Button 
         type="button" 
         size="icon" 

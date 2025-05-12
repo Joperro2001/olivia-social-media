@@ -135,6 +135,11 @@ const ChatPage: React.FC = () => {
         </div>
       </div>
       
+      {/* Message input area - positioned below header */}
+      <div className="p-4 bg-white border-b shadow-sm sticky top-[60px] z-10">
+        <ChatInput onSendMessage={handleSendMessage} />
+      </div>
+      
       {/* Chat background with messages */}
       <div 
         className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FDF5EF] bg-opacity-80"
@@ -172,11 +177,6 @@ const ChatPage: React.FC = () => {
           ))
         )}
         <div ref={messagesEndRef} />
-      </div>
-      
-      {/* Message input area - positioned at bottom, with prominent styling */}
-      <div className="p-4 bg-white border-t shadow-sm">
-        <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
   );
