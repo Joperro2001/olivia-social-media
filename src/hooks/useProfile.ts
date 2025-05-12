@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -51,7 +50,20 @@ export const useProfile = () => {
 
       if (interestsError) throw interestsError;
 
-      setProfile(profileData as Profile);
+      const profile = {
+        about_me: profileData.about_me,
+        age: profileData.age,
+        created_at: profileData.created_at,
+        current_city: profileData.current_city,
+        full_name: profileData.full_name,
+        id: profileData.id,
+        move_in_city: profileData.move_in_city,
+        nationality: profileData.nationality,
+        university: profileData.university,
+        updated_at: profileData.updated_at,
+      } as unknown as Profile;
+
+      setProfile(profile);
       setInterests(interestsData || []);
     } catch (error: any) {
       console.error("Error fetching profile:", error);
@@ -122,9 +134,9 @@ export const useProfile = () => {
         .from('profiles')
         .getPublicUrl(filePath);
 
-      // Update the profile with the new avatar URL
+      // Store the avatar URL in local state only, without updating the database
       if (data?.publicUrl) {
-        await updateProfile({ avatar_url: data.publicUrl });
+        setProfile((prev) => prev ? { ...prev, avatar_url: data.publicUrl } : null);
         return data.publicUrl;
       }
       return null;
