@@ -2,18 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-
-export type Profile = {
-  id: string;
-  full_name: string | null;
-  age: number | null;
-  university: string | null;
-  nationality: string | null;
-  current_city: string | null;
-  move_in_city: string | null;
-  about_me: string | null;
-  avatar_url: string | null;
-};
+import { Profile } from "@/types/Profile";
 
 export type Interest = {
   id: string;
@@ -50,7 +39,8 @@ export const useProfile = () => {
 
       if (interestsError) throw interestsError;
 
-      const profile = {
+      // Convert profileData to Profile type, including the avatar_url
+      setProfile({
         about_me: profileData.about_me,
         age: profileData.age,
         created_at: profileData.created_at,
@@ -61,9 +51,9 @@ export const useProfile = () => {
         nationality: profileData.nationality,
         university: profileData.university,
         updated_at: profileData.updated_at,
-      } as unknown as Profile;
-
-      setProfile(profile);
+        avatar_url: profileData.avatar_url || null,
+      });
+      
       setInterests(interestsData || []);
     } catch (error: any) {
       console.error("Error fetching profile:", error);
