@@ -40,16 +40,17 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     
     // Check if location contains any country name
     for (const country in countryMap) {
-      if (location.includes(country)) {
+      if (location && location.includes(country)) {
         return countryMap[country];
       }
     }
     
-    return ''; // Default if no match
+    return '🌍'; // Default globe emoji if no match
   };
 
   // Extract city from location
   const getCity = (location: string): string => {
+    if (!location) return "Unknown location";
     const cityPart = location.split(',')[0];
     return cityPart.trim();
   };
@@ -64,6 +65,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     onSwipeRight(id);
   };
 
+  // Default placeholder image if no image is provided
+  const defaultImage = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop";
+  const displayImage = image || defaultImage;
+
   const city = getCity(location);
   const countryFlag = getCountryFlag(location);
 
@@ -71,15 +76,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
       <div 
         className="absolute inset-0 bg-cover bg-center" 
-        style={{ backgroundImage: `url(${image})` }}
+        style={{ backgroundImage: `url(${displayImage})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
       </div>
       
       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
         <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-2xl font-bold">{name}</h2>
-          <span className="text-xl">{age}</span>
+          <h2 className="text-2xl font-bold">{name || "Anonymous"}</h2>
+          <span className="text-xl">{age || "?"}</span>
         </div>
         
         <div className="flex items-center gap-2 mb-4">
@@ -87,17 +92,21 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
           <p className="text-sm">{countryFlag} {city}</p>
         </div>
         
-        <p className="text-sm mb-4 line-clamp-3">{bio}</p>
+        <p className="text-sm mb-4 line-clamp-3">{bio || "No bio available"}</p>
         
         <div className="flex flex-wrap gap-2 mb-16">
-          {tags.map(tag => (
+          {tags && tags.length > 0 ? tags.map(tag => (
             <Badge 
               key={tag} 
               className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
             >
               {tag}
             </Badge>
-          ))}
+          )) : (
+            <Badge className="bg-white/20 hover:bg-white/30 text-white border border-white/30">
+              No tags
+            </Badge>
+          )}
         </div>
       </div>
 
