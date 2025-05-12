@@ -28,24 +28,28 @@ const MatchesTabContent: React.FC<MatchesTabContentProps> = ({ profiles }) => {
     : profiles;
 
   return (
-    <>
-      <SearchInput 
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder="Search messages..."
-      />
+    <div className="flex flex-col h-full">
+      <div className="px-1 mb-2">
+        <SearchInput 
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search messages..."
+        />
+      </div>
       
       {searchQuery && filteredProfiles.length === 0 ? (
         <div className="text-center py-6">
           <p className="text-gray-500">No matches found for "{searchQuery}"</p>
         </div>
       ) : (
-        <MatchesList 
-          profiles={filteredProfiles} 
-          showRequests={false}
-        />
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <MatchesList 
+            profiles={filteredProfiles} 
+            showRequests={false}
+          />
+        </div>
       )}
-    </>
+    </div>
   );
 };
 

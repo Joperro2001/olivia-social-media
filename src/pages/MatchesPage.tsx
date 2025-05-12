@@ -53,8 +53,8 @@ const MatchesPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
-      <div className="flex items-center px-4 py-4">
+    <div className="flex flex-col h-[100vh] bg-[#F1F1F1]">
+      <div className="flex items-center px-4 py-4 bg-white shadow-sm">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -68,7 +68,7 @@ const MatchesPage: React.FC = () => {
 
       <div className="px-4 pb-4 flex-1 overflow-y-auto">
         <Tabs defaultValue="messages" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid w-full grid-cols-2 mb-4 bg-white">
             <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="requests">
               Requests
