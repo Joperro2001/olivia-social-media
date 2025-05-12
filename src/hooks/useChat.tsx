@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,8 +62,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Correctly create a channel for Supabase realtime subscriptions
-    const channel = supabase.channel(`public:messages:chat_id=eq.${chatId}`)
+    // Use type assertion to fix compatibility issue with channel name
+    const channel = supabase.channel(`room:${chatId}` as any)
       .on(
         'postgres_changes',
         {
