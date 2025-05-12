@@ -5,9 +5,22 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { UserCheck, UserX } from "lucide-react";
-import { MatchedProfile } from "@/data/matchesMockData";
+import { UserCheck, UserX, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+interface MatchedProfile {
+  id: string;
+  name: string;
+  age: number;
+  location: string;
+  image: string;
+  bio: string;
+  matchDate: string;
+  tags: string[];
+  isPending?: boolean;
+  hasInitialMessage?: boolean;
+  messages?: string[];
+}
 
 interface MatchesListProps {
   profiles: MatchedProfile[];
@@ -34,20 +47,11 @@ const MatchesList: React.FC<MatchesListProps> = ({
   const handleAcceptMatch = (e: React.MouseEvent, profileId: string, name: string) => {
     e.stopPropagation();
     onAcceptMatch?.(profileId);
-    toast({
-      title: "Match Accepted",
-      description: `You've connected with ${name}!`,
-      className: "bg-gradient-to-r from-green-500 to-teal-500 text-white border-none",
-    });
   };
 
   const handleDenyMatch = (e: React.MouseEvent, profileId: string, name: string) => {
     e.stopPropagation();
     onDeclineMatch?.(profileId);
-    toast({
-      title: "Match Declined",
-      description: `You declined the match request from ${name}.`,
-    });
   };
 
   if (profiles.length === 0) {
@@ -83,7 +87,13 @@ const MatchesList: React.FC<MatchesListProps> = ({
           >
             <div className="flex items-start">
               <Avatar className="h-12 w-12">
-                <img src={profile.image} alt={profile.name} />
+                {profile.image ? (
+                  <img src={profile.image} alt={profile.name} />
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                    <User className="h-6 w-6 text-gray-500" />
+                  </div>
+                )}
               </Avatar>
               <div className="ml-3 flex-1">
                 <div className="flex items-center justify-between">
@@ -98,11 +108,17 @@ const MatchesList: React.FC<MatchesListProps> = ({
                   )}
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1">
-                  {profile.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
+                  {profile.tags && profile.tags.length > 0 ? (
+                    profile.tags.slice(0, 3).map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline" className="text-xs">
+                      New User
                     </Badge>
-                  ))}
+                  )}
                 </div>
                 
                 {/* Show last message if this is in the messages tab */}
@@ -115,7 +131,7 @@ const MatchesList: React.FC<MatchesListProps> = ({
                 {/* Show bio in requests tab */}
                 {showRequests && (
                   <p className="text-sm mt-2 text-gray-600 line-clamp-2">
-                    {profile.bio}
+                    {profile.bio || "This user hasn't added a bio yet."}
                   </p>
                 )}
               </div>
