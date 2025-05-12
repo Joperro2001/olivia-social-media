@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
   id: string;
@@ -62,9 +63,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Fix type issue with correct channel format - using proper type casting
-    // We need to use RealtimeChannel generic type to match what Supabase expects
-    const channel = supabase.channel('room' + ':' + chatId)
+    // Create channel with a type cast to resolve the type error
+    const channel = supabase.channel(`public:messages:chat_id=eq.${chatId}` as unknown as never)
       .on(
         'postgres_changes',
         {
