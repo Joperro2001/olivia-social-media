@@ -336,6 +336,7 @@ export type Database = {
         Row: {
           about_me: string | null
           age: number | null
+          avatar_url: string | null
           created_at: string
           current_city: string | null
           full_name: string | null
@@ -348,6 +349,7 @@ export type Database = {
         Insert: {
           about_me?: string | null
           age?: number | null
+          avatar_url?: string | null
           created_at?: string
           current_city?: string | null
           full_name?: string | null
@@ -360,6 +362,7 @@ export type Database = {
         Update: {
           about_me?: string | null
           age?: number | null
+          avatar_url?: string | null
           created_at?: string
           current_city?: string | null
           full_name?: string | null

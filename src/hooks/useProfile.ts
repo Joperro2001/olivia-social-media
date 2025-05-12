@@ -41,7 +41,7 @@ export const useProfile = () => {
       if (interestsError) throw interestsError;
 
       // Convert profileData to Profile type
-      // Explicitly include all fields from Profile type
+      // Make sure avatar_url is included
       setProfile({
         about_me: profileData.about_me,
         age: profileData.age,
@@ -53,7 +53,7 @@ export const useProfile = () => {
         nationality: profileData.nationality,
         university: profileData.university,
         updated_at: profileData.updated_at,
-        avatar_url: profileData.avatar_url || undefined
+        avatar_url: profileData.avatar_url
       });
       
       setInterests(interestsData || []);
@@ -126,9 +126,10 @@ export const useProfile = () => {
         .from('profiles')
         .getPublicUrl(filePath);
 
-      // Store the avatar URL in local state only, without updating the database
+      // Update the profile with the new avatar URL
       if (data?.publicUrl) {
-        setProfile((prev) => prev ? { ...prev, avatar_url: data.publicUrl } : null);
+        // Update the profile in the database
+        await updateProfile({ avatar_url: data.publicUrl });
         return data.publicUrl;
       }
       return null;
