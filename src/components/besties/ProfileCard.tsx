@@ -35,15 +35,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       'UK': '🇬🇧',
       'United Kingdom': '🇬🇧',
       'France': '🇫🇷',
-      'Italy': '🇮🇹',
-      'United States': '🇺🇸',
-      'USA': '🇺🇸',
-      'Canada': '🇨🇦',
-      'Australia': '🇦🇺',
-      'Japan': '🇯🇵',
-      'China': '🇨🇳',
-      'India': '🇮🇳',
-      'Brazil': '🇧🇷'
+      'Italy': '🇮🇹'
     };
     
     // Check if location contains any country name
@@ -53,7 +45,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       }
     }
     
-    return '🌍'; // Default if no match
+    return ''; // Default if no match
   };
 
   // Extract city from location
@@ -75,37 +67,30 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   const city = getCity(location);
   const countryFlag = getCountryFlag(location);
 
-  // Handle image loading error
-  const handleImageError = (e: React.SyntheticEvent<HTMLDivElement, Event>) => {
-    const target = e.target as HTMLDivElement;
-    target.style.backgroundImage = "url('https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000')";
-  };
-
   return (
     <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
       <div 
         className="absolute inset-0 bg-cover bg-center" 
         style={{ backgroundImage: `url(${image})` }}
-        onError={handleImageError}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
       </div>
       
       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
         <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-2xl font-bold">{name || "Anonymous User"}</h2>
-          <span className="text-xl">{age > 0 ? age : ""}</span>
+          <h2 className="text-2xl font-bold">{name}</h2>
+          <span className="text-xl">{age}</span>
         </div>
         
         <div className="flex items-center gap-2 mb-4">
           <Flag className="h-4 w-4" />
-          <p className="text-sm">{countryFlag} {city || "Unknown location"}</p>
+          <p className="text-sm">{countryFlag} {city}</p>
         </div>
         
-        <p className="text-sm mb-4 line-clamp-3">{bio || "No bio provided"}</p>
+        <p className="text-sm mb-4 line-clamp-3">{bio}</p>
         
         <div className="flex flex-wrap gap-2 mb-16">
-          {tags && tags.map(tag => (
+          {tags.map(tag => (
             <Badge 
               key={tag} 
               className="bg-white/20 hover:bg-white/30 text-white border border-white/30"

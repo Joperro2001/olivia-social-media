@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -21,41 +22,15 @@ export const useProfile = () => {
       if (!user) return;
       
       setIsLoading(true);
-      console.log("Fetching profile for user:", user.id);
       
-      // Fetch profile data - using maybeSingle() instead of single() to avoid error when no profile exists
+      // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
 
       if (profileError) throw profileError;
-      
-      console.log("Profile data:", profileData);
-      
-      if (!profileData) {
-        console.log("No profile found, creating a new profile");
-        // Create a new profile if none exists
-        const newProfile: Partial<Profile> = {
-          id: user.id,
-          full_name: user.user_metadata?.full_name || "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        
-        const { data: createdProfile, error: createError } = await supabase
-          .from("profiles")
-          .insert([newProfile])
-          .select()
-          .single();
-          
-        if (createError) throw createError;
-        setProfile(createdProfile);
-      } else {
-        // Use existing profile
-        setProfile(profileData);
-      }
       
       // Fetch interests
       const { data: interestsData, error: interestsError } = await supabase
@@ -64,8 +39,24 @@ export const useProfile = () => {
         .eq("user_id", user.id);
 
       if (interestsError) throw interestsError;
-      setInterests(interestsData || []);
+
+      // Convert profileData to Profile type
+      // Make sure avatar_url is included
+      setProfile({
+        about_me: profileData.about_me,
+        age: profileData.age,
+        created_at: profileData.created_at,
+        current_city: profileData.current_city,
+        full_name: profileData.full_name,
+        id: profileData.id,
+        move_in_city: profileData.move_in_city,
+        nationality: profileData.nationality,
+        university: profileData.university,
+        updated_at: profileData.updated_at,
+        avatar_url: profileData.avatar_url
+      });
       
+      setInterests(interestsData || []);
     } catch (error: any) {
       console.error("Error fetching profile:", error);
       toast({
