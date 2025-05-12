@@ -63,8 +63,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Create channel with a type cast to resolve the type error
-    const channel = supabase.channel(`public:messages:chat_id=eq.${chatId}` as unknown as never)
+    // Use a simpler channel name and proper type assertion
+    const channel = supabase.channel(`room_${chatId}`)
       .on(
         'postgres_changes',
         {
