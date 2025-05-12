@@ -9,11 +9,14 @@ import { ArrowLeft, Send, Paperclip, MoreVertical, Image, Mic } from "lucide-rea
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Profile {
   id: string;
   name: string;
   image?: string;
+  full_name?: string;
+  avatar_url?: string;
 }
 
 const ChatPage: React.FC = () => {
@@ -35,13 +38,22 @@ const ChatPage: React.FC = () => {
       if (!profileId) return;
       
       try {
-        // In a real app, we would fetch this from the API
-        // For now, we'll use a mock profile
-        setProfile({
-          id: profileId,
-          name: "Chat Partner",
-          // You can set a default image or leave it undefined
-        });
+        // Fetch the actual profile from Supabase
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .eq('id', profileId)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setProfile({
+            id: data.id,
+            name: data.full_name || 'Chat Partner',
+            image: data.avatar_url
+          });
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
