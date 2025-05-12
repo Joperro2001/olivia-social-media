@@ -23,11 +23,42 @@ export const useOtherProfiles = () => {
       console.log("Current user ID:", user.id);
       console.log("Fetching profiles with filter to exclude current user");
       
-      // Filter out the current user directly in the query
-      const { data, error } = await supabase
+      // First, get the IDs of users the current user has already matched with or sent requests to
+      const { data: matchesAsUser1, error: matchError1 } = await supabase
+        .from('profile_matches')
+        .select('user_id_2')
+        .eq('user_id_1', user.id);
+
+      const { data: matchesAsUser2, error: matchError2 } = await supabase
+        .from('profile_matches')
+        .select('user_id_1')
+        .eq('user_id_2', user.id);
+      
+      if (matchError1 || matchError2) {
+        console.error("Error fetching matches:", matchError1 || matchError2);
+        throw new Error("Failed to fetch existing matches");
+      }
+      
+      // Extract all user IDs that should be excluded
+      const matchedUserIds = [
+        ...(matchesAsUser1 ? matchesAsUser1.map(match => match.user_id_2) : []),
+        ...(matchesAsUser2 ? matchesAsUser2.map(match => match.user_id_1) : [])
+      ];
+      
+      console.log("Excluding already matched users:", matchedUserIds);
+      
+      // Get all profiles excluding the current user and already matched users
+      let query = supabase
         .from("profiles")
         .select("*")
         .neq("id", user.id);
+      
+      // Only add the "not in" filter if there are matched users to exclude
+      if (matchedUserIds.length > 0) {
+        query = query.not('id', 'in', `(${matchedUserIds.join(',')})`);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error("Supabase error:", error);
@@ -40,7 +71,7 @@ export const useOtherProfiles = () => {
         console.log("Profiles found:", data);
         setProfiles(data);
       } else {
-        console.log("No other profiles found in the database");
+        console.log("No other profiles found or all users are already matched");
         setProfiles([]);
       }
     } catch (error: any) {
