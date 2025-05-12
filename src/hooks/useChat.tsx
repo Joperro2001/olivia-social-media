@@ -62,8 +62,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Use type assertion to fix compatibility issue with channel name
-    const channel = supabase.channel(`room:${chatId}` as any)
+    // Fix type issue with correct channel format - using proper type casting
+    // We need to use RealtimeChannel generic type to match what Supabase expects
+    const channel = supabase.channel('room' + ':' + chatId)
       .on(
         'postgres_changes',
         {
