@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Diamond, Heart, Sparkles, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { profiles } from "@/data/bestiesMockData";
 import ProfileMatching from "@/components/besties/ProfileMatching";
 import BestiesFilter from "@/components/besties/BestiesFilter";
 import { useNavigate } from "react-router-dom";
@@ -61,10 +60,7 @@ const BestiesPage: React.FC = () => {
         </div>
 
         {showFilters && <BestiesFilter />}
-        <ProfileMatching 
-          profiles={profiles} 
-          onMatchFound={handleOpenMatches}
-        />
+        <ProfileMatching onMatchFound={handleOpenMatches} />
       </div>
     </div>
   );
