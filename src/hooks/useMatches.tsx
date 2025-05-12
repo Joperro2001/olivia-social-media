@@ -60,8 +60,9 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
   }, [userId, fetchMatchesData]);
 
   // Separate profiles into accepted and pending
+  // For pending profiles, only show those where the current user is the recipient
   const acceptedProfiles = profiles.filter(profile => !profile.isPending);
-  const pendingProfiles = profiles.filter(profile => profile.isPending);
+  const pendingProfiles = profiles.filter(profile => profile.isPending && profile.isRequestRecipient);
 
   // Find match entry for a specific profile ID
   const findMatchForProfile = (profileId: string): ProfileMatch | undefined => {

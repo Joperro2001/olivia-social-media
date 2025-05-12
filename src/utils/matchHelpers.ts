@@ -15,6 +15,8 @@ export interface MatchProfile {
   isPending?: boolean;
   hasInitialMessage?: boolean;
   messages?: string[];
+  isRequestSender?: boolean;
+  isRequestRecipient?: boolean;
 }
 
 export interface ProfileMatch {
@@ -24,6 +26,8 @@ export interface ProfileMatch {
   user_id_1: string;
   user_id_2: string;
   otherUserId: string;
+  isRequestSender: boolean;
+  isRequestRecipient: boolean;
 }
 
 // Format match date to relative time
@@ -65,13 +69,18 @@ export const fetchMatchedProfiles = async (userId: string) => {
     
     if (matchesAsUser1?.length) {
       matchesAsUser1.forEach(match => {
+        // Current user is user_id_1, so they are the sender if status is pending
+        // In this case, user_id_1 is always the smaller UUID and initiates the match request
+        const isRequestSender = match.status === 'pending';
         matches.push({
           id: match.id,
           status: match.status,
           matched_at: match.matched_at,
           user_id_1: match.user_id_1,
           user_id_2: match.user_id_2,
-          otherUserId: match.user_id_2
+          otherUserId: match.user_id_2,
+          isRequestSender,
+          isRequestRecipient: false
         });
         otherUserIds.push(match.user_id_2);
       });
@@ -79,13 +88,18 @@ export const fetchMatchedProfiles = async (userId: string) => {
     
     if (matchesAsUser2?.length) {
       matchesAsUser2.forEach(match => {
+        // Current user is user_id_2, so they are the recipient if status is pending
+        // In this case, user_id_1 is the smaller UUID and initiates the match request
+        const isRequestRecipient = match.status === 'pending';
         matches.push({
           id: match.id,
           status: match.status,
           matched_at: match.matched_at,
           user_id_1: match.user_id_1,
           user_id_2: match.user_id_2,
-          otherUserId: match.user_id_1
+          otherUserId: match.user_id_1,
+          isRequestSender: false,
+          isRequestRecipient
         });
         otherUserIds.push(match.user_id_1);
       });
@@ -138,6 +152,8 @@ export const mapProfilesToMatchProfiles = (
       tags: [],
       isPending: match.status === 'pending',
       hasInitialMessage: match.status === 'accepted',
+      isRequestSender: match.isRequestSender,
+      isRequestRecipient: match.isRequestRecipient,
     };
   }).filter(Boolean) as MatchProfile[];
 
