@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/context/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -21,6 +22,7 @@ type FormValues = z.infer<typeof formSchema>;
 const SignInPage = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [authError, setAuthError] = React.useState<string | null>(null);
   const { signIn, googleSignIn, user } = useAuth();
   const navigate = useNavigate();
 
@@ -42,14 +44,14 @@ const SignInPage = () => {
   const onSubmit = async (data: FormValues) => {
     try {
       setIsLoading(true);
+      setAuthError(null); // Clear previous errors
       const result = await signIn(data.email, data.password);
       if (!result.success && result.message) {
-        form.setError("root", { 
-          message: result.message 
-        });
+        setAuthError(result.message);
       }
     } catch (error) {
       console.error("Sign in error:", error);
+      setAuthError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -60,6 +62,7 @@ const SignInPage = () => {
       await googleSignIn();
     } catch (error) {
       console.error("Google sign in error:", error);
+      setAuthError("Error signing in with Google. Please try again.");
     }
   };
 
@@ -73,6 +76,13 @@ const SignInPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {authError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>
+                {authError}
+              </AlertDescription>
+            </Alert>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField

@@ -35,6 +35,13 @@ export const handleEmailSignIn = async (email: string, password: string) => {
     });
     
     if (error) {
+      // Provide a more user-friendly error message
+      if (error.message.includes("Invalid login credentials")) {
+        return { 
+          success: false, 
+          message: "Incorrect email or password. Please try again."
+        };
+      }
       throw error;
     }
     
@@ -62,6 +69,13 @@ export const handleEmailSignUp = async (email: string, password: string, userDat
     });
     
     if (error) {
+      // Provide more specific error messages
+      if (error.message.includes("already registered")) {
+        return {
+          success: false,
+          message: "This email address is already registered. Please sign in instead."
+        };
+      }
       throw error;
     }
     
