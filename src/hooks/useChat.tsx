@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
   id: string;
@@ -62,8 +62,17 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Create the channel properly - using a type-safe approach
-    const channel = supabase.channel(`chat:${chatId}`);
+    // Fix: Create the channel with proper typing
+    const channel = supabase.channel(`chat:${chatId}`, {
+      config: {
+        broadcast: {
+          self: true
+        },
+        presence: {
+          key: user?.id || 'anonymous'
+        }
+      }
+    });
     
     // Configure the real-time subscription
     channel
@@ -91,7 +100,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [chatId]);
+  }, [chatId, user?.id]);
 
   // Fetch existing messages
   const fetchMessages = async (chatIdToUse: string) => {
