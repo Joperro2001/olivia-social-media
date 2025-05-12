@@ -68,21 +68,34 @@ const ChatPage: React.FC = () => {
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth"
-    });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
   
   const handleSendMessage = async (content: string) => {
-    const success = await sendMessage(content);
-    if (!success) {
+    console.log("ChatPage handleSendMessage called with:", content);
+    try {
+      const success = await sendMessage(content);
+      if (!success) {
+        toast({
+          title: "Error",
+          description: "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
+      }
+      return success;
+    } catch (error) {
+      console.error("Error in handleSendMessage:", error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: "An unexpected error occurred while sending your message.",
         variant: "destructive",
       });
+      return false;
     }
-    return success;
   };
 
   if (!user) {
@@ -157,7 +170,7 @@ const ChatPage: React.FC = () => {
       >
         {usingLocalMode && (
           <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md mb-4">
-            Using local mode due to database connectivity issues. Messages may not be saved.
+            Using local mode due to database connectivity issues. Messages may not be saved permanently.
           </div>
         )}
 
@@ -172,7 +185,7 @@ const ChatPage: React.FC = () => {
               className={`flex ${message.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
             >
               <div 
-                className={`max-w-[75%] p-3 rounded-lg animate-bubble-in ${
+                className={`max-w-[75%] p-3 rounded-lg ${
                   message.sender_id === user.id 
                     ? 'bg-primary text-white rounded-br-none' 
                     : 'bg-white rounded-bl-none shadow-sm'
