@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MoreVertical, CloudSync, AlertCircle } from "lucide-react";
+import { ArrowLeft, MoreVertical, CloudSun, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -208,7 +207,7 @@ const ChatPage: React.FC = () => {
               disabled={isSyncing}
               className="text-xs"
             >
-              <CloudSync className="h-4 w-4 mr-1" />
+              <CloudSun className="h-4 w-4 mr-1" />
               {isSyncing ? 'Syncing...' : 'Sync Messages'}
             </Button>
           )}
