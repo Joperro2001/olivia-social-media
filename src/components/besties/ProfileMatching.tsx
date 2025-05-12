@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { Profile } from "@/types/Profile";
-import { Loader, Users } from "lucide-react";
+import { Loader, Users, UserPlus } from "lucide-react";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -66,10 +66,22 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         <div className="p-4 rounded-full bg-gray-100 mb-4">
           <Users className="h-8 w-8 text-gray-400" />
         </div>
-        <h3 className="text-xl font-semibold mb-2">No other profiles yet</h3>
-        <p className="text-gray-500 mb-6">
-          Invite your friends or wait for more people to join!
+        <h3 className="text-xl font-semibold mb-2">No other profiles available</h3>
+        <p className="text-gray-500 mb-6 max-w-xs">
+          There are no other users on the platform yet. Invite your friends to join!
         </p>
+        <Button 
+          className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
+          onClick={() => {
+            toast({
+              title: "Invite link copied!",
+              description: "Share this link with your friends to join the platform.",
+            });
+          }}
+        >
+          <UserPlus className="h-4 w-4" />
+          Invite Friends
+        </Button>
       </div>
     );
   }
