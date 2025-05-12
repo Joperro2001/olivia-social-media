@@ -63,13 +63,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId) return;
     
-    // Fix: Use the correct channel type for Supabase
-    const channel = supabase.channel(`chat:${chatId}`, {
-      config: {
-        broadcast: { self: true },
-        presence: { key: '' },
-      }
-    });
+    // Create the channel with the updated typing - use a simple string
+    // The specific format of the channel name is important for Supabase
+    const channel = supabase.channel(`private:${chatId}`);
     
     // Configure the real-time subscription
     channel
