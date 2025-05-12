@@ -1,11 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { Profile } from "@/types/Profile";
-import { Loader, Users, UserPlus } from "lucide-react";
+import { Loader, Users, UserPlus, RefreshCw } from "lucide-react";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -14,7 +14,11 @@ interface ProfileMatchingProps {
 const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   const { toast } = useToast();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { profiles, isLoading } = useOtherProfiles();
+  const { profiles, isLoading, refetchProfiles } = useOtherProfiles();
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [profiles.length]);
 
   const handleSwipeLeft = (id: string) => {
     console.log(`Swiped left on ${id}`);
@@ -70,18 +74,28 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         <p className="text-gray-500 mb-6 max-w-xs">
           There are no other users on the platform yet. Invite your friends to join!
         </p>
-        <Button 
-          className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
-          onClick={() => {
-            toast({
-              title: "Invite link copied!",
-              description: "Share this link with your friends to join the platform.",
-            });
-          }}
-        >
-          <UserPlus className="h-4 w-4" />
-          Invite Friends
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button 
+            className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
+            onClick={() => {
+              toast({
+                title: "Invite link copied!",
+                description: "Share this link with your friends to join the platform.",
+              });
+            }}
+          >
+            <UserPlus className="h-4 w-4" />
+            Invite Friends
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={refetchProfiles}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
       </div>
     );
   }
@@ -97,12 +111,22 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         <div className="text-center px-4 py-10">
           <h3 className="text-xl font-semibold mb-2">You've seen all profiles</h3>
           <p className="text-gray-500 mb-6">Check back later for new connections</p>
-          <Button 
-            onClick={() => setCurrentIndex(0)}
-            className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
-          >
-            Reset Profiles
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              onClick={() => setCurrentIndex(0)}
+              className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
+            >
+              Reset Profiles
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={refetchProfiles}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
       )}
     </div>
