@@ -17,17 +17,25 @@ export const useOtherProfiles = () => {
       
       setIsLoading(true);
       
+      // Log to check if we have a valid user ID to filter with
+      console.log("Current user ID:", user.id);
+      
       // Fetch profiles excluding the current user
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
-        .neq("id", user.id);
-
+        .select("*");
+      
       if (error) throw error;
       
-      if (data && data.length > 0) {
-        console.log("Fetched profiles:", data.length);
-        setProfiles(data);
+      console.log("Raw fetched profiles:", data);
+      
+      // Filter out the current user after fetching if needed
+      const otherProfiles = data?.filter(profile => profile.id !== user.id) || [];
+      
+      console.log("Filtered profiles (excluding current user):", otherProfiles);
+      
+      if (otherProfiles && otherProfiles.length > 0) {
+        setProfiles(otherProfiles);
       } else {
         console.log("No other profiles found in database");
         setProfiles([]);
