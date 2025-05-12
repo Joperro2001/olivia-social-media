@@ -26,6 +26,7 @@ export const useOtherProfiles = () => {
       if (!user) return;
       
       setIsLoading(true);
+      console.log("Fetching profiles for user:", user.id);
       
       // Fetch other users' profiles
       const { data: profilesData, error: profilesError } = await supabase
@@ -34,6 +35,45 @@ export const useOtherProfiles = () => {
         .neq("id", user.id);
 
       if (profilesError) throw profilesError;
+
+      console.log("Raw profiles data:", profilesData);
+      
+      if (!profilesData || profilesData.length === 0) {
+        console.log("No other profiles found in the database");
+        // Add demo profile if no other profiles exist
+        const demoProfiles: OtherUserProfile[] = [
+          {
+            id: "demo-1",
+            name: "Alex Morgan",
+            age: 28,
+            location: "Barcelona, Spain 🇪🇸",
+            bio: "Photographer and digital nomad. Recently moved to Barcelona and looking to connect with like-minded people!",
+            image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000",
+            tags: ["Photography", "Travel", "Art", "Hiking"]
+          },
+          {
+            id: "demo-2",
+            name: "Marco Deluca",
+            age: 31,
+            location: "Berlin, Germany 🇩🇪",
+            bio: "Software engineer who loves coffee and electronic music. New to Berlin and excited to explore the city!",
+            image: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=1000",
+            tags: ["Tech", "Music", "Coffee", "Cycling"]
+          },
+          {
+            id: "demo-3",
+            name: "Sophia Chen",
+            age: 26,
+            location: "Amsterdam, Netherlands 🇳🇱",
+            bio: "UX designer and plant enthusiast. Just moved from Singapore and looking to build my network here!",
+            image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1000",
+            tags: ["Design", "Plants", "Yoga", "Reading"]
+          }
+        ];
+        setProfiles(demoProfiles);
+        setIsLoading(false);
+        return;
+      }
 
       // Transform data to match the expected format
       const transformedProfiles = await Promise.all(profilesData.map(async (profile): Promise<OtherUserProfile> => {
@@ -60,6 +100,7 @@ export const useOtherProfiles = () => {
         };
       }));
       
+      console.log("Transformed profiles:", transformedProfiles);
       setProfiles(transformedProfiles);
     } catch (error: any) {
       console.error("Error fetching other profiles:", error);
@@ -68,6 +109,20 @@ export const useOtherProfiles = () => {
         description: error.message,
         variant: "destructive",
       });
+      
+      // Fallback to demo profiles in case of error
+      const demoProfiles: OtherUserProfile[] = [
+        {
+          id: "demo-1",
+          name: "Alex Morgan",
+          age: 28,
+          location: "Barcelona, Spain 🇪🇸",
+          bio: "Photographer and digital nomad. Recently moved to Barcelona and looking to connect with like-minded people!",
+          image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1000",
+          tags: ["Photography", "Travel", "Art", "Hiking"]
+        }
+      ];
+      setProfiles(demoProfiles);
     } finally {
       setIsLoading(false);
     }

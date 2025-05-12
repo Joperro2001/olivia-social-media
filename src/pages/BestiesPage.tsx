@@ -66,6 +66,14 @@ const BestiesPage: React.FC = () => {
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           </div>
+        ) : profiles.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-center">
+            <p className="text-gray-500 mb-4">No other users found.</p>
+            <p className="text-sm text-gray-400 max-w-xs">
+              This is likely because there are no other user profiles in the database yet. 
+              Demo profiles will be shown as examples.
+            </p>
+          </div>
         ) : (
           <ProfileMatching 
             profiles={profiles} 
