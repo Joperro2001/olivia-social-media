@@ -72,7 +72,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         </div>
         <h3 className="text-xl font-semibold mb-2">No other profiles available</h3>
         <p className="text-gray-500 mb-6 max-w-xs">
-          There are no other users on the platform yet. Invite your friends to join!
+          There are no other users on the platform yet. Make sure your profile is set up and try refreshing.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button 
@@ -89,7 +89,14 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
           </Button>
           <Button 
             variant="outline"
-            onClick={refetchProfiles}
+            onClick={() => {
+              console.log("Refreshing profiles...");
+              refetchProfiles();
+              toast({
+                title: "Refreshing profiles",
+                description: "Looking for new matches...",
+              });
+            }}
             className="flex items-center gap-2"
           >
             <RefreshCw className="h-4 w-4" />

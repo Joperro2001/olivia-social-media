@@ -13,29 +13,36 @@ export const useOtherProfiles = () => {
 
   const fetchOtherProfiles = async () => {
     try {
-      if (!user) return;
+      if (!user) {
+        console.log("No user is logged in, cannot fetch profiles");
+        return;
+      }
       
       setIsLoading(true);
       
       console.log("Current user ID:", user.id);
+      console.log("Fetching profiles with filter to exclude current user");
       
-      // Fetch all profiles without filtering in the query
-      const { data: allProfiles, error } = await supabase
+      // Filter out the current user directly in the query
+      const { data, error } = await supabase
         .from("profiles")
-        .select("*");
+        .select("*")
+        .neq("id", user.id);
       
       if (error) {
+        console.error("Supabase error:", error);
         throw error;
       }
       
-      console.log("All profiles fetched:", allProfiles);
+      console.log("Profiles fetched:", data ? data.length : 0);
       
-      // Filter out the current user client-side
-      const otherProfiles = allProfiles.filter(profile => profile.id !== user.id);
-      
-      console.log("Filtered profiles (excluding current user):", otherProfiles);
-      
-      setProfiles(otherProfiles || []);
+      if (data && data.length > 0) {
+        console.log("Profiles found:", data);
+        setProfiles(data);
+      } else {
+        console.log("No other profiles found in the database");
+        setProfiles([]);
+      }
     } catch (error: any) {
       console.error("Error fetching other profiles:", error);
       toast({
@@ -51,8 +58,10 @@ export const useOtherProfiles = () => {
 
   useEffect(() => {
     if (user) {
+      console.log("User detected, initiating profile fetch");
       fetchOtherProfiles();
     } else {
+      console.log("No user available, clearing profiles");
       setIsLoading(false);
       setProfiles([]);
     }

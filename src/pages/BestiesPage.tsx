@@ -1,16 +1,18 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Diamond, Heart, Sparkles, Users } from "lucide-react";
+import { Diamond, Heart, Sparkles, Users, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ProfileMatching from "@/components/besties/ProfileMatching";
 import BestiesFilter from "@/components/besties/BestiesFilter";
 import { useNavigate } from "react-router-dom";
+import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
+  const { refetchProfiles } = useOtherProfiles();
   
   const handleOpenMatches = () => {
     navigate("/matches");
@@ -26,6 +28,11 @@ const BestiesPage: React.FC = () => {
       description: "You'll be able to create your own group in the full version!",
     });
   };
+
+  useEffect(() => {
+    // Force a refresh of profiles when the page loads
+    refetchProfiles();
+  }, []);
 
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
@@ -47,6 +54,20 @@ const BestiesPage: React.FC = () => {
             aria-label="View Matches"
           >
             <Heart className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => {
+              refetchProfiles();
+              toast({
+                title: "Refreshing profiles",
+                description: "Looking for new matches...",
+              });
+            }}
+            aria-label="Refresh Profiles"
+          >
+            <RefreshCw className="h-5 w-5" />
           </Button>
         </div>
       </div>
