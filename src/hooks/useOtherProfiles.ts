@@ -19,19 +19,23 @@ export const useOtherProfiles = () => {
       
       console.log("Current user ID:", user.id);
       
-      // Directly filter out the current user in the SQL query instead of client-side filtering
-      const { data, error } = await supabase
+      // Fetch all profiles without filtering in the query
+      const { data: allProfiles, error } = await supabase
         .from("profiles")
-        .select("*")
-        .neq("id", user.id);
+        .select("*");
       
       if (error) {
         throw error;
       }
       
-      console.log("Profiles of other users:", data);
+      console.log("All profiles fetched:", allProfiles);
       
-      setProfiles(data || []);
+      // Filter out the current user client-side
+      const otherProfiles = allProfiles.filter(profile => profile.id !== user.id);
+      
+      console.log("Filtered profiles (excluding current user):", otherProfiles);
+      
+      setProfiles(otherProfiles || []);
     } catch (error: any) {
       console.error("Error fetching other profiles:", error);
       toast({
