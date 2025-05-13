@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { matchedProfiles, matchedGroups, rsvpEvents } from "@/data/matchesMockData";
@@ -15,6 +15,8 @@ import AboutMeCard from "@/components/profile/AboutMeCard";
 import RelocationCard from "@/components/profile/RelocationCard";
 import PremiumCard from "@/components/profile/PremiumCard";
 import ProfileStats from "@/components/profile/ProfileStats";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ProfilePage: React.FC = () => {
   const { toast } = useToast();
@@ -26,12 +28,9 @@ const ProfilePage: React.FC = () => {
   const matchesCount = matchedProfiles.filter(profile => !profile.isPending).length;
   const groupsCount = matchedGroups.length;
   
+  // Use LoadingSpinner component for consistent loading UI
   if (isLoading) {
-    return (
-      <div className="h-[100vh] bg-[#FDF5EF] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading profile..." />;
   }
 
   if (!profile) {

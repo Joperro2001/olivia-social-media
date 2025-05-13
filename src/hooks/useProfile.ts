@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -16,11 +15,13 @@ export const useProfile = () => {
   const [interests, setInterests] = useState<Interest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-
+  const fetchInProgress = useRef(false);
+  
   const fetchProfile = async () => {
     try {
-      if (!user) return;
+      if (!user || fetchInProgress.current) return;
       
+      fetchInProgress.current = true;
       setIsLoading(true);
       
       // Fetch profile data
@@ -66,6 +67,7 @@ export const useProfile = () => {
       });
     } finally {
       setIsLoading(false);
+      fetchInProgress.current = false;
     }
   };
 
@@ -203,6 +205,8 @@ export const useProfile = () => {
       setInterests([]);
       setIsLoading(false);
     }
+    // We're intentionally only depending on user to prevent extra fetches
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return {
