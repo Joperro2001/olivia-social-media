@@ -4,6 +4,7 @@ import { ChecklistItemData, UserChecklist } from '@/types/Chat';
 import { useAuth } from "@/context/AuthContext";
 import { useCallback } from "react";
 import { parseJsonSafely } from "@/lib/utils";
+import { Json } from "@/integrations/supabase/types";
 
 // Helper function to convert database response to our app type
 function convertDbResponseToUserChecklist(data: any): UserChecklist {
@@ -13,6 +14,12 @@ function convertDbResponseToUserChecklist(data: any): UserChecklist {
       items: data.checklist_data?.items || []
     }
   };
+}
+
+// Helper function to convert checklist data to Json type for database storage
+function prepareChecklistDataForDb(items: ChecklistItemData[]): Json {
+  // Convert to a plain object that fits Json type
+  return { items: items } as Json;
 }
 
 // Fetch a user's checklists
@@ -67,9 +74,7 @@ export async function createChecklist(checklist: {
       .insert({
         user_id: checklist.user_id,
         title: "Relocation Checklist", // Add required title field
-        checklist_data: {
-          items: checklist.items
-        }
+        checklist_data: prepareChecklistDataForDb(checklist.items)
       })
       .select()
       .single();
@@ -92,9 +97,7 @@ export async function updateChecklist(userId: string, items: ChecklistItemData[]
     const { data, error } = await supabase
       .from("user_checklists")
       .update({
-        checklist_data: { 
-          items: items 
-        }
+        checklist_data: prepareChecklistDataForDb(items)
       })
       .eq("user_id", userId)
       .select()
@@ -146,9 +149,7 @@ export async function updateChecklistItem(
     const { data, error } = await supabase
       .from("user_checklists")
       .update({
-        checklist_data: { 
-          items: updatedItems 
-        }
+        checklist_data: prepareChecklistDataForDb(updatedItems)
       })
       .eq("user_id", userId)
       .select()
