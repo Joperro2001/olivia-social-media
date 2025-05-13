@@ -16,7 +16,7 @@ interface ChatSecuritySettingsProps {
 const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [useLocalStorage, setUseLocalStorage] = useState(true);
+  const [useLocalStorage, setUseLocalStorage] = useState(false);
   const [autoDelete, setAutoDelete] = useState(true);
   const [retentionDays, setRetentionDays] = useState(7);
   
@@ -53,8 +53,8 @@ const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) 
     purgeOldLocalMessages(user.id);
     
     toast({
-      title: "Local messages cleaned",
-      description: "Old locally stored messages have been removed",
+      title: "Storage cleared",
+      description: "All locally stored messages have been removed",
     });
   };
   
@@ -118,7 +118,7 @@ const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) 
               className="w-full flex items-center justify-center gap-2"
             >
               <Trash2 className="h-4 w-4" />
-              <span>Clean Local Storage Now</span>
+              <span>Clear Local Storage Now</span>
             </Button>
           </>
         )}

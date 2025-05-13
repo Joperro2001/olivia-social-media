@@ -5,7 +5,7 @@
 
 // Default preferences
 const DEFAULT_PREFS = {
-  useLocalStorage: true,
+  useLocalStorage: false,
   autoDeleteAfterSync: true,
   localStorageTimeout: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
 };
@@ -59,35 +59,12 @@ export const purgeOldLocalMessages = (userId: string | undefined): void => {
       }
     }
     
-    // Process each chat
+    // Remove all local messages
     chatKeys.forEach(key => {
-      try {
-        const messages = JSON.parse(localStorage.getItem(key) || '[]');
-        const prefs = getChatStoragePrefs(userId);
-        const currentTime = Date.now();
-        
-        // Filter out old messages
-        const filteredMessages = messages.filter(msg => {
-          const messageTime = new Date(msg.sent_at).getTime();
-          const age = currentTime - messageTime;
-          return age <= prefs.localStorageTimeout;
-        });
-        
-        if (filteredMessages.length < messages.length) {
-          // Save filtered messages back or delete entirely if empty
-          if (filteredMessages.length > 0) {
-            localStorage.setItem(key, JSON.stringify(filteredMessages));
-            console.log(`Purged old messages from ${key}`);
-          } else {
-            localStorage.removeItem(key);
-            console.log(`Removed empty chat store ${key}`);
-          }
-        }
-      } catch (error) {
-        console.error(`Error processing old messages for ${key}:`, error);
-      }
+      localStorage.removeItem(key);
+      console.log(`Removed local chat storage: ${key}`);
     });
   } catch (error) {
-    console.error('Error purging old messages:', error);
+    console.error('Error purging local messages:', error);
   }
 };
