@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChecklistItemData, UserChecklist } from '@/types/Chat';
 import { useAuth } from "@/context/AuthContext";
 import { useCallback } from "react";
+import { parseJsonSafely } from "@/lib/utils";
 
 // Helper function to convert database response to our app type
 function convertDbResponseToUserChecklist(data: any): UserChecklist {
@@ -129,8 +130,9 @@ export async function updateChecklistItem(
       throw new Error("Checklist not found");
     }
     
-    // Ensure we have the expected structure
-    const items = checklist.checklist_data?.items || [];
+    // Parse the checklist data safely, ensuring we have the expected structure
+    const checklistData = parseJsonSafely<{items: ChecklistItemData[]}>(checklist.checklist_data);
+    const items = checklistData.items || [];
     
     // Find and update the specific item
     const updatedItems = items.map((item: ChecklistItemData) => {
