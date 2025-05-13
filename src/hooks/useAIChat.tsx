@@ -2,184 +2,132 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AIAgent, AIConversation, AIMessage } from '@/types/Chat';
+import { UserConversationMessage } from '@/types/Chat';
 import { v4 as uuidv4 } from 'uuid';
 
 interface UseAIChatProps {
-  conversationId?: string;
-  agentId?: string;
+  sessionId?: string;
 }
 
-export function useAIChat({ conversationId, agentId }: UseAIChatProps = {}) {
+export function useAIChat({ sessionId }: UseAIChatProps = {}) {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<AIMessage[]>([]);
-  const [conversation, setConversation] = useState<AIConversation | null>(null);
-  const [agent, setAgent] = useState<AIAgent | null>(null);
+  const [messages, setMessages] = useState<UserConversationMessage[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId || '');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get or create agent
-  const getOrCreateAgent = useCallback(async () => {
-    if (!user) return null;
-    
+  // Create a new session if none exists
+  const createNewSession = useCallback(async (title: string = "New Conversation"): Promise<string> => {
     try {
-      // Check if agent exists
-      const { data: existingAgent, error: fetchError } = await supabase
-        .from('ai_agents')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        // PGRST116 means no rows returned
-        throw fetchError;
-      }
-
-      if (existingAgent) {
-        return existingAgent;
-      }
-
-      // Create a new agent if none exists
-      const { data: newAgent, error: createError } = await supabase
-        .from('ai_agents')
-        .insert([{
+      if (!user) throw new Error("User not authenticated");
+      
+      // Generate a new session ID
+      const newSessionId = uuidv4();
+      
+      // Create initial system message to identify the session
+      await supabase
+        .from('user_conversations')
+        .insert({
           user_id: user.id,
-          name: 'Olivia', 
-          description: 'Your relocation assistant'
-        }])
-        .select('*')
-        .single();
-
-      if (createError) throw createError;
-      return newAgent;
+          session_id: newSessionId,
+          message_type: 'ai',
+          content: `Session started: ${title}`,
+          summary_flag: true // This marks it as a system message
+        });
+      
+      return newSessionId;
     } catch (err) {
-      console.error('Error getting/creating agent:', err);
-      setError('Failed to initialize AI agent');
-      return null;
+      console.error('Error creating session:', err);
+      setError('Failed to create a new conversation session');
+      return '';
     }
   }, [user]);
 
-  // Create a new conversation
-  const createConversation = useCallback(async (agentId: string, title: string = "New Conversation") => {
-    try {
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert([{
-          agent_id: agentId,
-          title
-        }])
-        .select('*')
-        .single();
-
-      if (error) throw error;
-      return data;
-    } catch (err) {
-      console.error('Error creating conversation:', err);
-      setError('Failed to create a new conversation');
-      return null;
-    }
-  }, []);
-
-  // Load existing conversation or create a new one
-  const loadOrCreateConversation = useCallback(async () => {
+  // Load existing session or create a new one
+  const loadOrCreateSession = useCallback(async () => {
     if (!user) return;
     
     setIsLoading(true);
     try {
-      // First get or create an agent
-      const currentAgent = agentId ? 
-        await supabase.from('ai_agents').select('*').eq('id', agentId).single().then(res => res.data) : 
-        await getOrCreateAgent();
+      let activeSessionId = currentSessionId;
       
-      if (!currentAgent) {
-        throw new Error('Could not initialize agent');
+      // If no session ID is provided, create a new one
+      if (!activeSessionId) {
+        activeSessionId = await createNewSession();
+        setCurrentSessionId(activeSessionId);
       }
       
-      setAgent(currentAgent);
-      
-      // Then load or create a conversation
-      let currentConversation;
-      
-      if (conversationId) {
-        const { data, error } = await supabase
-          .from('conversations')
+      // Load messages for the session
+      if (activeSessionId) {
+        const { data: messageData, error: messagesError } = await supabase
+          .from('user_conversations')
           .select('*')
-          .eq('id', conversationId)
-          .eq('agent_id', currentAgent.id)
-          .single();
+          .eq('user_id', user.id)
+          .eq('session_id', activeSessionId)
+          .order('timestamp', { ascending: true });
         
-        if (error) throw error;
-        currentConversation = data;
-      } else {
-        // Create a new conversation
-        currentConversation = await createConversation(currentAgent.id);
+        if (messagesError) throw messagesError;
+        setMessages(messageData || []);
       }
-      
-      if (!currentConversation) {
-        throw new Error('Could not load or create conversation');
-      }
-      
-      setConversation(currentConversation);
-      
-      // Load messages for the conversation
-      const { data: messageData, error: messagesError } = await supabase
-        .from('ai_messages')
-        .select('*')
-        .eq('conversation_id', currentConversation.id)
-        .order('created_at', { ascending: true });
-      
-      if (messagesError) throw messagesError;
-      setMessages(messageData || []);
       
     } catch (err) {
-      console.error('Error loading conversation:', err);
+      console.error('Error loading conversation session:', err);
       setError('Failed to load conversation');
     } finally {
       setIsLoading(false);
     }
-  }, [user, agentId, conversationId, getOrCreateAgent, createConversation]);
+  }, [user, currentSessionId, createNewSession]);
 
   // Send a message
   const sendMessage = useCallback(async (content: string) => {
-    if (!conversation || !user) return false;
+    if (!user || !currentSessionId) {
+      if (!currentSessionId && user) {
+        // Create a session if we don't have one yet
+        const newSessionId = await createNewSession();
+        setCurrentSessionId(newSessionId);
+        return sendMessage(content); // Retry with the new session
+      }
+      return false;
+    }
     
     try {
-      // Check if the agent exists
-      if (!agent) {
-        throw new Error('AI agent not initialized');
-      }
-      
       // Add user message to DB
-      const userMessage: AIMessage = {
-        id: uuidv4(),
-        conversation_id: conversation.id,
+      const userMessage: Partial<UserConversationMessage> = {
+        user_id: user.id,
+        session_id: currentSessionId,
         content,
-        sender: 'user',
-        created_at: new Date().toISOString(),
+        message_type: 'human',
       };
       
       const { error: sendError } = await supabase
-        .from('ai_messages')
+        .from('user_conversations')
         .insert([userMessage]);
       
       if (sendError) throw sendError;
       
       // Optimistically update UI
-      setMessages(prev => [...prev, userMessage]);
+      setMessages(prev => [
+        ...prev,
+        {
+          ...userMessage,
+          message_id: uuidv4(), // Temporary ID that will be replaced when we fetch from DB
+          timestamp: new Date().toISOString(),
+          summary_flag: false
+        } as UserConversationMessage
+      ]);
       
       // Here we would normally make an API call to get AI response
       // For now, we'll simulate a basic AI response
       setTimeout(async () => {
-        const aiResponse: AIMessage = {
-          id: uuidv4(),
-          conversation_id: conversation.id,
+        const aiResponse: Partial<UserConversationMessage> = {
+          user_id: user.id,
+          session_id: currentSessionId,
           content: getSimulatedResponse(content),
-          sender: 'ai',
-          created_at: new Date().toISOString(),
+          message_type: 'ai',
         };
         
         const { error: aiError } = await supabase
-          .from('ai_messages')
+          .from('user_conversations')
           .insert([aiResponse]);
         
         if (aiError) {
@@ -187,7 +135,8 @@ export function useAIChat({ conversationId, agentId }: UseAIChatProps = {}) {
           return;
         }
         
-        setMessages(prev => [...prev, aiResponse]);
+        // Refresh messages from database to get the real IDs
+        loadOrCreateSession();
       }, 1000);
       
       return true;
@@ -196,7 +145,7 @@ export function useAIChat({ conversationId, agentId }: UseAIChatProps = {}) {
       setError('Failed to send message');
       return false;
     }
-  }, [conversation, user, agent]);
+  }, [user, currentSessionId, createNewSession, loadOrCreateSession]);
 
   // Simulated AI response function - this would normally be replaced with a real API call
   const getSimulatedResponse = (userMessage: string) => {
@@ -223,46 +172,47 @@ export function useAIChat({ conversationId, agentId }: UseAIChatProps = {}) {
 
   // Set up real-time subscription for new messages
   useEffect(() => {
-    if (!conversation) return;
+    if (!currentSessionId || !user) return;
     
     const channel = supabase
-      .channel('ai-chat-changes')
+      .channel('user-conversations-changes')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'ai_messages',
-        filter: `conversation_id=eq.${conversation.id}`
+        table: 'user_conversations',
+        filter: `session_id=eq.${currentSessionId}`
       }, (payload) => {
-        const newMessage = payload.new as AIMessage;
-        // Only add message if it's not already in our list
-        setMessages(currentMessages => {
-          if (currentMessages.find(m => m.id === newMessage.id)) {
-            return currentMessages;
-          }
-          return [...currentMessages, newMessage];
-        });
+        const newMessage = payload.new as UserConversationMessage;
+        // Only add message if it's not already in our list and belongs to current user
+        if (newMessage.user_id === user.id) {
+          setMessages(currentMessages => {
+            if (currentMessages.find(m => m.message_id === newMessage.message_id)) {
+              return currentMessages;
+            }
+            return [...currentMessages, newMessage];
+          });
+        }
       })
       .subscribe();
       
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversation]);
+  }, [currentSessionId, user]);
 
   // Initial load
   useEffect(() => {
     if (user) {
-      loadOrCreateConversation();
+      loadOrCreateSession();
     }
-  }, [user, loadOrCreateConversation]);
+  }, [user, loadOrCreateSession]);
 
   return {
     messages,
-    conversation,
-    agent,
+    sessionId: currentSessionId,
     isLoading,
     error,
     sendMessage,
-    createConversation
+    createNewSession
   };
 }

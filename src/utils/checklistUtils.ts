@@ -1,36 +1,17 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { UserChecklist, ChecklistItemData } from '@/types/Chat';
 import { useAuth } from "@/context/AuthContext";
 import { useCallback } from "react";
 
-// Define interfaces for our checklist data
-export interface ChecklistItem {
-  id: string;
-  checklist_id: string;
-  category: string;
-  item_text: string;
-  is_checked: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Checklist {
-  id: string;
-  user_id: string;
-  title: string;
-  destination: string;
-  purpose: string | null;
-  duration: string | null;
-  created_at: string;
-  updated_at: string;
-  items?: ChecklistItem[];
-}
+// Define interfaces for our checklist data based on the new schema
+export interface ChecklistWithItems extends UserChecklist {}
 
 // Fetch a user's checklists
 export async function fetchUserChecklists() {
   try {
     const { data, error } = await supabase
-      .from("packing_checklists")
+      .from("user_checklists")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -46,46 +27,45 @@ export async function fetchUserChecklists() {
   }
 }
 
-// Fetch a single checklist with its items
-export async function fetchChecklistWithItems(checklistId: string) {
+// Fetch a single checklist
+export async function fetchChecklist(checklistId: string): Promise<UserChecklist | null> {
   try {
-    // Fetch the checklist
-    const { data: checklist, error: checklistError } = await supabase
-      .from("packing_checklists")
+    const { data, error } = await supabase
+      .from("user_checklists")
       .select("*")
-      .eq("id", checklistId)
+      .eq("checklist_id", checklistId)
       .single();
 
-    if (checklistError) {
-      console.error("Error fetching checklist:", checklistError);
+    if (error) {
+      console.error("Error fetching checklist:", error);
       return null;
     }
 
-    // Fetch the checklist items
-    const { data: items, error: itemsError } = await supabase
-      .from("checklist_items")
-      .select("*")
-      .eq("checklist_id", checklistId)
-      .order("category", { ascending: true });
-
-    if (itemsError) {
-      console.error("Error fetching checklist items:", itemsError);
-      return checklist;
-    }
-
-    return { ...checklist, items: items || [] };
+    return data;
   } catch (err) {
-    console.error("Error in fetchChecklistWithItems:", err);
+    console.error("Error in fetchChecklist:", err);
     return null;
   }
 }
 
 // Create a new checklist
-export async function createChecklist(checklist: Omit<Checklist, "id" | "created_at" | "updated_at">) {
+export async function createChecklist(checklist: {
+  title: string;
+  description?: string;
+  items: ChecklistItemData[];
+  user_id: string;
+}) {
   try {
     const { data, error } = await supabase
-      .from("packing_checklists")
-      .insert(checklist)
+      .from("user_checklists")
+      .insert({
+        user_id: checklist.user_id,
+        title: checklist.title,
+        description: checklist.description || null,
+        checklist_data: {
+          items: checklist.items
+        }
+      })
       .select()
       .single();
 
@@ -101,33 +81,95 @@ export async function createChecklist(checklist: Omit<Checklist, "id" | "created
   }
 }
 
-// Add items to a checklist
-export async function addChecklistItems(items: Omit<ChecklistItem, "id" | "created_at" | "updated_at">[]) {
+// Update an existing checklist
+export async function updateChecklist(checklistId: string, updates: {
+  title?: string;
+  description?: string;
+  items?: ChecklistItemData[];
+}) {
   try {
+    // First get the current checklist to merge with updates
+    const { data: currentChecklist } = await supabase
+      .from("user_checklists")
+      .select("checklist_data, title, description")
+      .eq("checklist_id", checklistId)
+      .single();
+    
+    if (!currentChecklist) {
+      throw new Error("Checklist not found");
+    }
+    
+    // Prepare updates
+    const updatedData: any = {};
+    
+    if (updates.title) updatedData.title = updates.title;
+    if (updates.description !== undefined) updatedData.description = updates.description;
+    
+    // If items are provided, update the checklist_data
+    if (updates.items) {
+      updatedData.checklist_data = {
+        ...currentChecklist.checklist_data,
+        items: updates.items
+      };
+    }
+    
+    // Apply the updates
     const { data, error } = await supabase
-      .from("checklist_items")
-      .insert(items)
-      .select();
+      .from("user_checklists")
+      .update(updatedData)
+      .eq("checklist_id", checklistId)
+      .select()
+      .single();
 
     if (error) {
-      console.error("Error adding checklist items:", error);
+      console.error("Error updating checklist:", error);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error("Error in addChecklistItems:", err);
+    console.error("Error in updateChecklist:", err);
     return null;
   }
 }
 
 // Update a checklist item
-export async function updateChecklistItem(itemId: string, updates: Partial<ChecklistItem>) {
+export async function updateChecklistItem(
+  checklistId: string, 
+  itemId: string, 
+  isChecked: boolean
+) {
   try {
+    // Get current checklist
+    const { data: checklist } = await supabase
+      .from("user_checklists")
+      .select("checklist_data")
+      .eq("checklist_id", checklistId)
+      .single();
+    
+    if (!checklist) {
+      throw new Error("Checklist not found");
+    }
+    
+    // Find and update the specific item
+    const items = checklist.checklist_data.items as ChecklistItemData[];
+    const updatedItems = items.map(item => {
+      if (item.id === itemId) {
+        return { ...item, is_checked: isChecked };
+      }
+      return item;
+    });
+    
+    // Update the checklist with the modified items
     const { data, error } = await supabase
-      .from("checklist_items")
-      .update(updates)
-      .eq("id", itemId)
+      .from("user_checklists")
+      .update({
+        checklist_data: { 
+          ...checklist.checklist_data, 
+          items: updatedItems 
+        }
+      })
+      .eq("checklist_id", checklistId)
       .select()
       .single();
 
@@ -146,17 +188,10 @@ export async function updateChecklistItem(itemId: string, updates: Partial<Check
 // Delete a checklist
 export async function deleteChecklist(checklistId: string) {
   try {
-    // Delete all items first (cascade delete should handle this, but just to be sure)
-    await supabase
-      .from("checklist_items")
+    const { error } = await supabase
+      .from("user_checklists")
       .delete()
       .eq("checklist_id", checklistId);
-      
-    // Then delete the checklist
-    const { error } = await supabase
-      .from("packing_checklists")
-      .delete()
-      .eq("id", checklistId);
 
     if (error) {
       console.error("Error deleting checklist:", error);
@@ -197,28 +232,29 @@ export function useChecklist() {
     if (!localChecklist) return null;
     
     try {
+      // Format the checklist items
+      const items = localChecklist.items?.map((item: any) => ({
+        id: crypto.randomUUID(),
+        description: item.text,
+        is_checked: item.checked || false,
+        auto_checked: item.auto_checked || false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })) || [];
+      
       // Create the checklist
       const checklist = await createChecklist({
         title: localChecklist.title || "My Moving Checklist",
-        destination: localChecklist.destination || "New City",
-        purpose: localChecklist.purpose || null,
-        duration: localChecklist.duration || null,
-        user_id: user.id // Add user_id to fix the TypeScript error
+        description: `Destination: ${localChecklist.destination || "New Location"}${
+          localChecklist.purpose ? `, Purpose: ${localChecklist.purpose}` : ""
+        }${
+          localChecklist.duration ? `, Duration: ${localChecklist.duration}` : ""
+        }`,
+        items: items,
+        user_id: user.id
       });
       
       if (!checklist) return null;
-      
-      // Add the items
-      if (localChecklist.items && localChecklist.items.length > 0) {
-        const formattedItems = localChecklist.items.map((item: any) => ({
-          checklist_id: checklist.id,
-          category: item.category || "General",
-          item_text: item.text,
-          is_checked: item.checked || false
-        }));
-        
-        await addChecklistItems(formattedItems);
-      }
       
       // Clear local storage after successful sync
       removeChecklistFromLocalStorage();
@@ -232,9 +268,9 @@ export function useChecklist() {
   
   return {
     fetchUserChecklists,
-    fetchChecklistWithItems,
+    fetchChecklist,
     createChecklist,
-    addChecklistItems,
+    updateChecklist,
     updateChecklistItem,
     deleteChecklist,
     syncLocalChecklistToDatabase

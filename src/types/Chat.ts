@@ -1,70 +1,76 @@
-
-
-export interface Message {
+export type Message = {
   id: string;
   content: string;
   sender_id: string;
   sent_at: string;
   read_at: string | null;
-}
+};
 
-export interface ChatState {
+export type AIMessage = {
+  id: string;
+  conversation_id: string;
+  content: string;
+  sender: string;
+  created_at: string;
+};
+
+export type ChatState = {
   messages: Message[];
   localMessages: Message[];
   isLoading: boolean;
   usingLocalMode: boolean;
   chatId: string | null;
   hasLocalMessages: boolean;
-}
+};
 
-// AI Chat interfaces
-export interface AIMessage {
+export type AIAgent = {
   id: string;
-  content: string;
-  sender: string; // 'user' or 'ai'
-  conversation_id: string;
+  name: string;
+  description: string | null;
+  user_id: string;
   created_at: string;
-}
+  updated_at: string;
+};
 
-export interface AIConversation {
+export type AIConversation = {
   id: string;
   title: string;
   agent_id: string;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface AIAgent {
-  id: string;
+// New types for the updated schema
+export type UserConversationMessage = {
+  message_id: string;
   user_id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-}
+  session_id: string;
+  timestamp: string;
+  message_type: 'human' | 'ai';
+  content: string;
+  summary_flag: boolean;
+};
 
-export interface AIPreparationList {
-  id: string;
-  conversation_id: string;
+export type UserChecklist = {
+  checklist_id: string;
+  user_id: string;
   title: string;
+  description: string | null;
+  checklist_data: {
+    items: ChecklistItemData[];
+    original_id?: string;
+    original_conversation_id?: string;
+    created_at?: string;
+  };
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface AIPreparationItem {
+export type ChecklistItemData = {
   id: string;
-  list_id: string;
   description: string;
   is_checked: boolean;
-  auto_checked: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface AIChatState {
-  messages: AIMessage[];
-  conversation: AIConversation | null;
-  agent: AIAgent | null;
-  isLoading: boolean;
-  error: string | null;
-}
+  auto_checked?: boolean;
+  created_at?: string;
+  updated_at?: string;
+};

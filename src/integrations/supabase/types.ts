@@ -44,7 +44,7 @@ export type Database = {
           },
         ]
       }
-      ai_messages: {
+      ai_messages_old: {
         Row: {
           content: string
           conversation_id: string
@@ -71,7 +71,7 @@ export type Database = {
             foreignKeyName: "ai_messages_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: "conversations"
+            referencedRelation: "conversations_old"
             referencedColumns: ["id"]
           },
         ]
@@ -158,7 +158,7 @@ export type Database = {
           },
         ]
       }
-      conversations: {
+      conversations_old: {
         Row: {
           agent_id: string
           created_at: string
@@ -478,7 +478,7 @@ export type Database = {
         }
         Relationships: []
       }
-      preparation_list_items: {
+      preparation_list_items_old: {
         Row: {
           auto_checked: boolean
           created_at: string
@@ -511,12 +511,12 @@ export type Database = {
             foreignKeyName: "preparation_list_items_list_id_fkey"
             columns: ["list_id"]
             isOneToOne: false
-            referencedRelation: "preparation_lists"
+            referencedRelation: "preparation_lists_old"
             referencedColumns: ["id"]
           },
         ]
       }
-      preparation_lists: {
+      preparation_lists_old: {
         Row: {
           conversation_id: string
           created_at: string
@@ -543,7 +543,7 @@ export type Database = {
             foreignKeyName: "preparation_lists_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
-            referencedRelation: "conversations"
+            referencedRelation: "conversations_old"
             referencedColumns: ["id"]
           },
         ]
@@ -614,6 +614,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_checklists: {
+        Row: {
+          checklist_data: Json
+          checklist_id: string
+          created_at: string | null
+          description: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          checklist_data: Json
+          checklist_id?: string
+          created_at?: string | null
+          description?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          checklist_data?: Json
+          checklist_id?: string
+          created_at?: string | null
+          description?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_conversations: {
+        Row: {
+          content: string
+          message_id: string
+          message_type: string
+          session_id: string
+          summary_flag: boolean | null
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          message_id?: string
+          message_type: string
+          session_id: string
+          summary_flag?: boolean | null
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          message_id?: string
+          message_type?: string
+          session_id?: string
+          summary_flag?: boolean | null
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_interests: {
         Row: {
           created_at: string
@@ -655,6 +715,10 @@ export type Database = {
       get_user_chats: {
         Args: { user_id: string }
         Returns: string[]
+      }
+      migrate_old_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

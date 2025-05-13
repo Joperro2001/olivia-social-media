@@ -5,6 +5,9 @@ import TypingIndicator from "@/components/olivia/TypingIndicator";
 import SuggestionCarousel from "@/components/olivia/SuggestionCarousel";
 import { useAuth } from "@/context/AuthContext";
 import { saveChecklistToLocalStorage } from "@/utils/checklistUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from "uuid";
+import { UserConversationMessage } from "@/types/Chat";
 
 interface Message {
   id: string;
@@ -14,6 +17,7 @@ interface Message {
 }
 
 const OliviaChat: React.FC = () => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([{
     id: "1",
     content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
@@ -23,6 +27,7 @@ const OliviaChat: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const autoMessageSent = useRef<boolean>(false);
+  const [sessionId, setSessionId] = useState<string>("");
   
   const suggestedCards = [
     {
@@ -46,6 +51,30 @@ const OliviaChat: React.FC = () => {
     }
   ];
 
+  // Generate a session ID for this conversation
+  useEffect(() => {
+    if (user && !sessionId) {
+      const newSessionId = uuidv4();
+      setSessionId(newSessionId);
+      
+      // Initialize the conversation in the database
+      const initConversation = async () => {
+        try {
+          await supabase.from("user_conversations").insert({
+            user_id: user.id,
+            session_id: newSessionId,
+            message_type: "ai",
+            content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
+          });
+        } catch (error) {
+          console.error("Error initializing conversation:", error);
+        }
+      };
+      
+      initConversation();
+    }
+  }, [user, sessionId]);
+
   useEffect(() => {
     // Check if there's a message to auto-send
     const autoMessage = sessionStorage.getItem("autoSendMessage");
@@ -62,20 +91,60 @@ const OliviaChat: React.FC = () => {
     }
   }, []);
 
+  // Load existing messages when the user changes or session is set
+  useEffect(() => {
+    if (user && sessionId) {
+      const fetchMessages = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("user_conversations")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("session_id", sessionId)
+            .order("timestamp", { ascending: true });
+          
+          if (error) {
+            throw error;
+          }
+          
+          if (data && data.length > 0) {
+            // Convert to the format our UI expects
+            const formattedMessages = data.map((msg: UserConversationMessage) => ({
+              id: msg.message_id,
+              content: msg.content,
+              isUser: msg.message_type === "human",
+              timestamp: new Date(msg.timestamp).toLocaleTimeString()
+            }));
+            
+            // Only update if we have messages and this isn't the first load
+            if (formattedMessages.length > 1) {
+              setMessages(formattedMessages);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+        }
+      };
+      
+      fetchMessages();
+    }
+  }, [user, sessionId]);
+
   const handleSendMessage = async (content: string): Promise<boolean> => {
     try {
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        content,
-        isUser: true,
-        timestamp: "Just now"
-      };
-      setMessages(prev => [...prev, userMessage]);
-
-      setIsTyping(true);
-      
-      // Return a Promise that resolves after the typing delay
-      return new Promise(resolve => {
+      if (!user || !sessionId) {
+        // Fall back to local state if no user or session
+        const userMessage: Message = {
+          id: Date.now().toString(),
+          content,
+          isUser: true,
+          timestamp: "Just now"
+        };
+        setMessages(prev => [...prev, userMessage]);
+  
+        setIsTyping(true);
+        
+        // Simulate AI response without saving to database
         setTimeout(() => {
           setIsTyping(false);
           const oliviaResponse: Message = {
@@ -85,12 +154,62 @@ const OliviaChat: React.FC = () => {
             timestamp: "Just now"
           };
           setMessages(prev => [...prev, oliviaResponse]);
-          resolve(true); // Resolve with true to indicate success
         }, 1500);
+        
+        return true;
+      }
+      
+      // For logged in users with a session, save to database
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content,
+        isUser: true,
+        timestamp: "Just now"
+      };
+      
+      // Add message to UI immediately for responsiveness
+      setMessages(prev => [...prev, userMessage]);
+      
+      // Save user message to database
+      await supabase.from("user_conversations").insert({
+        user_id: user.id,
+        session_id: sessionId,
+        message_type: "human",
+        content,
       });
+      
+      setIsTyping(true);
+      
+      // Get AI response
+      const aiResponse = getOliviaResponse(content);
+      
+      // Simulate thinking time
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setIsTyping(false);
+      
+      // Add AI response to UI
+      const oliviaMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: aiResponse,
+        isUser: false,
+        timestamp: "Just now"
+      };
+      
+      setMessages(prev => [...prev, oliviaMessage]);
+      
+      // Save AI response to database
+      await supabase.from("user_conversations").insert({
+        user_id: user.id,
+        session_id: sessionId,
+        message_type: "ai",
+        content: aiResponse,
+      });
+      
+      return true;
     } catch (error) {
       console.error("Error sending message:", error);
-      return Promise.resolve(false); // Return false on error
+      return false;
     }
   };
 
