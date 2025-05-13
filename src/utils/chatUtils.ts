@@ -40,7 +40,7 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     // Use RPC function to check if a chat exists between these users
     // First, get all chats the current user is in
     const { data: userChats, error: userChatsError } = await supabase
-      .rpc('get_user_chat_ids');
+      .rpc('get_user_chats');
       
     if (userChatsError) {
       console.error('Error getting user chats:', userChatsError);
