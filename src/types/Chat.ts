@@ -23,3 +23,21 @@ export interface UserConversationMessage {
   timestamp: string;
   summary_flag?: boolean;
 }
+
+// Add missing types for checklists
+export interface ChecklistItemData {
+  id: string;
+  description: string;
+  is_checked: boolean;
+  auto_checked?: boolean;
+  category?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface UserChecklist {
+  user_id: string;
+  checklist_data: {
+    items: ChecklistItemData[];
+  };
+}

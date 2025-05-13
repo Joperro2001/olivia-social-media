@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
@@ -108,8 +109,8 @@ const OliviaChat: React.FC = () => {
           }
           
           if (data && data.length > 0) {
-            // Convert to the format our UI expects
-            const formattedMessages = data.map((msg: UserConversationMessage) => ({
+            // Convert to the format our UI expects with proper type assertion
+            const formattedMessages = data.map((msg) => ({
               id: msg.message_id,
               content: msg.content,
               isUser: msg.message_type === "human",
