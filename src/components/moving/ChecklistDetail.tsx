@@ -273,68 +273,6 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
       </CardFooter>
     </Card>
   );
-  
-  function renderCategoriesAsTabTriggers() {
-    // Sort categories in a logical order
-    const categoryOrder = [
-      "Visa & Immigration", 
-      "Health & Insurance", 
-      "Education", 
-      "Employment", 
-      "Housing", 
-      "Finance", 
-      "Communication", 
-      "Travel", 
-      "Personal"
-    ];
-    
-    // Get all categories and sort them
-    const categories = Object.keys(items);
-    categories.sort((a, b) => {
-      const indexA = categoryOrder.indexOf(a);
-      const indexB = categoryOrder.indexOf(b);
-      
-      // If both are found in the order array, sort by that order
-      if (indexA !== -1 && indexB !== -1) {
-        return indexA - indexB;
-      }
-      
-      // If only one is found, prioritize the one in the order array
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
-      
-      // If neither is found, sort alphabetically
-      return a.localeCompare(b);
-    });
-    
-    return categories.map(category => (
-      <TabsTrigger key={category} value={category}>
-        {category}
-      </TabsTrigger>
-    ));
-  }
-  
-  function renderCategoriesAsTabsContent() {
-    return Object.entries(items).map(([category, categoryItems]) => (
-      <TabsContent key={category} value={category} className="space-y-4 pt-2">
-        {categoryItems.map(item => (
-          <div key={item.id} className="flex items-center space-x-2">
-            <Checkbox
-              id={item.id}
-              checked={item.is_checked}
-              onCheckedChange={() => handleToggleItem(item)}
-            />
-            <Label
-              htmlFor={item.id}
-              className={`cursor-pointer ${item.is_checked ? "line-through text-muted-foreground" : ""}`}
-            >
-              {item.description}
-            </Label>
-          </div>
-        ))}
-      </TabsContent>
-    ));
-  }
 };
 
 export default ChecklistDetail;
