@@ -107,8 +107,15 @@ export async function updateChecklist(checklistId: string, updates: {
     
     // If items are provided, update the checklist_data
     if (updates.items) {
+      const typedChecklistData = currentChecklist.checklist_data as {
+        items: ChecklistItemData[];
+        original_id?: string;
+        original_conversation_id?: string;
+        created_at?: string;
+      };
+      
       updatedData.checklist_data = {
-        ...currentChecklist.checklist_data,
+        ...typedChecklistData,
         items: updates.items
       };
     }
@@ -152,7 +159,11 @@ export async function updateChecklistItem(
     }
     
     // Find and update the specific item
-    const items = checklist.checklist_data.items as ChecklistItemData[];
+    const typedChecklistData = checklist.checklist_data as {
+      items: ChecklistItemData[];
+    };
+    
+    const items = typedChecklistData.items;
     const updatedItems = items.map(item => {
       if (item.id === itemId) {
         return { ...item, is_checked: isChecked };
@@ -165,7 +176,7 @@ export async function updateChecklistItem(
       .from("user_checklists")
       .update({
         checklist_data: { 
-          ...checklist.checklist_data, 
+          ...typedChecklistData, 
           items: updatedItems 
         }
       })
@@ -219,6 +230,11 @@ export function getChecklistFromLocalStorage() {
 // Remove checklist from local storage
 export function removeChecklistFromLocalStorage() {
   localStorage.removeItem("cityPackerData");
+}
+
+// Helper function to fetch checklist with items (for compatibility with old code)
+export async function fetchChecklistWithItems(checklistId: string): Promise<UserChecklist | null> {
+  return fetchChecklist(checklistId);
 }
 
 // Custom hook for working with checklists

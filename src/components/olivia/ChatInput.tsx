@@ -1,85 +1,87 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Send, Paperclip, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { Send } from "lucide-react";
 
-interface ChatInputProps {
-  onSendMessage: (message: string) => Promise<boolean>;
+export interface ChatInputProps {
+  onSendMessage: (content: string) => Promise<boolean>;
+  placeholder?: string;
+  disabled?: boolean; // Add disabled prop
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({
-  onSendMessage
+const ChatInput: React.FC<ChatInputProps> = ({ 
+  onSendMessage, 
+  placeholder = "Type a message...",
+  disabled = false
 }) => {
   const [message, setMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const { toast } = useToast();
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (message.trim() && !isSending) {
-      setIsSending(true);
-      
-      try {
-        console.log("Sending message:", message);
-        const success = await onSendMessage(message);
-        
-        if (success) {
-          setMessage("");
-        } else {
-          toast({
-            title: "Failed to send message",
-            description: "Please try again",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error("Error sending message:", error);
-        toast({
-          title: "Error",
-          description: "Failed to send message. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsSending(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    // Auto-focus the textarea when the component mounts
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage || isSubmitting || disabled) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      const success = await onSendMessage(trimmedMessage);
+      if (success) {
+        setMessage("");
+      }
+    } finally {
+      setIsSubmitting(false);
+      // Re-focus the textarea after sending
+      if (textareaRef.current) {
+        textareaRef.current.focus();
       }
     }
   };
-  
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-white p-2 border-2 border-primary shadow-md rounded-full">
-      <Button 
-        type="button" 
-        size="icon" 
-        variant="ghost"
-        className="rounded-full"
-      >
-        <Paperclip className="h-4 w-4 text-gray-500" />
-      </Button>
-      
-      <Input 
-        type="text" 
-        value={message} 
-        onChange={e => setMessage(e.target.value)} 
-        placeholder="Type a message..." 
-        className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0" 
-        disabled={isSending}
-      />
-      
-      <Button 
-        type="submit" 
-        size="icon" 
-        className="rounded-full bg-primary"
-        disabled={!message.trim() || isSending}
-      >
-        {isSending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
+    <form 
+      onSubmit={handleSubmit} 
+      className="px-4 mx-auto w-full max-w-3xl"
+    >
+      <div className="flex items-end gap-2 bg-white dark:bg-gray-800 rounded-lg border p-2 shadow-sm">
+        <Textarea
+          ref={textareaRef}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="min-h-10 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+          disabled={isSubmitting || disabled}
+        />
+        <Button 
+          size="icon" 
+          type="submit"
+          disabled={isSubmitting || !message.trim() || disabled}
+          className={`rounded-full h-8 w-8 ${message.trim() ? "bg-primary" : "bg-gray-300 dark:bg-gray-700"}`}
+        >
           <Send className="h-4 w-4" />
-        )}
-        <span className="sr-only">Send message</span>
-      </Button>
+          <span className="sr-only">Send</span>
+        </Button>
+      </div>
     </form>
   );
 };

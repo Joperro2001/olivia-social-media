@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,11 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Trash, Download, Check, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Checklist, ChecklistItem, updateChecklistItem, deleteChecklist } from "@/utils/checklistUtils";
+import { UserChecklist, ChecklistItemData } from "@/types/Chat";
+import { updateChecklistItem, deleteChecklist } from "@/utils/checklistUtils";
 import { useNavigate } from "react-router-dom";
 
 interface ChecklistDetailProps {
-  checklist: Checklist;
+  checklist: UserChecklist;
   onDeleted?: () => void;
   onUpdated?: () => void;
 }
@@ -18,32 +20,36 @@ interface ChecklistDetailProps {
 const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [items, setItems] = useState<Record<string, ChecklistItem[]>>({});
+  const [items, setItems] = useState<Record<string, ChecklistItemData[]>>({});
   
   useEffect(() => {
-    if (checklist.items) {
+    if (checklist?.checklist_data?.items) {
       // Group items by category
-      const grouped = checklist.items.reduce((acc, item) => {
+      const grouped = checklist.checklist_data.items.reduce((acc, item) => {
         const category = item.category || "General";
         if (!acc[category]) {
           acc[category] = [];
         }
         acc[category].push(item);
         return acc;
-      }, {} as Record<string, ChecklistItem[]>);
+      }, {} as Record<string, ChecklistItemData[]>);
       
       setItems(grouped);
     }
   }, [checklist]);
   
-  const handleToggleItem = async (item: ChecklistItem) => {
+  const handleToggleItem = async (item: ChecklistItemData) => {
     try {
-      const updated = await updateChecklistItem(item.id, { is_checked: !item.is_checked });
+      const updated = await updateChecklistItem(
+        checklist.checklist_id,
+        item.id,
+        !item.is_checked
+      );
       
       if (updated) {
         // Update local state
         setItems(prevItems => {
-          const category = item.category;
+          const category = item.category || "General";
           const updatedItems = { ...prevItems };
           
           if (updatedItems[category]) {
@@ -72,7 +78,7 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this checklist?")) {
       try {
-        const success = await deleteChecklist(checklist.id);
+        const success = await deleteChecklist(checklist.checklist_id);
         
         if (success) {
           toast({
@@ -103,15 +109,13 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
     try {
       // Create text content for the checklist
       let content = `# ${checklist.title}\n\n`;
-      content += `Destination: ${checklist.destination}\n`;
-      if (checklist.purpose) content += `Purpose: ${checklist.purpose}\n`;
-      if (checklist.duration) content += `Duration: ${checklist.duration}\n\n`;
+      content += `Destination: ${checklist.description || "Unknown"}\n\n`;
       
       // Add items grouped by category
       Object.entries(items).forEach(([category, categoryItems]) => {
         content += `## ${category}\n\n`;
         categoryItems.forEach(item => {
-          content += `- [${item.is_checked ? 'x' : ' '}] ${item.item_text}\n`;
+          content += `- [${item.is_checked ? 'x' : ' '}] ${item.description}\n`;
         });
         content += '\n';
       });
@@ -142,8 +146,8 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
   };
   
   // Calculate completion percentage
-  const totalItems = checklist.items?.length || 0;
-  const checkedItems = checklist.items?.filter(item => item.is_checked).length || 0;
+  const totalItems = checklist?.checklist_data?.items?.length || 0;
+  const checkedItems = checklist?.checklist_data?.items?.filter(item => item.is_checked)?.length || 0;
   const completionPercentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
   
   const renderCategoriesAsTabTriggers = () => {
@@ -200,7 +204,7 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
               htmlFor={item.id}
               className={`cursor-pointer ${item.is_checked ? "line-through text-muted-foreground" : ""}`}
             >
-              {item.item_text}
+              {item.description}
             </Label>
           </div>
         ))}
@@ -208,6 +212,10 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
     ));
   };
   
+  if (!checklist || !checklist.checklist_data) {
+    return <div>No checklist data available</div>;
+  }
+
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -218,14 +226,7 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
           </div>
         </div>
         <div className="text-sm text-muted-foreground">
-          <p>{checklist.destination}</p>
-          {(checklist.purpose || checklist.duration) && (
-            <p>
-              {checklist.purpose && `Purpose: ${checklist.purpose}`}
-              {checklist.purpose && checklist.duration && " • "}
-              {checklist.duration && `Duration: ${checklist.duration}`}
-            </p>
-          )}
+          <p>{checklist.description}</p>
         </div>
       </CardHeader>
       
@@ -247,12 +248,16 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
           </div>
         </div>
         
-        <Tabs defaultValue={Object.keys(items)[0]} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-2">
-            {renderCategoriesAsTabTriggers()}
-          </TabsList>
-          {renderCategoriesAsTabsContent()}
-        </Tabs>
+        {Object.keys(items).length > 0 ? (
+          <Tabs defaultValue={Object.keys(items)[0]} className="w-full">
+            <TabsList className="grid grid-cols-3 mb-2">
+              {renderCategoriesAsTabTriggers()}
+            </TabsList>
+            {renderCategoriesAsTabsContent()}
+          </Tabs>
+        ) : (
+          <p className="text-center text-muted-foreground py-8">No items in this checklist</p>
+        )}
       </CardContent>
       
       <CardFooter className="flex justify-between">

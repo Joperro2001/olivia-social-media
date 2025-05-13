@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Checklist, fetchUserChecklists, useChecklist } from "@/utils/checklistUtils";
+import { UserChecklist } from "@/types/Chat";
+import { fetchUserChecklists, useChecklist } from "@/utils/checklistUtils";
 import { Package, FileText } from "lucide-react";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import ChecklistDetail from "@/components/moving/ChecklistDetail";
@@ -13,8 +15,8 @@ const ChecklistList = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [checklists, setChecklists] = useState<Checklist[]>([]);
-  const [activeChecklist, setActiveChecklist] = useState<Checklist | null>(null);
+  const [checklists, setChecklists] = useState<UserChecklist[]>([]);
+  const [activeChecklist, setActiveChecklist] = useState<UserChecklist | null>(null);
   const [loading, setLoading] = useState(true);
   const { syncLocalChecklistToDatabase } = useChecklist();
   
@@ -59,15 +61,9 @@ const ChecklistList = () => {
     }
   }, [user]);
   
-  const handleSelectChecklist = async (checklist: Checklist) => {
-    // If we already have the items, just set the active checklist
-    if (checklist.items) {
-      setActiveChecklist(checklist);
-      return;
-    }
-    
-    // Otherwise, navigate to the detailed view
-    navigate(`/checklist/${checklist.id}`);
+  const handleSelectChecklist = async (checklist: UserChecklist) => {
+    // Navigate to the detailed view
+    navigate(`/checklist/${checklist.checklist_id}`);
   };
   
   const handleCreateChecklist = () => {
@@ -123,18 +119,18 @@ const ChecklistList = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {checklists.map(checklist => (
           <Card 
-            key={checklist.id} 
+            key={checklist.checklist_id} 
             className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => handleSelectChecklist(checklist)}
           >
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">{checklist.title}</CardTitle>
-              <p className="text-sm text-muted-foreground">{checklist.destination}</p>
+              <p className="text-sm text-muted-foreground">{checklist.description}</p>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between text-sm">
                 <span>{new Date(checklist.created_at).toLocaleDateString()}</span>
-                <span>{checklist.purpose || checklist.duration}</span>
+                <span>{checklist.checklist_id}</span>
               </div>
             </CardContent>
           </Card>

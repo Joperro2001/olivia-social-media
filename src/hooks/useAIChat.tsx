@@ -30,7 +30,7 @@ export function useAIChat({ sessionId }: UseAIChatProps = {}) {
         .insert({
           user_id: user.id,
           session_id: newSessionId,
-          message_type: 'ai',
+          message_type: 'ai' as const,
           content: `Session started: ${title}`,
           summary_flag: true // This marks it as a system message
         });
@@ -67,7 +67,16 @@ export function useAIChat({ sessionId }: UseAIChatProps = {}) {
           .order('timestamp', { ascending: true });
         
         if (messagesError) throw messagesError;
-        setMessages(messageData || []);
+        
+        if (messageData) {
+          // Ensure messageData has the correct type
+          const typedMessages = messageData.map(msg => ({
+            ...msg,
+            message_type: msg.message_type as 'human' | 'ai'
+          }));
+          
+          setMessages(typedMessages);
+        }
       }
       
     } catch (err) {
@@ -92,11 +101,11 @@ export function useAIChat({ sessionId }: UseAIChatProps = {}) {
     
     try {
       // Add user message to DB
-      const userMessage: Partial<UserConversationMessage> = {
+      const userMessage = {
         user_id: user.id,
         session_id: currentSessionId,
         content,
-        message_type: 'human',
+        message_type: 'human' as const,
       };
       
       const { error: sendError } = await supabase
@@ -119,11 +128,11 @@ export function useAIChat({ sessionId }: UseAIChatProps = {}) {
       // Here we would normally make an API call to get AI response
       // For now, we'll simulate a basic AI response
       setTimeout(async () => {
-        const aiResponse: Partial<UserConversationMessage> = {
+        const aiResponse = {
           user_id: user.id,
           session_id: currentSessionId,
           content: getSimulatedResponse(content),
-          message_type: 'ai',
+          message_type: 'ai' as const,
         };
         
         const { error: aiError } = await supabase
@@ -189,7 +198,12 @@ export function useAIChat({ sessionId }: UseAIChatProps = {}) {
             if (currentMessages.find(m => m.message_id === newMessage.message_id)) {
               return currentMessages;
             }
-            return [...currentMessages, newMessage];
+            // Ensure message_type is correctly typed
+            const typedMessage: UserConversationMessage = {
+              ...newMessage,
+              message_type: newMessage.message_type as 'human' | 'ai'
+            };
+            return [...currentMessages, typedMessage];
           });
         }
       })

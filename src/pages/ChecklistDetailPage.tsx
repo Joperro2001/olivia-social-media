@@ -4,15 +4,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import ChecklistDetail from "@/components/moving/ChecklistDetail";
-import { fetchChecklistWithItems } from "@/utils/checklistUtils";
+import { fetchChecklist } from "@/utils/checklistUtils";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
+import { UserChecklist } from "@/types/Chat";
 
 const ChecklistDetailPage: React.FC = () => {
   const { checklistId } = useParams<{ checklistId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [checklist, setChecklist] = useState<any>(null);
+  const [checklist, setChecklist] = useState<UserChecklist | null>(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -24,7 +25,7 @@ const ChecklistDetailPage: React.FC = () => {
       
       try {
         setLoading(true);
-        const data = await fetchChecklistWithItems(checklistId);
+        const data = await fetchChecklist(checklistId);
         
         if (!data) {
           toast({
