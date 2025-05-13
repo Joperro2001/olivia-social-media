@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Checklist, fetchUserChecklists, useChecklist } from "@/utils/checklistUtils";
-import { Package } from "lucide-react";
+import { Package, FileText } from "lucide-react";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import ChecklistDetail from "@/components/moving/ChecklistDetail";
 
@@ -72,7 +72,7 @@ const ChecklistList = () => {
   
   const handleCreateChecklist = () => {
     // Redirect to chat with Olivia to create a new checklist
-    sessionStorage.setItem("autoSendMessage", "Create my moving checklist");
+    sessionStorage.setItem("autoSendMessage", "Create my relocation document checklist");
     navigate("/");
   };
   
@@ -90,16 +90,16 @@ const ChecklistList = () => {
       <Card className="border-primary/10 hover:shadow-md transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            <CardTitle>You Don't Have a Packing Checklist Yet</CardTitle>
+            <FileText className="h-5 w-5 text-primary" />
+            <CardTitle>You Don't Have a Relocation Checklist Yet</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p>You haven't created a moving checklist yet. Let Olivia help you build a personalized checklist with everything you need for your move.</p>
+          <p>You haven't created a relocation document checklist yet. Let Olivia help you build a personalized checklist with all the essential documents and requirements for your international move.</p>
           
           <img 
-            src="https://images.unsplash.com/photo-1622186477895-f2af6a0f5a97?auto=format&fit=crop&w=600&h=400&q=80" 
-            alt="Moving boxes and packing" 
+            src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&h=400&q=80" 
+            alt="Important documents and passport" 
             className="rounded-lg mb-6 w-full max-w-md object-cover h-48 mx-auto"
           />
           
@@ -145,7 +145,7 @@ const ChecklistList = () => {
           onClick={handleCreateChecklist}
         >
           <CardContent className="h-full flex flex-col items-center justify-center py-6">
-            <Package className="h-12 w-12 text-muted-foreground mb-2" />
+            <FileText className="h-12 w-12 text-muted-foreground mb-2" />
             <p className="text-center font-medium">Create New Checklist</p>
           </CardContent>
         </Card>

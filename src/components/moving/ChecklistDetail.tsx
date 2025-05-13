@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Trash, Download, Check } from "lucide-react";
+import { Trash, Download, Check, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Checklist, ChecklistItem, updateChecklistItem, deleteChecklist } from "@/utils/checklistUtils";
 import { useNavigate } from "react-router-dom";
@@ -148,7 +147,39 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
   const completionPercentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
   
   const renderCategoriesAsTabTriggers = () => {
-    return Object.keys(items).map(category => (
+    // Sort categories in a logical order
+    const categoryOrder = [
+      "Visa & Immigration", 
+      "Health & Insurance", 
+      "Education", 
+      "Employment", 
+      "Housing", 
+      "Finance", 
+      "Communication", 
+      "Travel", 
+      "Personal"
+    ];
+    
+    // Get all categories and sort them
+    const categories = Object.keys(items);
+    categories.sort((a, b) => {
+      const indexA = categoryOrder.indexOf(a);
+      const indexB = categoryOrder.indexOf(b);
+      
+      // If both are found in the order array, sort by that order
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      
+      // If only one is found, prioritize the one in the order array
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      
+      // If neither is found, sort alphabetically
+      return a.localeCompare(b);
+    });
+    
+    return categories.map(category => (
       <TabsTrigger key={category} value={category}>
         {category}
       </TabsTrigger>
@@ -181,7 +212,10 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
     <Card className="w-full">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle>{checklist.title}</CardTitle>
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+            <CardTitle>{checklist.title}</CardTitle>
+          </div>
         </div>
         <div className="text-sm text-muted-foreground">
           <p>{checklist.destination}</p>
@@ -197,7 +231,7 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
       
       <CardContent>
         <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-1">
             <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
               <div 
                 className="h-full bg-primary" 
@@ -208,7 +242,7 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
               {completionPercentage}%
             </span>
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground ml-2">
             {checkedItems}/{totalItems} items
           </div>
         </div>

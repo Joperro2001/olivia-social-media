@@ -106,8 +106,11 @@ const OliviaChat: React.FC = () => {
     }
     
     // Handle checklist creation flow
-    if (lowerCaseMessage.includes("create my") && (lowerCaseMessage.includes("moving checklist") || lowerCaseMessage.includes("packing checklist"))) {
-      return "I'd be happy to help you create a moving checklist! Let's start with the basics. Which city are you moving to?";
+    if (lowerCaseMessage.includes("create my") && 
+        (lowerCaseMessage.includes("relocation") || 
+         lowerCaseMessage.includes("document checklist") || 
+         lowerCaseMessage.includes("moving checklist"))) {
+      return "I'd be happy to help you create a relocation document checklist! Which city are you moving to?";
     }
     
     // Extract destination from user's message
@@ -134,36 +137,61 @@ const OliviaChat: React.FC = () => {
       const checklistData = JSON.parse(localStorage.getItem("cityPackerData") || "{}");
       checklistData.duration = userMessage.trim();
       
-      // Add some default checklist items based on destination and duration
+      // Add relocation document checklist items based on destination and duration
       const longStay = userMessage.toLowerCase().includes("permanent") || 
                       userMessage.toLowerCase().includes("year") ||
                       userMessage.includes("long");
       
+      const isStudent = checklistData.purpose?.toLowerCase().includes("study");
+      const isWork = checklistData.purpose?.toLowerCase().includes("work");
+      
       const items = [
-        { category: "Documents", text: "Passport and ID documents", checked: false },
-        { category: "Documents", text: "Visa documentation", checked: false },
-        { category: "Documents", text: "Health insurance documents", checked: false },
-        { category: "Essentials", text: "Medications and prescriptions", checked: false },
-        { category: "Electronics", text: "Phone and charger", checked: false },
-        { category: "Electronics", text: "Laptop and charger", checked: false },
-        { category: "Electronics", text: "Travel adapters", checked: false },
-        { category: "Clothing", text: "Weather-appropriate clothing", checked: false },
-        { category: "Clothing", text: "Comfortable shoes", checked: false },
+        { category: "Visa & Immigration", text: "Valid passport (min. 6 months validity)", checked: false },
+        { category: "Visa & Immigration", text: "Visa application forms", checked: false },
+        { category: "Visa & Immigration", text: "Passport photos", checked: false },
+        { category: "Health & Insurance", text: "International health insurance", checked: false },
+        { category: "Health & Insurance", text: "Vaccination records", checked: false },
+        { category: "Housing", text: "Temporary accommodation booking", checked: false },
+        { category: "Housing", text: "Rental deposit funds", checked: false },
+        { category: "Communication", text: "International SIM card or eSIM", checked: false },
+        { category: "Travel", text: "Flight tickets", checked: false },
+        { category: "Finance", text: "Bank statements (last 3 months)", checked: false },
+        { category: "Finance", text: "Foreign currency or travel card", checked: false },
       ];
+      
+      if (isStudent) {
+        items.push(
+          { category: "Education", text: "University acceptance letter", checked: false },
+          { category: "Education", text: "Scholarship documentation (if applicable)", checked: false },
+          { category: "Education", text: "Academic transcripts", checked: false },
+          { category: "Education", text: "Student visa paperwork", checked: false }
+        );
+      }
+      
+      if (isWork) {
+        items.push(
+          { category: "Employment", text: "Work contract", checked: false },
+          { category: "Employment", text: "Work visa/permit", checked: false },
+          { category: "Employment", text: "Professional certificates", checked: false },
+          { category: "Employment", text: "Reference letters", checked: false }
+        );
+      }
       
       if (longStay) {
         items.push(
-          { category: "Housing", text: "Rental agreements", checked: false },
-          { category: "Housing", text: "Utility setup information", checked: false },
-          { category: "Financial", text: "Banking information", checked: false },
-          { category: "Financial", text: "Budget plan for first 3 months", checked: false },
+          { category: "Visa & Immigration", text: "Birth certificate", checked: false },
+          { category: "Visa & Immigration", text: "Marriage certificate (if applicable)", checked: false },
+          { category: "Housing", text: "Proof of income for rental applications", checked: false },
+          { category: "Finance", text: "Tax documents from home country", checked: false },
+          { category: "Health & Insurance", text: "Medical history records", checked: false },
+          { category: "Personal", text: "Driver's license or International Driving Permit", checked: false }
         );
       }
       
       checklistData.items = items;
       saveChecklistToLocalStorage(checklistData);
       
-      return `Perfect! I've created a customized moving checklist for your ${checklistData.duration} stay in ${checklistData.destination} for ${checklistData.purpose}. You can view and manage your checklist by visiting the My City Packer section. Would you like to view your checklist now?`;
+      return `Perfect! I've created a customized relocation document checklist for your ${checklistData.duration} stay in ${checklistData.destination} for ${checklistData.purpose}. This includes essential documents for visa applications, housing, healthcare, and more. You can view and manage your checklist in the My City Packer section. Would you like to view your checklist now?`;
     }
     
     // User wants to view checklist

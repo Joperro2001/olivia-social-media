@@ -1,7 +1,8 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import ChecklistList from "@/components/moving/ChecklistList";
 
 const MyCityPackerPage: React.FC = () => {
@@ -19,7 +20,10 @@ const MyCityPackerPage: React.FC = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold">My City Packer</h1>
+          <div>
+            <h1 className="text-2xl font-bold">Relocation Documents</h1>
+            <p className="text-sm text-muted-foreground">Manage your essential documents and requirements</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {/* Placeholder for consistent spacing */}
