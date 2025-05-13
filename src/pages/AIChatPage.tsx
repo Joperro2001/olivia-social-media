@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAIChat } from "@/hooks/useAIChat";
-import ChatInput from "@/components/olivia/ChatInput";
-import ChatBubble from "@/components/olivia/ChatBubble";
+import ChatInput from "@/components/chat/ChatInput";
+import ChatBubble from "@/components/chat/ChatBubble";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useAuth } from "@/context/AuthContext";
+import { DEFAULT_AVATAR, MESSAGE_TYPES } from "@/constants/chatConstants";
 
 const AIChatPage: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -92,9 +93,9 @@ const AIChatPage: React.FC = () => {
               <ChatBubble
                 key={message.message_id}
                 message={message.content}
-                isUser={message.message_type === 'human'}
+                isUser={message.message_type === MESSAGE_TYPES.HUMAN}
                 timestamp={new Date(message.timestamp).toLocaleTimeString()}
-                avatar={message.message_type === 'ai' ? "/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png" : undefined}
+                avatar={message.message_type === MESSAGE_TYPES.AI ? DEFAULT_AVATAR : undefined}
                 isFirstMessage={index === 0}
               />
             ))}

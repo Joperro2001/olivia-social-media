@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from "react";
-import ChatBubble from "@/components/olivia/ChatBubble";
-import ChatInput from "@/components/olivia/ChatInput";
+import ChatBubble from "@/components/chat/ChatBubble";
+import ChatInput from "@/components/chat/ChatInput";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import SuggestionCarousel from "@/components/olivia/SuggestionCarousel";
 import { useAuth } from "@/context/AuthContext";
@@ -9,6 +8,7 @@ import { saveChecklistToLocalStorage } from "@/utils/checklistUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { UserConversationMessage } from "@/types/Chat";
+import { DEFAULT_AVATAR } from "@/constants/chatConstants";
 
 interface Message {
   id: string;
@@ -29,7 +29,7 @@ const OliviaChat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const autoMessageSent = useRef<boolean>(false);
   const [sessionId, setSessionId] = useState<string>("");
-  
+
   const suggestedCards = [
     {
       id: "card1",
@@ -397,6 +397,7 @@ const OliviaChat: React.FC = () => {
     }
   };
 
+  // Auto-scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth"
@@ -418,7 +419,7 @@ const OliviaChat: React.FC = () => {
           message={message.content} 
           isUser={message.isUser} 
           timestamp={message.timestamp} 
-          avatar={!message.isUser ? "/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png" : undefined} 
+          avatar={!message.isUser ? DEFAULT_AVATAR : undefined} 
           isFirstMessage={index === 0}
         />)}
         

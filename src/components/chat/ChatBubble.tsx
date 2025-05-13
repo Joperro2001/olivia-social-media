@@ -37,7 +37,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
         <Avatar className="w-8 h-8">
           <img
             src={avatar || "/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png"}
-            alt="Olivia"
+            alt="Avatar"
             className="w-full h-full object-cover"
           />
         </Avatar>

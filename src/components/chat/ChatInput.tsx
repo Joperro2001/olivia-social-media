@@ -4,17 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MAX_RETRIES } from "@/constants/chatConstants";
 
 export interface ChatInputProps {
   onSendMessage: (content: string) => Promise<boolean>;
   placeholder?: string;
   disabled?: boolean;
+  autoFocus?: boolean;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ 
   onSendMessage, 
   placeholder = "Type a message...",
-  disabled = false
+  disabled = false,
+  autoFocus = true
 }) => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,11 +25,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    // Auto-focus the textarea when the component mounts
-    if (textareaRef.current && !disabled) {
+    // Auto-focus the textarea when the component mounts if autoFocus is true
+    if (textareaRef.current && autoFocus && !disabled) {
       textareaRef.current.focus();
     }
-  }, [disabled]);
+  }, [disabled, autoFocus]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -39,33 +42,47 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setIsSubmitting(true);
     console.log("Attempting to send message:", trimmedMessage);
     
-    try {
-      const success = await onSendMessage(trimmedMessage);
-      
-      if (success) {
-        console.log("Message sent successfully");
-        setMessage("");
-      } else {
-        console.error("Message sending failed");
-        toast({
-          title: "Failed to send message",
-          description: "Please try again or refresh the page.",
-          variant: "destructive",
-        });
+    let retryCount = 0;
+    let success = false;
+
+    while (retryCount < MAX_RETRIES && !success) {
+      try {
+        success = await onSendMessage(trimmedMessage);
+        
+        if (success) {
+          console.log("Message sent successfully");
+          setMessage("");
+        } else {
+          console.error(`Message sending failed (attempt ${retryCount + 1})`);
+          retryCount++;
+          
+          if (retryCount >= MAX_RETRIES) {
+            toast({
+              title: "Failed to send message",
+              description: "Please try again or refresh the page.",
+              variant: "destructive",
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error in handleSubmit (attempt ${retryCount + 1}):`, error);
+        retryCount++;
+        
+        if (retryCount >= MAX_RETRIES) {
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
-    } catch (error) {
-      console.error("Error in handleSubmit:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-      // Re-focus the textarea after sending
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-      }
+    }
+    
+    setIsSubmitting(false);
+    
+    // Re-focus the textarea after sending
+    if (textareaRef.current && autoFocus) {
+      textareaRef.current.focus();
     }
   };
 
