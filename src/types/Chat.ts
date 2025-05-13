@@ -1,3 +1,4 @@
+
 export type Message = {
   id: string;
   content: string;
@@ -71,7 +72,7 @@ export type ChecklistItemData = {
   description: string;
   is_checked: boolean;
   auto_checked?: boolean;
-  category?: string;  // Add the category property as optional
+  category?: string;  // Added the category property
   created_at?: string;
   updated_at?: string;
 };
