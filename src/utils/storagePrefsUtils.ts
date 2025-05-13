@@ -6,7 +6,6 @@
 // Default preferences
 const DEFAULT_PREFS = {
   useLocalStorage: true,
-  encryptLocalMessages: true,
   autoDeleteAfterSync: true,
   localStorageTimeout: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
 };
@@ -44,23 +43,6 @@ export const saveChatStoragePrefs = (
   } catch (error) {
     console.error('Error saving chat preferences:', error);
   }
-};
-
-// Check if local messages should be purged based on age
-export const shouldPurgeOldMessages = (
-  userId: string | undefined,
-  timestamp: string
-): boolean => {
-  if (!userId) return false;
-  
-  const prefs = getChatStoragePrefs(userId);
-  if (!prefs.autoDeleteAfterSync) return false;
-  
-  const messageTime = new Date(timestamp).getTime();
-  const currentTime = Date.now();
-  const age = currentTime - messageTime;
-  
-  return age > prefs.localStorageTimeout;
 };
 
 // Clean up old local messages across all chats

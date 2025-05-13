@@ -1,10 +1,8 @@
 
 import { Message } from "@/types/Chat";
 import { supabase } from "@/integrations/supabase/client";
-import { encryptMessage, decryptMessage, encryptMessages, decryptMessages } from "./encryptionUtils";
-import { getChatStoragePrefs, shouldPurgeOldMessages, purgeOldLocalMessages } from "./storagePrefsUtils";
 
-// Save local messages to localStorage with encryption
+// Save local messages to localStorage without encryption
 export const saveLocalMessages = async (
   userId: string | undefined,
   profileId: string,
@@ -13,35 +11,15 @@ export const saveLocalMessages = async (
   if (!userId || !profileId || messages.length === 0) return;
   
   try {
-    const prefs = getChatStoragePrefs(userId);
-    
-    // Return early if local storage is disabled
-    if (!prefs.useLocalStorage) {
-      console.log('Local storage is disabled by user preference');
-      return;
-    }
-    
     const savedLocalKey = `chat_local_${userId}_${profileId}`;
-    
-    // Encrypt messages if enabled
-    let messagesToSave = messages;
-    if (prefs.encryptLocalMessages) {
-      messagesToSave = await encryptMessages(messages, userId);
-    }
-    
-    localStorage.setItem(savedLocalKey, JSON.stringify(messagesToSave));
-    console.log(`Saved ${messages.length} messages to local storage (encrypted: ${prefs.encryptLocalMessages})`);
-    
-    // Periodically clean up old messages
-    if (Math.random() < 0.1) { // 10% chance to run cleanup on each save
-      purgeOldLocalMessages(userId);
-    }
+    localStorage.setItem(savedLocalKey, JSON.stringify(messages));
+    console.log(`Saved ${messages.length} messages to local storage`);
   } catch (error) {
     console.error('Error saving local messages:', error);
   }
 };
 
-// Load local messages from localStorage and decrypt if needed
+// Load local messages from localStorage
 export const loadLocalMessages = async (
   userId: string | undefined,
   profileId: string
@@ -49,14 +27,6 @@ export const loadLocalMessages = async (
   if (!userId || !profileId) return [];
   
   try {
-    const prefs = getChatStoragePrefs(userId);
-    
-    // Return empty if local storage is disabled
-    if (!prefs.useLocalStorage) {
-      console.log('Local storage is disabled by user preference');
-      return [];
-    }
-    
     const savedLocalKey = `chat_local_${userId}_${profileId}`;
     const savedMessages = localStorage.getItem(savedLocalKey);
     
@@ -64,12 +34,6 @@ export const loadLocalMessages = async (
       const parsedMessages = JSON.parse(savedMessages);
       if (Array.isArray(parsedMessages)) {
         console.log('Loaded saved local messages:', parsedMessages.length);
-        
-        // Decrypt messages if they appear to be encrypted
-        if (prefs.encryptLocalMessages) {
-          return await decryptMessages(parsedMessages, userId);
-        }
-        
         return parsedMessages;
       }
     }
@@ -176,22 +140,14 @@ export const sendMessageToDatabase = async (
   }
 };
 
-// Create a new local message with optional encryption
+// Create a new local message
 export const createLocalMessage = async (
   content: string,
   userId: string
 ): Promise<Message> => {
-  const prefs = getChatStoragePrefs(userId);
-  let messageContent = content.trim();
-  
-  // Encrypt if enabled
-  if (prefs.encryptLocalMessages) {
-    messageContent = await encryptMessage(messageContent, userId);
-  }
-  
   return {
     id: Date.now().toString(),
-    content: messageContent,
+    content: content.trim(),
     sender_id: userId,
     sent_at: new Date().toISOString(),
     read_at: null
@@ -245,20 +201,12 @@ export const sendMultipleMessagesToDatabase = async (
   console.log(`Attempting to send ${messages.length} messages to database`);
   
   try {
-    // Ensure any encrypted messages are decrypted before sending to server
-    const processedMessages = await Promise.all(
-      messages.map(async (msg) => {
-        // Try to decrypt if it looks encrypted
-        const content = await decryptMessage(msg.content, msg.sender_id);
-        
-        return {
-          chat_id: chatId,
-          sender_id: msg.sender_id,
-          content: content,
-          sent_at: msg.sent_at
-        };
-      })
-    );
+    const processedMessages = messages.map(msg => ({
+      chat_id: chatId,
+      sender_id: msg.sender_id,
+      content: msg.content,
+      sent_at: msg.sent_at
+    }));
     
     const { error } = await supabase
       .from('messages')

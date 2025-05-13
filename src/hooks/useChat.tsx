@@ -17,7 +17,6 @@ import {
   sendMultipleMessagesToDatabase,
   testDatabaseConnection
 } from "@/utils/chatUtils";
-import { getChatStoragePrefs } from "@/utils/storagePrefsUtils";
 
 interface UseChatProps {
   profileId: string;
@@ -29,7 +28,6 @@ export const useChat = ({ profileId }: UseChatProps) => {
   const [retryCount, setRetryCount] = useState(0);
   const [state, dispatch] = useChatReducer();
   const [syncAttemptInProgress, setSyncAttemptInProgress] = useState(false);
-  const [storagePrefs, setStoragePrefs] = useState({ useLocalStorage: true });
   
   const { 
     messages, 
@@ -40,17 +38,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
     hasLocalMessages
   } = state;
 
-  // Load user storage preferences
-  useEffect(() => {
-    if (user) {
-      const prefs = getChatStoragePrefs(user.id);
-      setStoragePrefs({ useLocalStorage: prefs.useLocalStorage });
-    }
-  }, [user]);
-
   // Load persisted local messages on component mount
   useEffect(() => {
-    if (!user || !profileId || !storagePrefs.useLocalStorage) return;
+    if (!user || !profileId) return;
     
     const loadMessages = async () => {
       const loadedMessages = await loadLocalMessages(user.id, profileId);
@@ -58,7 +48,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
     };
     
     loadMessages();
-  }, [user, profileId, storagePrefs.useLocalStorage]);
+  }, [user, profileId]);
 
   // Get or create chat with the matched profile
   useEffect(() => {
@@ -123,14 +113,12 @@ export const useChat = ({ profileId }: UseChatProps) => {
 
   // Save local messages to localStorage when they change
   useEffect(() => {
-    if (!storagePrefs.useLocalStorage) return;
-    
     const saveMessages = async () => {
       await saveLocalMessages(user?.id, profileId, localMessages);
     };
     
     saveMessages();
-  }, [localMessages, user, profileId, storagePrefs.useLocalStorage]);
+  }, [localMessages, user, profileId]);
 
   // Periodic sync attempt when in local mode
   useEffect(() => {
@@ -213,26 +201,6 @@ export const useChat = ({ profileId }: UseChatProps) => {
     
     // If we're in local mode due to database issues
     if (usingLocalMode) {
-      // If local storage is disabled in user preferences, check if we can reconnect
-      if (!storagePrefs.useLocalStorage) {
-        const isConnected = await testDatabaseConnection();
-        if (!isConnected) {
-          toast({
-            title: "Warning",
-            description: "Local storage is disabled and you're offline. Message may not be saved.",
-            variant: "destructive",
-          });
-        } else {
-          // If connected, try switching back to online mode
-          dispatch({ type: 'SET_USING_LOCAL_MODE', payload: false });
-          // Small delay to allow mode switch
-          await new Promise(resolve => setTimeout(resolve, 300));
-          
-          // Now try sending again
-          return sendMessage(content);
-        }
-      }
-      
       // Create and store message locally
       const localMessage = await createLocalMessage(content, user.id);
       
@@ -264,46 +232,28 @@ export const useChat = ({ profileId }: UseChatProps) => {
       } catch (error) {
         console.error('Error sending message:', error);
         
-        // Fall back to local mode if local storage is enabled
+        // Fall back to local mode
         dispatch({ type: 'SET_USING_LOCAL_MODE', payload: true });
         
-        if (storagePrefs.useLocalStorage) {
-          // Add message to local state
-          const localMessage = await createLocalMessage(content, user.id);
-          dispatch({ type: 'ADD_LOCAL_MESSAGE', payload: localMessage });
-          dispatch({ type: 'ADD_MESSAGE', payload: localMessage });
-          
-          toast({
-            title: "Warning",
-            description: "Message sent in local mode only (saved to your device)",
-            variant: "default",
-          });
-          
-          return true;
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to send message and local storage is disabled",
-            variant: "destructive",
-          });
-          return false;
-        }
-      }
-    } else {
-      // No chatId available, use local mode if enabled
-      if (storagePrefs.useLocalStorage) {
+        // Add message to local state
         const localMessage = await createLocalMessage(content, user.id);
         dispatch({ type: 'ADD_LOCAL_MESSAGE', payload: localMessage });
         dispatch({ type: 'ADD_MESSAGE', payload: localMessage });
-        return true;
-      } else {
+        
         toast({
-          title: "Error",
-          description: "Cannot send message without connection and local storage is disabled",
-          variant: "destructive",
+          title: "Warning",
+          description: "Message sent in local mode only (saved to your device)",
+          variant: "default",
         });
-        return false;
+        
+        return true;
       }
+    } else {
+      // No chatId available, use local mode
+      const localMessage = await createLocalMessage(content, user.id);
+      dispatch({ type: 'ADD_LOCAL_MESSAGE', payload: localMessage });
+      dispatch({ type: 'ADD_MESSAGE', payload: localMessage });
+      return true;
     }
   };
 
