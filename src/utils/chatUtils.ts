@@ -40,7 +40,7 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     // Use RPC function to check if a chat exists between these users
     // First, get all chats the current user is in
     const { data: userChats, error: userChatsError } = await supabase
-      .rpc('get_user_chats');
+      .rpc('get_user_chats', { user_id: user.id });
       
     if (userChatsError) {
       console.error('Error getting user chats:', userChatsError);
@@ -51,14 +51,14 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
       // For each chat, check if the other user is a participant
       for (const chatId of userChats) {
         // Get all participants for this chat except the current user
-        const { data: otherParticipants, error: participantsError } = await supabase
+        const { data: otherParticipants, error: fetchParticipantsError } = await supabase
           .from('chat_participants')
           .select('user_id')
           .eq('chat_id', chatId)
           .neq('user_id', user.id);
           
-        if (participantsError) {
-          console.error('Error checking chat participants:', participantsError);
+        if (fetchParticipantsError) {
+          console.error('Error checking chat participants:', fetchParticipantsError);
           continue; // Try next chat
         }
         

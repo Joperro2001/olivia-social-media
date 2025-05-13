@@ -23,10 +23,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   useEffect(() => {
     // Auto-focus the textarea when the component mounts
-    if (textareaRef.current) {
+    if (textareaRef.current && !disabled) {
       textareaRef.current.focus();
     }
-  }, []);
+  }, [disabled]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -37,15 +37,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (!trimmedMessage || isSubmitting || disabled) return;
     
     setIsSubmitting(true);
+    console.log("Attempting to send message:", trimmedMessage);
     
     try {
       const success = await onSendMessage(trimmedMessage);
+      
       if (success) {
+        console.log("Message sent successfully");
         setMessage("");
       } else {
+        console.error("Message sending failed");
         toast({
-          title: "Error",
-          description: "Failed to send message. Please try again.",
+          title: "Failed to send message",
+          description: "Please try again or refresh the page.",
           variant: "destructive",
         });
       }
