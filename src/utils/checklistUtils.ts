@@ -18,8 +18,8 @@ function convertDbResponseToUserChecklist(data: any): UserChecklist {
 
 // Helper function to convert checklist data to Json type for database storage
 function prepareChecklistDataForDb(items: ChecklistItemData[]): Json {
-  // Convert to a plain object that fits Json type
-  return { items: items } as Json;
+  // First convert to unknown, then to Json to satisfy TypeScript
+  return JSON.parse(JSON.stringify({ items })) as Json;
 }
 
 // Fetch a user's checklists
