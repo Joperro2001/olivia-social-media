@@ -5,19 +5,20 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Trash, Download, Check, FileText } from "lucide-react";
+import { Trash, Download, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserChecklist, ChecklistItemData } from "@/types/Chat";
 import { updateChecklistItem, deleteChecklist } from "@/utils/checklistUtils";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 interface ChecklistDetailProps {
   checklist: UserChecklist;
   onDeleted?: () => void;
-  onUpdated?: () => void;
 }
 
-const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailProps) => {
+const ChecklistDetail = ({ checklist, onDeleted }: ChecklistDetailProps) => {
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [items, setItems] = useState<Record<string, ChecklistItemData[]>>({});
@@ -40,9 +41,11 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
   }, [checklist]);
   
   const handleToggleItem = async (item: ChecklistItemData) => {
+    if (!user) return;
+    
     try {
       const updated = await updateChecklistItem(
-        checklist.checklist_id,
+        user.id,
         item.id,
         !item.is_checked
       );
@@ -61,10 +64,6 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
           
           return updatedItems;
         });
-        
-        if (onUpdated) {
-          onUpdated();
-        }
       }
     } catch (error) {
       console.error("Error updating checklist item:", error);
@@ -77,9 +76,11 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
   };
   
   const handleDelete = async () => {
+    if (!user) return;
+    
     if (window.confirm("Are you sure you want to delete this checklist?")) {
       try {
-        const success = await deleteChecklist(checklist.checklist_id);
+        const success = await deleteChecklist(user.id);
         
         if (success) {
           toast({
@@ -109,8 +110,7 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
   const handleExport = () => {
     try {
       // Create text content for the checklist
-      let content = `# ${checklist.title}\n\n`;
-      content += `Destination: ${checklist.description || "Unknown"}\n\n`;
+      let content = `# My Relocation Checklist\n\n`;
       
       // Add items grouped by category
       Object.entries(items).forEach(([category, categoryItems]) => {
@@ -126,7 +126,7 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${checklist.title.replace(/\s+/g, '_')}.md`;
+      a.download = `relocation_checklist.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -223,11 +223,8 @@ const ChecklistDetail = ({ checklist, onDeleted, onUpdated }: ChecklistDetailPro
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            <CardTitle>{checklist.title}</CardTitle>
+            <CardTitle>My Relocation Checklist</CardTitle>
           </div>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          <p>{checklist.description}</p>
         </div>
       </CardHeader>
       

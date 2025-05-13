@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import ChecklistDetail from "@/components/moving/ChecklistDetail";
@@ -8,24 +8,25 @@ import { fetchChecklist } from "@/utils/checklistUtils";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
 import { UserChecklist } from "@/types/Chat";
+import { useAuth } from "@/context/AuthContext";
 
 const ChecklistDetailPage: React.FC = () => {
-  const { checklistId } = useParams<{ checklistId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [checklist, setChecklist] = useState<UserChecklist | null>(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
     const loadChecklist = async () => {
-      if (!checklistId) {
+      if (!user) {
         navigate("/my-city-packer");
         return;
       }
       
       try {
         setLoading(true);
-        const data = await fetchChecklist(checklistId);
+        const data = await fetchChecklist(user.id);
         
         if (!data) {
           toast({
@@ -51,7 +52,7 @@ const ChecklistDetailPage: React.FC = () => {
     };
     
     loadChecklist();
-  }, [checklistId, navigate, toast]);
+  }, [user, navigate, toast]);
   
   if (loading) {
     return (
@@ -99,8 +100,7 @@ const ChecklistDetailPage: React.FC = () => {
       <div className="px-4 flex-1 overflow-auto pb-28">
         <ChecklistDetail 
           checklist={checklist} 
-          onDeleted={() => navigate("/my-city-packer")}
-          onUpdated={() => {}}
+          onDeleted={() => navigate("/my-city-packer")} 
         />
       </div>
     </div>

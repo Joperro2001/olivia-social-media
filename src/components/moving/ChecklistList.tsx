@@ -6,8 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { UserChecklist } from "@/types/Chat";
-import { fetchUserChecklists, useChecklist } from "@/utils/checklistUtils";
-import { Package, FileText } from "lucide-react";
+import { fetchChecklist, useChecklist } from "@/utils/checklistUtils";
+import { FileText } from "lucide-react";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import ChecklistDetail from "@/components/moving/ChecklistDetail";
 
@@ -15,26 +15,25 @@ const ChecklistList = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [checklists, setChecklists] = useState<UserChecklist[]>([]);
-  const [activeChecklist, setActiveChecklist] = useState<UserChecklist | null>(null);
+  const [checklist, setChecklist] = useState<UserChecklist | null>(null);
   const [loading, setLoading] = useState(true);
   const { syncLocalChecklistToDatabase } = useChecklist();
   
-  const loadChecklists = async () => {
+  const loadChecklist = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     try {
-      const data = await fetchUserChecklists();
-      setChecklists(data);
-      
-      // If we have exactly one checklist, select it automatically
-      if (data.length === 1) {
-        handleSelectChecklist(data[0]);
-      }
+      const data = await fetchChecklist(user.id);
+      setChecklist(data);
     } catch (error) {
-      console.error("Error loading checklists:", error);
+      console.error("Error loading checklist:", error);
       toast({
         title: "Error",
-        description: "Failed to load your checklists",
+        description: "Failed to load your checklist",
         variant: "destructive"
       });
     } finally {
@@ -47,7 +46,7 @@ const ChecklistList = () => {
     if (user) {
       const syncAndLoad = async () => {
         const syncedChecklist = await syncLocalChecklistToDatabase();
-        loadChecklists();
+        loadChecklist();
         
         if (syncedChecklist) {
           toast({
@@ -61,11 +60,6 @@ const ChecklistList = () => {
     }
   }, [user]);
   
-  const handleSelectChecklist = async (checklist: UserChecklist) => {
-    // Navigate to the detailed view
-    navigate(`/checklist/${checklist.checklist_id}`);
-  };
-  
   const handleCreateChecklist = () => {
     // Redirect to chat with Olivia to create a new checklist
     sessionStorage.setItem("autoSendMessage", "Create my relocation document checklist");
@@ -73,15 +67,15 @@ const ChecklistList = () => {
   };
   
   const handleDeletedChecklist = () => {
-    setActiveChecklist(null);
-    loadChecklists();
+    setChecklist(null);
+    loadChecklist();
   };
   
   if (loading) {
-    return <LoadingSpinner message="Loading your checklists..." />;
+    return <LoadingSpinner message="Loading your checklist..." />;
   }
   
-  if (checklists.length === 0) {
+  if (!checklist) {
     return (
       <Card className="border-primary/10 hover:shadow-md transition-shadow">
         <CardHeader>
@@ -110,44 +104,7 @@ const ChecklistList = () => {
     );
   }
   
-  if (checklists.length === 1 && activeChecklist) {
-    return <ChecklistDetail checklist={activeChecklist} onDeleted={handleDeletedChecklist} />;
-  }
-  
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {checklists.map(checklist => (
-          <Card 
-            key={checklist.checklist_id} 
-            className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => handleSelectChecklist(checklist)}
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">{checklist.title}</CardTitle>
-              <p className="text-sm text-muted-foreground">{checklist.description}</p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between text-sm">
-                <span>{new Date(checklist.created_at).toLocaleDateString()}</span>
-                <span>{checklist.checklist_id}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        
-        <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow border-dashed"
-          onClick={handleCreateChecklist}
-        >
-          <CardContent className="h-full flex flex-col items-center justify-center py-6">
-            <FileText className="h-12 w-12 text-muted-foreground mb-2" />
-            <p className="text-center font-medium">Create New Checklist</p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  return <ChecklistDetail checklist={checklist} onDeleted={handleDeletedChecklist} />;
 };
 
 export default ChecklistList;

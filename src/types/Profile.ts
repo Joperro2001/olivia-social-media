@@ -11,4 +11,14 @@ export type Profile = {
   university: string;
   updated_at: string;
   avatar_url?: string;
+  checklist_data?: {
+    items: ChecklistItem[];
+  };
 }; 
+
+export type ChecklistItem = {
+  id: string;
+  description: string;
+  is_checked: boolean;
+  category?: string;
+};

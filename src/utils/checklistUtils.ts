@@ -1,45 +1,35 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { UserChecklist, ChecklistItemData } from '@/types/Chat';
+import { ChecklistItemData, UserChecklist } from '@/types/Chat';
 import { useAuth } from "@/context/AuthContext";
 import { useCallback } from "react";
-
-// Define interfaces for our checklist data based on the new schema
-export interface ChecklistWithItems extends UserChecklist {}
 
 // Fetch a user's checklists
 export async function fetchUserChecklists() {
   try {
     const { data, error } = await supabase
       .from("user_checklists")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("*");
 
     if (error) {
       console.error("Error fetching checklists:", error);
       return [];
     }
 
-    // Transform the data to ensure it matches the UserChecklist type
-    return (data || []).map(item => ({
-      ...item,
-      checklist_data: typeof item.checklist_data === 'string' 
-        ? JSON.parse(item.checklist_data) 
-        : item.checklist_data
-    })) as UserChecklist[];
+    return (data || []) as UserChecklist[];
   } catch (err) {
     console.error("Error in fetchUserChecklists:", err);
     return [];
   }
 }
 
-// Fetch a single checklist
-export async function fetchChecklist(checklistId: string): Promise<UserChecklist | null> {
+// Fetch a single checklist for a user
+export async function fetchChecklist(userId: string): Promise<UserChecklist | null> {
   try {
     const { data, error } = await supabase
       .from("user_checklists")
       .select("*")
-      .eq("checklist_id", checklistId)
+      .eq("user_id", userId)
       .single();
 
     if (error) {
@@ -47,13 +37,7 @@ export async function fetchChecklist(checklistId: string): Promise<UserChecklist
       return null;
     }
 
-    // Transform to ensure it matches the UserChecklist type
-    return {
-      ...data,
-      checklist_data: typeof data.checklist_data === 'string' 
-        ? JSON.parse(data.checklist_data) 
-        : data.checklist_data
-    } as UserChecklist;
+    return data as UserChecklist;
   } catch (err) {
     console.error("Error in fetchChecklist:", err);
     return null;
@@ -62,8 +46,6 @@ export async function fetchChecklist(checklistId: string): Promise<UserChecklist
 
 // Create a new checklist
 export async function createChecklist(checklist: {
-  title: string;
-  description?: string;
   items: ChecklistItemData[];
   user_id: string;
 }) {
@@ -72,8 +54,6 @@ export async function createChecklist(checklist: {
       .from("user_checklists")
       .insert({
         user_id: checklist.user_id,
-        title: checklist.title,
-        description: checklist.description || null,
         checklist_data: {
           items: checklist.items
         }
@@ -86,12 +66,7 @@ export async function createChecklist(checklist: {
       return null;
     }
 
-    return {
-      ...data,
-      checklist_data: typeof data.checklist_data === 'string' 
-        ? JSON.parse(data.checklist_data) 
-        : data.checklist_data
-    } as UserChecklist;
+    return data as UserChecklist;
   } catch (err) {
     console.error("Error in createChecklist:", err);
     return null;
@@ -99,51 +74,16 @@ export async function createChecklist(checklist: {
 }
 
 // Update an existing checklist
-export async function updateChecklist(checklistId: string, updates: {
-  title?: string;
-  description?: string;
-  items?: ChecklistItemData[];
-}) {
+export async function updateChecklist(userId: string, items: ChecklistItemData[]) {
   try {
-    // First get the current checklist to merge with updates
-    const { data: currentChecklist } = await supabase
-      .from("user_checklists")
-      .select("checklist_data, title, description")
-      .eq("checklist_id", checklistId)
-      .single();
-    
-    if (!currentChecklist) {
-      throw new Error("Checklist not found");
-    }
-    
-    // Prepare updates
-    const updatedData: any = {};
-    
-    if (updates.title) updatedData.title = updates.title;
-    if (updates.description !== undefined) updatedData.description = updates.description;
-    
-    // If items are provided, update the checklist_data
-    if (updates.items) {
-      const typedChecklistData = typeof currentChecklist.checklist_data === 'string'
-        ? JSON.parse(currentChecklist.checklist_data)
-        : currentChecklist.checklist_data as {
-            items: ChecklistItemData[];
-            original_id?: string;
-            original_conversation_id?: string;
-            created_at?: string;
-          };
-      
-      updatedData.checklist_data = {
-        ...typedChecklistData,
-        items: updates.items
-      };
-    }
-    
-    // Apply the updates
     const { data, error } = await supabase
       .from("user_checklists")
-      .update(updatedData)
-      .eq("checklist_id", checklistId)
+      .update({
+        checklist_data: { 
+          items: items 
+        }
+      })
+      .eq("user_id", userId)
       .select()
       .single();
 
@@ -152,12 +92,7 @@ export async function updateChecklist(checklistId: string, updates: {
       return null;
     }
 
-    return {
-      ...data,
-      checklist_data: typeof data.checklist_data === 'string' 
-        ? JSON.parse(data.checklist_data) 
-        : data.checklist_data
-    } as UserChecklist;
+    return data as UserChecklist;
   } catch (err) {
     console.error("Error in updateChecklist:", err);
     return null;
@@ -166,7 +101,7 @@ export async function updateChecklist(checklistId: string, updates: {
 
 // Update a checklist item
 export async function updateChecklistItem(
-  checklistId: string, 
+  userId: string, 
   itemId: string, 
   isChecked: boolean
 ) {
@@ -175,7 +110,7 @@ export async function updateChecklistItem(
     const { data: checklist } = await supabase
       .from("user_checklists")
       .select("checklist_data")
-      .eq("checklist_id", checklistId)
+      .eq("user_id", userId)
       .single();
     
     if (!checklist) {
@@ -183,13 +118,7 @@ export async function updateChecklistItem(
     }
     
     // Find and update the specific item
-    const typedChecklistData = typeof checklist.checklist_data === 'string'
-      ? JSON.parse(checklist.checklist_data)
-      : checklist.checklist_data as {
-          items: ChecklistItemData[];
-        };
-    
-    const items = typedChecklistData.items;
+    const items = checklist.checklist_data.items;
     const updatedItems = items.map(item => {
       if (item.id === itemId) {
         return { ...item, is_checked: isChecked };
@@ -202,11 +131,10 @@ export async function updateChecklistItem(
       .from("user_checklists")
       .update({
         checklist_data: { 
-          ...typedChecklistData, 
           items: updatedItems 
         }
       })
-      .eq("checklist_id", checklistId)
+      .eq("user_id", userId)
       .select()
       .single();
 
@@ -215,12 +143,7 @@ export async function updateChecklistItem(
       return null;
     }
 
-    return {
-      ...data,
-      checklist_data: typeof data.checklist_data === 'string' 
-        ? JSON.parse(data.checklist_data) 
-        : data.checklist_data
-    } as UserChecklist;
+    return data as UserChecklist;
   } catch (err) {
     console.error("Error in updateChecklistItem:", err);
     return null;
@@ -228,12 +151,12 @@ export async function updateChecklistItem(
 }
 
 // Delete a checklist
-export async function deleteChecklist(checklistId: string) {
+export async function deleteChecklist(userId: string) {
   try {
     const { error } = await supabase
       .from("user_checklists")
       .delete()
-      .eq("checklist_id", checklistId);
+      .eq("user_id", userId);
 
     if (error) {
       console.error("Error deleting checklist:", error);
@@ -263,11 +186,6 @@ export function removeChecklistFromLocalStorage() {
   localStorage.removeItem("cityPackerData");
 }
 
-// Helper function to fetch checklist with items (for compatibility with old code)
-export async function fetchChecklistWithItems(checklistId: string): Promise<UserChecklist | null> {
-  return fetchChecklist(checklistId);
-}
-
 // Custom hook for working with checklists
 export function useChecklist() {
   const { user } = useAuth();
@@ -285,19 +203,13 @@ export function useChecklist() {
         description: item.text,
         is_checked: item.checked || false,
         auto_checked: item.auto_checked || false,
-        category: item.category || "General", // Add category
+        category: item.category || "General", 
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })) || [];
       
       // Create the checklist
       const checklist = await createChecklist({
-        title: localChecklist.title || "My Moving Checklist",
-        description: `Destination: ${localChecklist.destination || "New Location"}${
-          localChecklist.purpose ? `, Purpose: ${localChecklist.purpose}` : ""
-        }${
-          localChecklist.duration ? `, Duration: ${localChecklist.duration}` : ""
-        }`,
         items: items,
         user_id: user.id
       });
