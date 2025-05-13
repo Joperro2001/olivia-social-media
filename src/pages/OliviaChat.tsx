@@ -308,7 +308,7 @@ const OliviaChat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-0 pb-0 sticky bottom-0 py-0 bg-gradient-to-t from-[#FDF5EF] to-transparent pt-0">
+      <div className="p-0 pb-8 sticky bottom-0 py-0 bg-gradient-to-t from-[#FDF5EF] to-transparent pt-4">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
