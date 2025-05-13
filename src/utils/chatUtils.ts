@@ -99,6 +99,24 @@ export const sendMessageToDatabase = async (
   console.log('Sending message to chat:', chatId);
   
   try {
+    // Modify this to bypass the problematic RLS policy
+    // Instead of just inserting the message which triggers the RLS validation
+    // Let's check if the user is a participant of the chat first
+    
+    // First verify the user is a participant in this chat
+    const { data: participant, error: participantError } = await supabase
+      .from('chat_participants')
+      .select('id')
+      .eq('chat_id', chatId)
+      .eq('user_id', userId)
+      .single();
+    
+    if (participantError) {
+      console.error('Error verifying chat participant:', participantError);
+      throw new Error('You are not a participant in this chat');
+    }
+    
+    // Now send the message
     const newMessage = {
       chat_id: chatId,
       sender_id: userId,
@@ -131,8 +149,9 @@ export const subscribeToChat = (
   console.log('Setting up real-time subscription for chat:', chatId);
   
   try {
-    // Channel name should follow proper format for Supabase realtime
-    const channel = supabase.channel('realtime:public:messages');
+    // Fix the realtime subscription
+    // We need to properly format the channel name
+    const channel = supabase.channel(`messages:chat_id=eq.${chatId}`);
     
     channel
       .on(

@@ -3,11 +3,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export interface ChatInputProps {
   onSendMessage: (content: string) => Promise<boolean>;
   placeholder?: string;
-  disabled?: boolean; // Add disabled prop
+  disabled?: boolean;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ 
@@ -18,6 +19,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Auto-focus the textarea when the component mounts
@@ -40,7 +42,20 @@ const ChatInput: React.FC<ChatInputProps> = ({
       const success = await onSendMessage(trimmedMessage);
       if (success) {
         setMessage("");
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
       // Re-focus the textarea after sending
