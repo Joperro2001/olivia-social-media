@@ -1,16 +1,11 @@
 
-import { useState, useEffect, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { Message } from "@/types/Chat";
-import {
-  fetchChatMessages,
-  getOrCreateChat,
-  sendMessageToDatabase,
-  subscribeToChat,
-  testDatabaseConnection
-} from "@/utils/chatUtils";
+import { useChatState } from "./chat/useChatState";
+import { useChatSubscription } from "./chat/useChatSubscription";
+import { useChatInitialization } from "./chat/useChatInitialization";
+import { useSendMessage } from "./chat/useSendMessage";
+import { testDatabaseConnection } from "@/utils/chatUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface UseChatProps {
   profileId: string;
@@ -19,188 +14,44 @@ interface UseChatProps {
 export const useChat = ({ profileId }: UseChatProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [chatId, setChatId] = useState<string | null>(null);
-  const [connectionError, setConnectionError] = useState<boolean>(false);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const retryCount = useRef<number>(0);
-  const maxRetries = 3;
+  
+  // Get state management functions
+  const {
+    messages, setMessages,
+    isLoading, setIsLoading,
+    chatId, setChatId,
+    connectionError, setConnectionError
+  } = useChatState();
 
-  // Get or create chat with the matched profile
-  useEffect(() => {
-    const initializeChat = async () => {
-      if (!user || !profileId) return;
-      
-      try {
-        setIsLoading(true);
-        setConnectionError(false);
-        
-        console.log("Starting chat initialization with profile:", profileId);
-        
-        // Test connection to database first
-        const isConnected = await testDatabaseConnection();
-        if (!isConnected) {
-          console.error("Database connection test failed");
-          setConnectionError(true);
-          throw new Error('Database connection failed');
-        }
-        
-        // Try to get or create a chat using our RPC function
-        const chatIdFromDB = await getOrCreateChat(profileId);
-        console.log('Chat initialized with ID:', chatIdFromDB);
-        setChatId(chatIdFromDB);
-        
-        // Fetch existing messages
-        await fetchMessages(chatIdFromDB);
-        
-        // Reset retry count on success
-        retryCount.current = 0;
-      } catch (error: any) {
-        console.error('Error initializing chat:', error);
-        console.error('Error details:', {
-          errorName: error.name,
-          errorMessage: error.message,
-          errorStack: error.stack
-        });
-        
-        // Check if we should retry
-        if (retryCount.current < maxRetries) {
-          retryCount.current += 1;
-          console.log(`Retrying chat initialization (${retryCount.current}/${maxRetries})...`);
-          
-          // Add a small delay before retrying
-          setTimeout(() => {
-            initializeChat();
-          }, 1000 * retryCount.current); // Increasing delay for each retry
-          
-          return;
-        }
-        
-        toast({
-          title: "Chat Initialization Error",
-          description: "Could not connect to the chat service. Please check your connection and try again.",
-          variant: "destructive",
-        });
-        setConnectionError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    initializeChat();
-    
-    // Clean up any existing channel subscription when component unmounts or profileId changes
-    return () => {
-      if (channelRef.current) {
-        console.log('Cleaning up channel subscription');
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, [user, profileId, toast]);
+  // Initialize chat
+  const { initializeChat, fetchMessages } = useChatInitialization({
+    userId: user?.id,
+    profileId,
+    setIsLoading,
+    setConnectionError,
+    setChatId,
+    setMessages
+  });
 
-  // Subscribe to real-time message updates
-  useEffect(() => {
-    if (!chatId || !user?.id) return;
-    
-    try {
-      console.log('Setting up real-time subscription for messages in chat:', chatId);
-      
-      // Clean up any existing subscription
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-      }
-      
-      const channel = subscribeToChat(chatId, (newMessage) => {
-        // Only add messages from other users, not our own (to avoid duplicates)
-        if (newMessage.sender_id !== user.id) {
-          console.log('Received real-time message:', newMessage);
-          setMessages(prev => [...prev, newMessage]);
-        }
-      });
-      
-      channelRef.current = channel;
-      
-    } catch (error: any) {
-      console.error('Error setting up realtime subscription:', error);
-      toast({
-        title: "Realtime Connection Error",
-        description: "Unable to receive live updates. Messages will still be sent, but you may need to refresh to see new messages.",
-        variant: "destructive",
-      });
-    }
-    
-    return () => {
-      if (channelRef.current) {
-        console.log('Removing channel on cleanup');
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, [chatId, user?.id, toast]);
+  // Set up real-time subscription
+  useChatSubscription({
+    chatId,
+    userId: user?.id,
+    setMessages
+  });
 
-  // Fetch existing messages
-  const fetchMessages = async (chatId: string) => {
-    try {
-      setIsLoading(true);
-      
-      console.log("Fetching messages for chat ID:", chatId);
-      
-      const messages = await fetchChatMessages(chatId);
-      setMessages(messages);
-      
-      return messages;
-    } catch (error: any) {
-      console.error("Error in fetchMessages:", error);
-      
-      toast({
-        title: "Error loading messages",
-        description: "Unable to load previous messages. Please try refreshing the page.",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Send message functionality
+  const { sendMessage } = useSendMessage({
+    chatId,
+    userId: user?.id,
+    setMessages
+  });
 
-  // Send a new message
-  const sendMessage = async (content: string) => {
-    if (!user || !content.trim() || !chatId) {
-      console.log('Cannot send message: missing required data', {
-        hasUser: !!user,
-        hasContent: !!content.trim(),
-        chatId
-      });
-      return false;
-    }
-
-    try {
-      console.log('Sending message to chat:', chatId);
-      
-      const newMessage = await sendMessageToDatabase(chatId, user.id, content);
-      
-      // Add the message to local state immediately for better UX
-      setMessages(prev => [...prev, newMessage]);
-      return true;
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      
-      toast({
-        title: "Message not sent",
-        description: "Could not send your message. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
+  // Retry functionality
   const retry = async () => {
     if (!user || !profileId) return;
     setIsLoading(true);
     setConnectionError(false);
-    retryCount.current = 0; // Reset retry count
     
     try {
       // Test connection first
@@ -210,9 +61,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
         throw new Error('Database connection failed');
       }
       
-      const chatIdFromDB = await getOrCreateChat(profileId);
-      setChatId(chatIdFromDB);
-      await fetchMessages(chatIdFromDB);
+      // Re-initialize chat
+      await initializeChat();
       
       toast({
         title: "Connection restored",
