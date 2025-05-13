@@ -583,7 +583,7 @@ export type Database = {
         Returns: string[]
       }
       is_chat_participant: {
-        Args: { chat_id: string; user_id: string }
+        Args: { chat_id: string; user_id: string } | { chat_uuid: string }
         Returns: boolean
       }
       migrate_old_data: {

@@ -68,6 +68,7 @@ export const sendMessageToDatabase = async (
       chat_id: chatId,
       sender_id: userId,
       content: content.trim()
+      // Note: sent_at will be automatically set by the database default
     };
     
     const { data, error } = await supabase
