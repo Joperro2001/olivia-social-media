@@ -4,11 +4,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Message } from "@/types/Chat";
+import { useChatReducer } from "@/hooks/useChatReducer";
 import {
   fetchChatMessages,
   getOrCreateChat,
   sendMessageToDatabase,
-  subscribeToChat,
   testDatabaseConnection
 } from "@/utils/chatUtils";
 
@@ -19,9 +19,7 @@ interface UseChatProps {
 export const useChat = ({ profileId }: UseChatProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [chatId, setChatId] = useState<string | null>(null);
+  const [state, dispatch] = useChatReducer();
   const [connectionError, setConnectionError] = useState<boolean>(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const retryCount = useRef<number>(0);
@@ -36,7 +34,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
       }
       
       try {
-        setIsLoading(true);
+        dispatch({ type: 'SET_LOADING', payload: true });
         setConnectionError(false);
         
         console.log("Starting chat initialization with profile:", profileId);
@@ -52,12 +50,12 @@ export const useChat = ({ profileId }: UseChatProps) => {
         // Try to get or create a chat using our RPC function
         const chatIdFromDB = await getOrCreateChat(profileId);
         console.log('Chat initialized with ID:', chatIdFromDB);
-        setChatId(chatIdFromDB);
+        dispatch({ type: 'SET_CHAT_ID', payload: chatIdFromDB });
         
         // Fetch existing messages
         const chatMessages = await fetchChatMessages(chatIdFromDB);
         console.log('Fetched messages:', chatMessages?.length || 0);
-        setMessages(chatMessages || []);
+        dispatch({ type: 'SET_MESSAGES', payload: chatMessages || [] });
         
         // Reset retry count on success
         retryCount.current = 0;
@@ -85,7 +83,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
         });
         setConnectionError(true);
       } finally {
-        setIsLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
     
@@ -99,14 +97,14 @@ export const useChat = ({ profileId }: UseChatProps) => {
         channelRef.current = null;
       }
     };
-  }, [user, profileId, toast]);
+  }, [user, profileId, toast, dispatch]);
 
   // Subscribe to real-time message updates
   useEffect(() => {
-    if (!chatId || !user?.id) return;
+    if (!state.chatId || !user?.id) return;
     
     try {
-      console.log('Setting up real-time subscription for messages in chat:', chatId);
+      console.log('Setting up real-time subscription for messages in chat:', state.chatId);
       
       // Clean up any existing subscription
       if (channelRef.current) {
@@ -114,7 +112,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
       }
       
       // Create a new channel subscription
-      const channel = supabase.channel(`public:messages:chat_id=eq.${chatId}`);
+      const channel = supabase.channel(`messages:chat_id=${state.chatId}`);
       
       channel
         .on(
@@ -123,7 +121,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
             event: 'INSERT',
             schema: 'public',
             table: 'messages',
-            filter: `chat_id=eq.${chatId}`
+            filter: `chat_id=eq.${state.chatId}`
           },
           (payload) => {
             console.log('Received real-time message:', payload);
@@ -132,7 +130,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
             // Only add messages from other users, not our own (to avoid duplicates)
             if (newMessage.sender_id !== user.id) {
               console.log('Adding received message to chat');
-              setMessages(prev => [...prev, newMessage]);
+              dispatch({ type: 'ADD_MESSAGE', payload: newMessage });
             }
           }
         )
@@ -164,35 +162,35 @@ export const useChat = ({ profileId }: UseChatProps) => {
         channelRef.current = null;
       }
     };
-  }, [chatId, user?.id, toast]);
+  }, [state.chatId, user?.id, toast, dispatch]);
 
   // Send a new message
   const sendMessage = async (content: string) => {
-    if (!user || !content.trim() || !chatId) {
+    if (!user || !content.trim() || !state.chatId) {
       console.log('Cannot send message: user, content, or chatId missing', {
         hasUser: !!user,
         hasContent: !!content.trim(),
-        chatId
+        chatId: state.chatId
       });
       return false;
     }
 
     try {
-      console.log('Attempting to send message to chat:', chatId);
+      console.log('Attempting to send message to chat:', state.chatId);
       
       // Add more detailed logging here
       console.log('Message details:', {
-        chatId,
+        chatId: state.chatId,
         senderId: user.id,
         contentLength: content.length,
         timestamp: new Date().toISOString()
       });
       
-      const newMessage = await sendMessageToDatabase(chatId, user.id, content);
+      const newMessage = await sendMessageToDatabase(state.chatId, user.id, content);
       console.log('Message sent successfully:', newMessage);
       
       // Add the message to local state immediately for better UX
-      setMessages(prev => [...prev, newMessage]);
+      dispatch({ type: 'ADD_MESSAGE', payload: newMessage });
       return true;
     } catch (error: any) {
       // More detailed error logging
@@ -214,7 +212,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
 
   const retry = async () => {
     if (!user || !profileId) return;
-    setIsLoading(true);
+    dispatch({ type: 'SET_LOADING', payload: true });
     setConnectionError(false);
     retryCount.current = 0; // Reset retry count
     
@@ -227,9 +225,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
       }
       
       const chatIdFromDB = await getOrCreateChat(profileId);
-      setChatId(chatIdFromDB);
+      dispatch({ type: 'SET_CHAT_ID', payload: chatIdFromDB });
       const chatMessages = await fetchChatMessages(chatIdFromDB);
-      setMessages(chatMessages || []);
+      dispatch({ type: 'SET_MESSAGES', payload: chatMessages || [] });
     } catch (error: any) {
       console.error('Retry failed:', error);
       console.error('Error details:', error.message, error.stack);
@@ -241,13 +239,13 @@ export const useChat = ({ profileId }: UseChatProps) => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
   return {
-    messages,
-    isLoading,
+    messages: state.messages,
+    isLoading: state.isLoading,
     connectionError,
     sendMessage,
     retry

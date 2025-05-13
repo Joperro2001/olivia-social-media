@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Profile {
   id: string;
@@ -31,6 +32,7 @@ const ChatPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { 
@@ -49,7 +51,9 @@ const ChatPage: React.FC = () => {
       if (!profileId) return;
       
       try {
+        setIsLoadingProfile(true);
         console.log(`Fetching profile for ID: ${profileId}`);
+        
         // Fetch the actual profile from Supabase
         const { data, error } = await supabase
           .from('profiles')
@@ -81,6 +85,8 @@ const ChatPage: React.FC = () => {
           description: "Failed to load contact information.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoadingProfile(false);
       }
     };
     
@@ -89,7 +95,7 @@ const ChatPage: React.FC = () => {
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
+    if (messagesEndRef.current && messages.length > 0) {
       messagesEndRef.current.scrollIntoView({
         behavior: "smooth"
       });
@@ -131,7 +137,7 @@ const ChatPage: React.FC = () => {
     );
   }
 
-  if (isLoading || !profile) {
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
         <LoadingSpinner message="Loading chat..." />
@@ -164,10 +170,9 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  return (
-    <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
-      {/* Header with profile info */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
+  const ProfileHeader = () => {
+    if (!profile) {
+      return (
         <div className="flex items-center">
           <Button 
             variant="ghost" 
@@ -178,19 +183,48 @@ const ChatPage: React.FC = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           
-          <Avatar className="h-10 w-10 mr-3">
-            {profile.image ? (
-              <AvatarImage src={profile.image} alt={profile.name} />
-            ) : (
-              <AvatarFallback>{profile.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-            )}
-          </Avatar>
+          <Skeleton className="h-10 w-10 rounded-full mr-3" />
           
           <div>
-            <h1 className="font-semibold text-base">{profile.name}</h1>
-            <p className="text-xs text-gray-500">Online now</p>
+            <Skeleton className="h-4 w-28 mb-1" />
+            <Skeleton className="h-3 w-20" />
           </div>
         </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => navigate("/matches")} 
+          className="mr-2"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        
+        <Avatar className="h-10 w-10 mr-3">
+          {profile.image ? (
+            <AvatarImage src={profile.image} alt={profile.name} />
+          ) : (
+            <AvatarFallback>{profile.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+          )}
+        </Avatar>
+        
+        <div>
+          <h1 className="font-semibold text-base">{profile.name}</h1>
+          <p className="text-xs text-gray-500">Online now</p>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
+      {/* Header with profile info */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
+        <ProfileHeader />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -207,7 +241,7 @@ const ChatPage: React.FC = () => {
         </DropdownMenu>
       </div>
       
-      {/* Message input area - positioned at the top */}
+      {/* Message input area */}
       <div className="p-4 bg-white border-b shadow-sm sticky top-[60px] z-10">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
