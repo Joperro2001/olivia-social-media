@@ -78,8 +78,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
         }
         
         toast({
-          title: "Error initializing chat",
-          description: error.message || "Failed to load chat. Please try again later.",
+          title: "Chat Initialization Error",
+          description: "Could not connect to the chat service. Please check your connection and try again.",
           variant: "destructive",
         });
         setConnectionError(true);
@@ -124,15 +124,9 @@ export const useChat = ({ profileId }: UseChatProps) => {
       
     } catch (error: any) {
       console.error('Error setting up realtime subscription:', error);
-      console.error('Error details:', {
-        errorName: error.name,
-        errorMessage: error.message,
-        errorStack: error.stack
-      });
-      
       toast({
-        title: "Connection Error",
-        description: error.message || "Failed to set up real-time updates. Please try reloading the page.",
+        title: "Realtime Connection Error",
+        description: "Unable to receive live updates. Messages will still be sent, but you may need to refresh to see new messages.",
         variant: "destructive",
       });
     }
@@ -158,16 +152,11 @@ export const useChat = ({ profileId }: UseChatProps) => {
       
       return messages;
     } catch (error: any) {
-      console.error("Error in fetchMessages:", error.message, error);
-      console.error('Error details:', {
-        errorName: error.name,
-        errorMessage: error.message,
-        errorStack: error.stack
-      });
+      console.error("Error in fetchMessages:", error);
       
       toast({
         title: "Error loading messages",
-        description: `Details: ${error.message || "Unknown error"}`,
+        description: "Unable to load previous messages. Please try refreshing the page.",
         variant: "destructive",
       });
       return [];
@@ -179,7 +168,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
   // Send a new message
   const sendMessage = async (content: string) => {
     if (!user || !content.trim() || !chatId) {
-      console.log('Cannot send message: user, content, or chatId missing', {
+      console.log('Cannot send message: missing required data', {
         hasUser: !!user,
         hasContent: !!content.trim(),
         chatId
@@ -188,34 +177,19 @@ export const useChat = ({ profileId }: UseChatProps) => {
     }
 
     try {
-      console.log('Attempting to send message to chat:', chatId);
-      
-      // Add more detailed logging here
-      console.log('Message details:', {
-        chatId,
-        senderId: user.id,
-        contentLength: content.length,
-        timestamp: new Date().toISOString()
-      });
+      console.log('Sending message to chat:', chatId);
       
       const newMessage = await sendMessageToDatabase(chatId, user.id, content);
-      console.log('Message sent successfully:', newMessage);
       
       // Add the message to local state immediately for better UX
       setMessages(prev => [...prev, newMessage]);
       return true;
     } catch (error: any) {
-      // More detailed error logging
       console.error('Error sending message:', error);
-      console.error('Error details:', {
-        errorName: error.name,
-        errorMessage: error.message,
-        errorStack: error.stack
-      });
       
       toast({
-        title: "Error",
-        description: error.message || "Failed to send message. Please try again.",
+        title: "Message not sent",
+        description: "Could not send your message. Please try again.",
         variant: "destructive",
       });
       return false;
@@ -246,16 +220,11 @@ export const useChat = ({ profileId }: UseChatProps) => {
       });
     } catch (error: any) {
       console.error('Retry failed:', error);
-      console.error('Error details:', {
-        errorName: error.name,
-        errorMessage: error.message,
-        errorStack: error.stack
-      });
       
       setConnectionError(true);
       toast({
         title: "Connection failed",
-        description: error.message || "Still unable to connect. Please try again later.",
+        description: "Still unable to connect. Please check your network connection and try again later.",
         variant: "destructive",
       });
     } finally {

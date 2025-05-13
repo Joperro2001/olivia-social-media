@@ -26,7 +26,7 @@ export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
   }
 };
 
-// Get or create a chat with another user - using our get_or_create_private_chat RPC function
+// Get or create a chat with another user
 export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
@@ -63,7 +63,6 @@ export const sendMessageToDatabase = async (
   console.log('Sending message to chat:', chatId);
   
   try {
-    // Now send the message
     const newMessage = {
       chat_id: chatId,
       sender_id: userId,

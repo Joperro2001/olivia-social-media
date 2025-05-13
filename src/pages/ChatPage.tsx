@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -122,13 +123,6 @@ const ChatPage: React.FC = () => {
     console.log("ChatPage handleSendMessage called with:", content);
     try {
       const success = await sendMessage(content);
-      if (!success) {
-        toast({
-          title: "Error",
-          description: "Failed to send message. Please try again.",
-          variant: "destructive",
-        });
-      }
       return success;
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
@@ -251,11 +245,6 @@ const ChatPage: React.FC = () => {
         </DropdownMenu>
       </div>
       
-      {/* Message input area - positioned at the top */}
-      <div className="p-4 bg-white border-b shadow-sm sticky top-[60px] z-10">
-        <ChatInput onSendMessage={handleSendMessage} />
-      </div>
-      
       {/* Chat background with messages */}
       <div 
         className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FDF5EF] bg-opacity-80"
@@ -293,6 +282,11 @@ const ChatPage: React.FC = () => {
           ))
         )}
         <div ref={messagesEndRef} />
+      </div>
+      
+      {/* Message input area */}
+      <div className="p-4 bg-white border-t shadow-sm">
+        <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
   );
