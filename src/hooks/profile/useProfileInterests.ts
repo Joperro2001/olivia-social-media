@@ -6,7 +6,7 @@ import { Interest } from "@/types/ProfileInterest";
 
 export const useProfileInterests = (
   interests: Interest[],
-  setInterests: (interests: Interest[]) => void
+  setInterests: (interests: Interest[] | ((prev: Interest[]) => Interest[])) => void
 ) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,7 +26,7 @@ export const useProfileInterests = (
 
       if (error) throw error;
       
-      setInterests((prev) => [...prev, data]);
+      setInterests((prev: Interest[]) => [...prev, data as Interest]);
       return true;
     } catch (error: any) {
       console.error("Error adding interest:", error);
@@ -49,7 +49,7 @@ export const useProfileInterests = (
 
       if (error) throw error;
       
-      setInterests((prev) => prev.filter((item) => item.id !== interestId));
+      setInterests((prev: Interest[]) => prev.filter((item) => item.id !== interestId));
       return true;
     } catch (error: any) {
       console.error("Error removing interest:", error);

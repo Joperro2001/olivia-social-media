@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export const useProfileUpdates = (
   profile: Profile | null,
-  setProfile: (profile: Profile | null) => void
+  setProfile: (profile: Profile | null | ((prev: Profile | null) => Profile | null)) => void
 ) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -25,7 +25,7 @@ export const useProfileUpdates = (
 
       if (error) throw error;
 
-      setProfile((prev) => prev ? { ...prev, ...profileData } : null);
+      setProfile((prev: Profile | null) => prev ? { ...prev, ...profileData } : null);
       
       toast({
         title: "Profile updated",
