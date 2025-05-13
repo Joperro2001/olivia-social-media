@@ -38,14 +38,14 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     console.log('Current user ID:', user.id);
     
     // First check if a chat already exists between these users
-    const { data: chatParticipants, error: participantsError } = await supabase
+    const { data: chatParticipants, error: fetchParticipantsError } = await supabase
       .from('chat_participants')
       .select('chat_id')
       .eq('user_id', user.id);
       
-    if (participantsError) {
-      console.error('Error checking for existing chats:', participantsError);
-      throw participantsError;
+    if (fetchParticipantsError) {
+      console.error('Error checking for existing chats:', fetchParticipantsError);
+      throw fetchParticipantsError;
     }
     
     if (chatParticipants && chatParticipants.length > 0) {
@@ -88,16 +88,16 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     console.log('Created new chat with ID:', newChat.id);
     
     // Add both users as participants
-    const { error: participantsError } = await supabase
+    const { error: addParticipantsError } = await supabase
       .from('chat_participants')
       .insert([
         { chat_id: newChat.id, user_id: user.id },
         { chat_id: newChat.id, user_id: profileId }
       ]);
     
-    if (participantsError) {
-      console.error('Error adding chat participants:', participantsError);
-      throw participantsError;
+    if (addParticipantsError) {
+      console.error('Error adding chat participants:', addParticipantsError);
+      throw addParticipantsError;
     }
     
     console.log('Successfully added participants to chat:', newChat.id);
@@ -119,15 +119,15 @@ export const sendMessageToDatabase = async (
   
   try {
     // Verify the user is a participant in this chat
-    const { data: participant, error: participantError } = await supabase
+    const { data: participant, error: participantQueryError } = await supabase
       .from('chat_participants')
       .select('id')
       .eq('chat_id', chatId)
       .eq('user_id', userId)
       .single();
     
-    if (participantError) {
-      console.error('Error verifying chat participant:', participantError);
+    if (participantQueryError) {
+      console.error('Error verifying chat participant:', participantQueryError);
       throw new Error('You are not a participant in this chat');
     }
     
