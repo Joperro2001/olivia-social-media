@@ -56,8 +56,13 @@ export const useChat = ({ profileId }: UseChatProps) => {
         
         // Reset retry count on success
         retryCount.current = 0;
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error initializing chat:', error);
+        console.error('Error details:', {
+          errorName: error.name,
+          errorMessage: error.message,
+          errorStack: error.stack
+        });
         
         // Check if we should retry
         if (retryCount.current < maxRetries) {
@@ -74,7 +79,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
         
         toast({
           title: "Error initializing chat",
-          description: "Failed to load chat. Please try again later.",
+          description: error.message || "Failed to load chat. Please try again later.",
           variant: "destructive",
         });
         setConnectionError(true);
@@ -117,11 +122,17 @@ export const useChat = ({ profileId }: UseChatProps) => {
       
       channelRef.current = channel;
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error setting up realtime subscription:', error);
+      console.error('Error details:', {
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+      
       toast({
         title: "Connection Error",
-        description: "Failed to set up real-time updates. Please try reloading the page.",
+        description: error.message || "Failed to set up real-time updates. Please try reloading the page.",
         variant: "destructive",
       });
     }
@@ -148,6 +159,12 @@ export const useChat = ({ profileId }: UseChatProps) => {
       return messages;
     } catch (error: any) {
       console.error("Error in fetchMessages:", error.message, error);
+      console.error('Error details:', {
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+      
       toast({
         title: "Error loading messages",
         description: `Details: ${error.message || "Unknown error"}`,
@@ -187,7 +204,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
       // Add the message to local state immediately for better UX
       setMessages(prev => [...prev, newMessage]);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       // More detailed error logging
       console.error('Error sending message:', error);
       console.error('Error details:', {
@@ -198,7 +215,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
       
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: error.message || "Failed to send message. Please try again.",
         variant: "destructive",
       });
       return false;
@@ -222,12 +239,23 @@ export const useChat = ({ profileId }: UseChatProps) => {
       const chatIdFromDB = await getOrCreateChat(profileId);
       setChatId(chatIdFromDB);
       await fetchMessages(chatIdFromDB);
-    } catch (error) {
+      
+      toast({
+        title: "Connection restored",
+        description: "Chat connection has been restored successfully.",
+      });
+    } catch (error: any) {
       console.error('Retry failed:', error);
+      console.error('Error details:', {
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+      
       setConnectionError(true);
       toast({
         title: "Connection failed",
-        description: "Still unable to connect. Please try again later.",
+        description: error.message || "Still unable to connect. Please try again later.",
         variant: "destructive",
       });
     } finally {

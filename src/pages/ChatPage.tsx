@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,7 +59,14 @@ const ChatPage: React.FC = () => {
   // Fetch profile details
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!profileId) return;
+      if (!profileId) {
+        toast({
+          title: "Error",
+          description: "No profile ID provided.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       try {
         // Fetch the actual profile from Supabase
@@ -70,7 +76,10 @@ const ChatPage: React.FC = () => {
           .eq('id', profileId)
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching profile:', error);
+          throw error;
+        }
         
         if (data) {
           setProfile({
@@ -78,19 +87,27 @@ const ChatPage: React.FC = () => {
             name: data.full_name || 'Chat Partner',
             image: data.avatar_url
           });
+        } else {
+          toast({
+            title: "Profile not found",
+            description: "Couldn't find this user's profile.",
+            variant: "destructive",
+          });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching profile:', error);
         toast({
           title: "Error",
-          description: "Failed to load contact information.",
+          description: error.message || "Failed to load contact information.",
           variant: "destructive",
         });
       }
     };
     
-    fetchProfile();
-  }, [profileId, toast]);
+    if (user && profileId) {
+      fetchProfile();
+    }
+  }, [profileId, toast, user]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
