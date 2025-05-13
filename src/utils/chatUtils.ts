@@ -31,26 +31,47 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
   try {
-    // Instead of using the RPC function that's causing the recursion issue,
-    // let's implement the logic directly
+    // Get the current user's ID
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No authenticated user found');
     
-    // First check if a chat already exists
-    const { data: existingChats, error: searchError } = await supabase
-      .from('chats')
-      .select('id, chat_participants!inner(*)')
-      .eq('type', 'direct')
-      .eq('chat_participants.user_id', profileId);
+    console.log('Current user ID:', user.id);
     
-    if (searchError) {
-      console.error('Error searching for existing chat:', searchError);
-      throw searchError;
+    // First check if a chat already exists between these users
+    const { data: chatParticipants, error: participantsError } = await supabase
+      .from('chat_participants')
+      .select('chat_id')
+      .eq('user_id', user.id);
+      
+    if (participantsError) {
+      console.error('Error checking for existing chats:', participantsError);
+      throw participantsError;
     }
     
-    // If a chat exists with this user, return it
-    if (existingChats && existingChats.length > 0) {
-      console.log('Found existing chat:', existingChats[0].id);
-      return existingChats[0].id;
+    if (chatParticipants && chatParticipants.length > 0) {
+      // Get the chat IDs where the current user is a participant
+      const userChatIds = chatParticipants.map(p => p.chat_id);
+      
+      // Now check if the other user is also a participant in any of these chats
+      const { data: matchingChats, error: matchError } = await supabase
+        .from('chat_participants')
+        .select('chat_id')
+        .eq('user_id', profileId)
+        .in('chat_id', userChatIds);
+        
+      if (matchError) {
+        console.error('Error finding matching chats:', matchError);
+        throw matchError;
+      }
+      
+      // If a matching chat is found, return that chat ID
+      if (matchingChats && matchingChats.length > 0) {
+        console.log('Found existing chat:', matchingChats[0].chat_id);
+        return matchingChats[0].chat_id;
+      }
     }
+    
+    console.log('No existing chat found, creating new chat');
     
     // Create a new chat
     const { data: newChat, error: createError } = await supabase
@@ -64,9 +85,7 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
       throw createError;
     }
     
-    // Get the current user's ID
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No authenticated user found');
+    console.log('Created new chat with ID:', newChat.id);
     
     // Add both users as participants
     const { error: participantsError } = await supabase
@@ -81,7 +100,7 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
       throw participantsError;
     }
     
-    console.log('Created new chat:', newChat.id);
+    console.log('Successfully added participants to chat:', newChat.id);
     return newChat.id;
     
   } catch (error) {
@@ -99,11 +118,7 @@ export const sendMessageToDatabase = async (
   console.log('Sending message to chat:', chatId);
   
   try {
-    // Modify this to bypass the problematic RLS policy
-    // Instead of just inserting the message which triggers the RLS validation
-    // Let's check if the user is a participant of the chat first
-    
-    // First verify the user is a participant in this chat
+    // Verify the user is a participant in this chat
     const { data: participant, error: participantError } = await supabase
       .from('chat_participants')
       .select('id')
@@ -134,6 +149,7 @@ export const sendMessageToDatabase = async (
       throw error;
     }
     
+    console.log('Message sent successfully:', data);
     return data as Message;
   } catch (error) {
     console.error('Error in sendMessageToDatabase:', error);
@@ -149,8 +165,7 @@ export const subscribeToChat = (
   console.log('Setting up real-time subscription for chat:', chatId);
   
   try {
-    // Fix the realtime subscription
-    // We need to properly format the channel name
+    // Set up the channel with proper formatting for Supabase realtime
     const channel = supabase.channel(`messages:chat_id=eq.${chatId}`);
     
     channel
@@ -163,13 +178,19 @@ export const subscribeToChat = (
           filter: `chat_id=eq.${chatId}`
         },
         (payload) => {
-          console.log('Received new message:', payload);
+          console.log('Received new message via realtime:', payload);
           const newMessage = payload.new as Message;
           onNewMessage(newMessage);
         }
       )
       .subscribe((status) => {
         console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to chat:', chatId);
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Error subscribing to chat:', chatId);
+        }
       });
       
     return channel;
@@ -183,6 +204,7 @@ export const subscribeToChat = (
 export const testDatabaseConnection = async (): Promise<boolean> => {
   try {
     // Simple query to test connection
+    console.log('Testing database connection');
     const { error } = await supabase
       .from('profiles')
       .select('id')
@@ -193,6 +215,7 @@ export const testDatabaseConnection = async (): Promise<boolean> => {
       return false;
     }
     
+    console.log('Database connection successful');
     return true;
   } catch (error) {
     console.error('Database connection test error:', error);

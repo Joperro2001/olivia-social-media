@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MoreVertical } from "lucide-react";
+import { ArrowLeft, MoreVertical, RefreshCw } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -36,7 +36,9 @@ const ChatPage: React.FC = () => {
   const { 
     messages, 
     isLoading, 
-    sendMessage
+    connectionError,
+    sendMessage,
+    retry
   } = useChat({ 
     profileId: profileId || '' 
   });
@@ -126,6 +128,22 @@ const ChatPage: React.FC = () => {
     );
   }
 
+  if (connectionError) {
+    return (
+      <div className="flex flex-col h-[100vh] bg-[#FDF5EF] items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-md p-6 max-w-md w-full text-center">
+          <h3 className="font-semibold text-lg mb-2">Connection Error</h3>
+          <p className="text-gray-600 mb-4">
+            We're having trouble connecting to the chat service. This could be due to network issues or server problems.
+          </p>
+          <Button onClick={retry} className="inline-flex items-center">
+            <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const formatTime = (timestamp: string) => {
     if (!timestamp) return "";
     return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -166,12 +184,15 @@ const ChatPage: React.FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {/* Menu options can go here */}
+            <DropdownMenuItem onClick={retry}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh chat
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       
-      {/* Message input area - positioned below header */}
+      {/* Message input area - positioned at the top */}
       <div className="p-4 bg-white border-b shadow-sm sticky top-[60px] z-10">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
