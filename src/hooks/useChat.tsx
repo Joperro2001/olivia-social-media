@@ -34,9 +34,12 @@ export const useChat = ({ profileId }: UseChatProps) => {
         setIsLoading(true);
         setConnectionError(false);
         
+        console.log("Starting chat initialization with profile:", profileId);
+        
         // Test connection to database first
         const isConnected = await testDatabaseConnection();
         if (!isConnected) {
+          console.error("Database connection test failed");
           setConnectionError(true);
           throw new Error('Database connection failed');
         }

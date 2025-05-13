@@ -37,37 +37,41 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     
     console.log('Current user ID:', user.id);
     
-    // Use RPC function to check if a chat exists between these users
-    // First, get all chats the current user is in
-    const { data: userChats, error: userChatsError } = await supabase
-      .rpc('get_user_chats', { user_id: user.id });
-      
-    if (userChatsError) {
-      console.error('Error getting user chats:', userChatsError);
-      throw userChatsError;
+    // Try a simpler approach - directly check if a chat exists between these two users
+    // This avoids the recursion in RLS policies
+    const { data: existingChats, error: chatQueryError } = await supabase
+      .from('chats')
+      .select('id')
+      .eq('type', 'direct');
+    
+    if (chatQueryError) {
+      console.error('Error querying chats:', chatQueryError);
+      throw chatQueryError;
     }
     
-    if (userChats && userChats.length > 0) {
-      // For each chat, check if the other user is a participant
-      for (const chatId of userChats) {
-        // Get all participants for this chat except the current user
-        const { data: otherParticipants, error: fetchParticipantsError } = await supabase
+    console.log(`Found ${existingChats?.length || 0} direct chats`);
+    
+    // For each chat, check if both users are participants
+    if (existingChats && existingChats.length > 0) {
+      for (const chat of existingChats) {
+        // We'll count participants that match our two user IDs
+        const { data: participants, error: participantsError } = await supabase
           .from('chat_participants')
           .select('user_id')
-          .eq('chat_id', chatId)
-          .neq('user_id', user.id);
-          
-        if (fetchParticipantsError) {
-          console.error('Error checking chat participants:', fetchParticipantsError);
+          .eq('chat_id', chat.id);
+        
+        if (participantsError) {
+          console.error('Error checking chat participants:', participantsError);
           continue; // Try next chat
         }
         
-        // Check if the target profile is in this chat
-        const isProfileInChat = otherParticipants?.some(p => p.user_id === profileId);
-        
-        if (isProfileInChat) {
-          console.log('Found existing chat:', chatId);
-          return chatId;
+        // Check if both users are in this chat's participants
+        if (participants) {
+          const userIds = participants.map(p => p.user_id);
+          if (userIds.includes(user.id) && userIds.includes(profileId) && userIds.length === 2) {
+            console.log('Found existing chat:', chat.id);
+            return chat.id;
+          }
         }
       }
     }
@@ -88,17 +92,23 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     
     console.log('Created new chat with ID:', newChat.id);
     
-    // Add both users as participants
-    const { error: addParticipantsError } = await supabase
+    // Add both users as participants - do this in separate calls to avoid potential RLS issues
+    const { error: addUser1Error } = await supabase
       .from('chat_participants')
-      .insert([
-        { chat_id: newChat.id, user_id: user.id },
-        { chat_id: newChat.id, user_id: profileId }
-      ]);
+      .insert([{ chat_id: newChat.id, user_id: user.id }]);
     
-    if (addParticipantsError) {
-      console.error('Error adding chat participants:', addParticipantsError);
-      throw addParticipantsError;
+    if (addUser1Error) {
+      console.error('Error adding first user as participant:', addUser1Error);
+      throw addUser1Error;
+    }
+    
+    const { error: addUser2Error } = await supabase
+      .from('chat_participants')
+      .insert([{ chat_id: newChat.id, user_id: profileId }]);
+    
+    if (addUser2Error) {
+      console.error('Error adding second user as participant:', addUser2Error);
+      throw addUser2Error;
     }
     
     console.log('Successfully added participants to chat:', newChat.id);
@@ -119,9 +129,6 @@ export const sendMessageToDatabase = async (
   console.log('Sending message to chat:', chatId);
   
   try {
-    // We don't need to verify participation separately now since we have RLS policies
-    // that will prevent sending messages if the user is not a participant
-    
     // Now send the message
     const newMessage = {
       chat_id: chatId,
