@@ -81,11 +81,11 @@ export async function fetchChecklistWithItems(checklistId: string) {
 }
 
 // Create a new checklist
-export async function createChecklist(checklist: Omit<Checklist, "id" | "user_id" | "created_at" | "updated_at">) {
+export async function createChecklist(checklist: Omit<Checklist, "id" | "created_at" | "updated_at">) {
   try {
     const { data, error } = await supabase
       .from("packing_checklists")
-      .insert([checklist])
+      .insert(checklist)
       .select()
       .single();
 
@@ -202,7 +202,8 @@ export function useChecklist() {
         title: localChecklist.title || "My Moving Checklist",
         destination: localChecklist.destination || "New City",
         purpose: localChecklist.purpose || null,
-        duration: localChecklist.duration || null
+        duration: localChecklist.duration || null,
+        user_id: user.id // Add user_id to fix the TypeScript error
       });
       
       if (!checklist) return null;
