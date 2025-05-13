@@ -16,13 +16,15 @@ export const useProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const fetchInProgress = useRef(false);
+  const initialFetchDone = useRef(false);
   
   const fetchProfile = async () => {
     try {
       if (!user || fetchInProgress.current) return;
       
       fetchInProgress.current = true;
-      setIsLoading(true);
+      
+      console.log("Fetching profile data for user:", user.id);
       
       // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
@@ -68,6 +70,7 @@ export const useProfile = () => {
     } finally {
       setIsLoading(false);
       fetchInProgress.current = false;
+      initialFetchDone.current = true;
     }
   };
 
@@ -198,12 +201,13 @@ export const useProfile = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && !initialFetchDone.current) {
       fetchProfile();
-    } else {
+    } else if (!user) {
       setProfile(null);
       setInterests([]);
       setIsLoading(false);
+      initialFetchDone.current = false;
     }
     // We're intentionally only depending on user to prevent extra fetches
     // eslint-disable-next-line react-hooks/exhaustive-deps
