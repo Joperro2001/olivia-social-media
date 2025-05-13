@@ -31,18 +31,59 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
   try {
-    const { data, error } = await supabase
-      .rpc('get_or_create_private_chat', {
-        other_user_id: profileId
-      });
-      
-    if (error) {
-      console.error('Error in get_or_create_private_chat:', error);
-      throw error;
+    // Instead of using the RPC function that's causing the recursion issue,
+    // let's implement the logic directly
+    
+    // First check if a chat already exists
+    const { data: existingChats, error: searchError } = await supabase
+      .from('chats')
+      .select('id, chat_participants!inner(*)')
+      .eq('type', 'direct')
+      .eq('chat_participants.user_id', profileId);
+    
+    if (searchError) {
+      console.error('Error searching for existing chat:', searchError);
+      throw searchError;
     }
     
-    console.log('Chat ID:', data);
-    return data;
+    // If a chat exists with this user, return it
+    if (existingChats && existingChats.length > 0) {
+      console.log('Found existing chat:', existingChats[0].id);
+      return existingChats[0].id;
+    }
+    
+    // Create a new chat
+    const { data: newChat, error: createError } = await supabase
+      .from('chats')
+      .insert([{ type: 'direct' }])
+      .select()
+      .single();
+    
+    if (createError) {
+      console.error('Error creating new chat:', createError);
+      throw createError;
+    }
+    
+    // Get the current user's ID
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No authenticated user found');
+    
+    // Add both users as participants
+    const { error: participantsError } = await supabase
+      .from('chat_participants')
+      .insert([
+        { chat_id: newChat.id, user_id: user.id },
+        { chat_id: newChat.id, user_id: profileId }
+      ]);
+    
+    if (participantsError) {
+      console.error('Error adding chat participants:', participantsError);
+      throw participantsError;
+    }
+    
+    console.log('Created new chat:', newChat.id);
+    return newChat.id;
+    
   } catch (error) {
     console.error('Failed to get or create chat:', error);
     throw error;
