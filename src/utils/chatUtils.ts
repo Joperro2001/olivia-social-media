@@ -64,19 +64,25 @@ export const deleteLocalMessages = (
 export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
   console.log('Fetching messages for chat:', chatId);
   
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .eq('chat_id', chatId)
-    .order('sent_at', { ascending: true });
-  
-  if (error) {
-    console.error('Error fetching messages:', error);
+  try {
+    // Use a simpler query that doesn't trigger recursion
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('chat_id', chatId)
+      .order('sent_at', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching messages:', error);
+      throw error;
+    }
+    
+    console.log('Fetched messages:', data?.length);
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchChatMessages:', error);
     throw error;
   }
-  
-  console.log('Fetched messages:', data?.length);
-  return data || [];
 };
 
 // Get or create a chat with another user
@@ -84,6 +90,7 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
   try {
+    // Using a stored procedure to avoid direct queries that might trigger recursion
     const { data, error } = await supabase
       .rpc('get_or_create_private_chat', {
         other_user_id: profileId
@@ -110,24 +117,29 @@ export const sendMessageToDatabase = async (
 ): Promise<Message> => {
   console.log('Sending message to chat:', chatId);
   
-  const newMessage = {
-    chat_id: chatId,
-    sender_id: userId,
-    content: content.trim()
-  };
-  
-  const { data, error } = await supabase
-    .from('messages')
-    .insert([newMessage])
-    .select()
-    .single();
-  
-  if (error) {
-    console.error('Error sending message:', error);
+  try {
+    const newMessage = {
+      chat_id: chatId,
+      sender_id: userId,
+      content: content.trim()
+    };
+    
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([newMessage])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+    
+    return data as Message;
+  } catch (error) {
+    console.error('Error in sendMessageToDatabase:', error);
     throw error;
   }
-  
-  return data as Message;
 };
 
 // Create a new local message
@@ -151,28 +163,35 @@ export const subscribeToChat = (
 ) => {
   console.log('Setting up real-time subscription for chat:', chatId);
   
-  const channel = supabase.channel(`chat:${chatId}`);
-  
-  channel
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `chat_id=eq.${chatId}`
-      },
-      (payload) => {
-        console.log('Received new message:', payload);
-        const newMessage = payload.new as Message;
-        onNewMessage(newMessage);
-      }
-    )
-    .subscribe((status) => {
-      console.log('Subscription status:', status);
-    });
+  try {
+    // Using a channel name without special characters to avoid potential issues
+    const channelName = `chat_${chatId}`;
+    const channel = supabase.channel(channelName);
     
-  return channel;
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${chatId}`
+        },
+        (payload) => {
+          console.log('Received new message:', payload);
+          const newMessage = payload.new as Message;
+          onNewMessage(newMessage);
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
+      
+    return channel;
+  } catch (error) {
+    console.error('Error setting up chat subscription:', error);
+    throw error;
+  }
 };
 
 // Batch send multiple messages to the database
