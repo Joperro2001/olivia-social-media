@@ -20,7 +20,13 @@ export async function fetchUserChecklists() {
       return [];
     }
 
-    return data || [];
+    // Transform the data to ensure it matches the UserChecklist type
+    return (data || []).map(item => ({
+      ...item,
+      checklist_data: typeof item.checklist_data === 'string' 
+        ? JSON.parse(item.checklist_data) 
+        : item.checklist_data
+    })) as UserChecklist[];
   } catch (err) {
     console.error("Error in fetchUserChecklists:", err);
     return [];
@@ -41,7 +47,13 @@ export async function fetchChecklist(checklistId: string): Promise<UserChecklist
       return null;
     }
 
-    return data;
+    // Transform to ensure it matches the UserChecklist type
+    return {
+      ...data,
+      checklist_data: typeof data.checklist_data === 'string' 
+        ? JSON.parse(data.checklist_data) 
+        : data.checklist_data
+    } as UserChecklist;
   } catch (err) {
     console.error("Error in fetchChecklist:", err);
     return null;
@@ -74,7 +86,12 @@ export async function createChecklist(checklist: {
       return null;
     }
 
-    return data;
+    return {
+      ...data,
+      checklist_data: typeof data.checklist_data === 'string' 
+        ? JSON.parse(data.checklist_data) 
+        : data.checklist_data
+    } as UserChecklist;
   } catch (err) {
     console.error("Error in createChecklist:", err);
     return null;
@@ -107,12 +124,14 @@ export async function updateChecklist(checklistId: string, updates: {
     
     // If items are provided, update the checklist_data
     if (updates.items) {
-      const typedChecklistData = currentChecklist.checklist_data as {
-        items: ChecklistItemData[];
-        original_id?: string;
-        original_conversation_id?: string;
-        created_at?: string;
-      };
+      const typedChecklistData = typeof currentChecklist.checklist_data === 'string'
+        ? JSON.parse(currentChecklist.checklist_data)
+        : currentChecklist.checklist_data as {
+            items: ChecklistItemData[];
+            original_id?: string;
+            original_conversation_id?: string;
+            created_at?: string;
+          };
       
       updatedData.checklist_data = {
         ...typedChecklistData,
@@ -133,7 +152,12 @@ export async function updateChecklist(checklistId: string, updates: {
       return null;
     }
 
-    return data;
+    return {
+      ...data,
+      checklist_data: typeof data.checklist_data === 'string' 
+        ? JSON.parse(data.checklist_data) 
+        : data.checklist_data
+    } as UserChecklist;
   } catch (err) {
     console.error("Error in updateChecklist:", err);
     return null;
@@ -159,9 +183,11 @@ export async function updateChecklistItem(
     }
     
     // Find and update the specific item
-    const typedChecklistData = checklist.checklist_data as {
-      items: ChecklistItemData[];
-    };
+    const typedChecklistData = typeof checklist.checklist_data === 'string'
+      ? JSON.parse(checklist.checklist_data)
+      : checklist.checklist_data as {
+          items: ChecklistItemData[];
+        };
     
     const items = typedChecklistData.items;
     const updatedItems = items.map(item => {
@@ -189,7 +215,12 @@ export async function updateChecklistItem(
       return null;
     }
 
-    return data;
+    return {
+      ...data,
+      checklist_data: typeof data.checklist_data === 'string' 
+        ? JSON.parse(data.checklist_data) 
+        : data.checklist_data
+    } as UserChecklist;
   } catch (err) {
     console.error("Error in updateChecklistItem:", err);
     return null;
@@ -254,6 +285,7 @@ export function useChecklist() {
         description: item.text,
         is_checked: item.checked || false,
         auto_checked: item.auto_checked || false,
+        category: item.category || "General", // Add category
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })) || [];
