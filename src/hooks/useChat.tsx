@@ -24,6 +24,8 @@ export const useChat = ({ profileId }: UseChatProps) => {
   const [chatId, setChatId] = useState<string | null>(null);
   const [connectionError, setConnectionError] = useState<boolean>(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const retryCount = useRef<number>(0);
+  const maxRetries = 3;
 
   // Get or create chat with the matched profile
   useEffect(() => {
@@ -44,14 +46,32 @@ export const useChat = ({ profileId }: UseChatProps) => {
           throw new Error('Database connection failed');
         }
         
+        // Try to get or create a chat using our RPC function
         const chatIdFromDB = await getOrCreateChat(profileId);
         console.log('Chat initialized with ID:', chatIdFromDB);
         setChatId(chatIdFromDB);
         
         // Fetch existing messages
         await fetchMessages(chatIdFromDB);
+        
+        // Reset retry count on success
+        retryCount.current = 0;
       } catch (error) {
         console.error('Error initializing chat:', error);
+        
+        // Check if we should retry
+        if (retryCount.current < maxRetries) {
+          retryCount.current += 1;
+          console.log(`Retrying chat initialization (${retryCount.current}/${maxRetries})...`);
+          
+          // Add a small delay before retrying
+          setTimeout(() => {
+            initializeChat();
+          }, 1000 * retryCount.current); // Increasing delay for each retry
+          
+          return;
+        }
+        
         toast({
           title: "Error initializing chat",
           description: "Failed to load chat. Please try again later.",
@@ -165,8 +185,16 @@ export const useChat = ({ profileId }: UseChatProps) => {
     if (!user || !profileId) return;
     setIsLoading(true);
     setConnectionError(false);
+    retryCount.current = 0; // Reset retry count
     
     try {
+      // Test connection first
+      const isConnected = await testDatabaseConnection();
+      if (!isConnected) {
+        setConnectionError(true);
+        throw new Error('Database connection failed');
+      }
+      
       const chatIdFromDB = await getOrCreateChat(profileId);
       setChatId(chatIdFromDB);
       await fetchMessages(chatIdFromDB);

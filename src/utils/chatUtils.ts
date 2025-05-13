@@ -26,7 +26,7 @@ export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
   }
 };
 
-// Get or create a chat with another user
+// Get or create a chat with another user - using direct SQL approach to avoid RLS recursion
 export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
@@ -37,82 +37,25 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     
     console.log('Current user ID:', user.id);
     
-    // Try a simpler approach - directly check if a chat exists between these two users
-    // This avoids the recursion in RLS policies
-    const { data: existingChats, error: chatQueryError } = await supabase
-      .from('chats')
-      .select('id')
-      .eq('type', 'direct');
+    // Use a direct approach to find existing chats
+    // This avoids the recursive RLS policy issue by directly querying
+    // both participants in a single query
+    const { data, error } = await supabase.rpc(
+      'get_or_create_private_chat',
+      { other_user_id: profileId }
+    );
     
-    if (chatQueryError) {
-      console.error('Error querying chats:', chatQueryError);
-      throw chatQueryError;
+    if (error) {
+      console.error('Error in get_or_create_private_chat RPC:', error);
+      throw error;
     }
     
-    console.log(`Found ${existingChats?.length || 0} direct chats`);
-    
-    // For each chat, check if both users are participants
-    if (existingChats && existingChats.length > 0) {
-      for (const chat of existingChats) {
-        // We'll count participants that match our two user IDs
-        const { data: participants, error: participantsError } = await supabase
-          .from('chat_participants')
-          .select('user_id')
-          .eq('chat_id', chat.id);
-        
-        if (participantsError) {
-          console.error('Error checking chat participants:', participantsError);
-          continue; // Try next chat
-        }
-        
-        // Check if both users are in this chat's participants
-        if (participants) {
-          const userIds = participants.map(p => p.user_id);
-          if (userIds.includes(user.id) && userIds.includes(profileId) && userIds.length === 2) {
-            console.log('Found existing chat:', chat.id);
-            return chat.id;
-          }
-        }
-      }
+    console.log('Chat ID from RPC function:', data);
+    if (!data) {
+      throw new Error('Failed to get or create chat');
     }
     
-    console.log('No existing chat found, creating new chat');
-    
-    // Create a new chat
-    const { data: newChat, error: createError } = await supabase
-      .from('chats')
-      .insert([{ type: 'direct' }])
-      .select()
-      .single();
-    
-    if (createError) {
-      console.error('Error creating new chat:', createError);
-      throw createError;
-    }
-    
-    console.log('Created new chat with ID:', newChat.id);
-    
-    // Add both users as participants - do this in separate calls to avoid potential RLS issues
-    const { error: addUser1Error } = await supabase
-      .from('chat_participants')
-      .insert([{ chat_id: newChat.id, user_id: user.id }]);
-    
-    if (addUser1Error) {
-      console.error('Error adding first user as participant:', addUser1Error);
-      throw addUser1Error;
-    }
-    
-    const { error: addUser2Error } = await supabase
-      .from('chat_participants')
-      .insert([{ chat_id: newChat.id, user_id: profileId }]);
-    
-    if (addUser2Error) {
-      console.error('Error adding second user as participant:', addUser2Error);
-      throw addUser2Error;
-    }
-    
-    console.log('Successfully added participants to chat:', newChat.id);
-    return newChat.id;
+    return data;
     
   } catch (error) {
     console.error('Failed to get or create chat:', error);
