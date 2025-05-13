@@ -16,8 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import ChatMessageSkeleton from "@/components/chat/ChatMessageSkeleton";
 
 interface Profile {
   id: string;
@@ -33,8 +31,6 @@ const ChatPage: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { 
@@ -53,9 +49,6 @@ const ChatPage: React.FC = () => {
       if (!profileId) return;
       
       try {
-        setIsLoadingProfile(true);
-        console.log(`Fetching profile for ID: ${profileId}`);
-        
         // Fetch the actual profile from Supabase
         const { data, error } = await supabase
           .from('profiles')
@@ -63,41 +56,31 @@ const ChatPage: React.FC = () => {
           .eq('id', profileId)
           .single();
           
-        if (error) {
-          console.error('Error fetching profile:', error);
-          throw error;
-        }
+        if (error) throw error;
         
         if (data) {
-          console.log('Profile data fetched:', data);
           setProfile({
             id: data.id,
             name: data.full_name || 'Chat Partner',
             image: data.avatar_url
           });
-        } else {
-          console.warn('No profile found for ID:', profileId);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching profile:', error);
-        console.error('Error details:', error.message);
-        
         toast({
           title: "Error",
           description: "Failed to load contact information.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoadingProfile(false);
       }
     };
     
     fetchProfile();
-  }, [profileId, toast, retryCount]);
+  }, [profileId, toast]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
-    if (messagesEndRef.current && messages.length > 0) {
+    if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
         behavior: "smooth"
       });
@@ -116,23 +99,15 @@ const ChatPage: React.FC = () => {
         });
       }
       return success;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error in handleSendMessage:", error);
-      console.error("Error details:", error.message);
-      
       toast({
         title: "Error",
-        description: `An unexpected error occurred: ${error.message || "Please try again."}`,
+        description: "An unexpected error occurred while sending your message.",
         variant: "destructive",
       });
       return false;
     }
-  };
-
-  const handleRetryConnection = () => {
-    // Increment retry count to trigger re-fetching of profile and chat data
-    setRetryCount(prev => prev + 1);
-    retry(); 
   };
 
   if (!user) {
@@ -145,38 +120,10 @@ const ChatPage: React.FC = () => {
     );
   }
 
-  if (isLoading || isLoadingProfile) {
+  if (isLoading || !profile) {
     return (
       <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
-        <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
-          <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => navigate("/matches")} 
-              className="mr-2"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            
-            <Skeleton className="h-10 w-10 rounded-full mr-3" />
-            
-            <div>
-              <Skeleton className="h-4 w-28 mb-1" />
-              <Skeleton className="h-3 w-20" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-4 bg-white border-b shadow-sm">
-          <Skeleton className="h-10 w-full rounded-md" />
-        </div>
-        
-        <div className="flex-1 flex items-center justify-center p-4 space-y-6">
-          <div className="w-full">
-            <ChatMessageSkeleton />
-          </div>
-        </div>
+        <LoadingSpinner message="Loading chat..." />
       </div>
     );
   }
@@ -189,10 +136,7 @@ const ChatPage: React.FC = () => {
           <p className="text-gray-600 mb-4">
             We're having trouble connecting to the chat service. This could be due to network issues or server problems.
           </p>
-          <Button 
-            onClick={handleRetryConnection} 
-            className="inline-flex items-center"
-          >
+          <Button onClick={retry} className="inline-flex items-center">
             <RefreshCw className="mr-2 h-4 w-4" /> Try Again
           </Button>
         </div>
@@ -202,16 +146,13 @@ const ChatPage: React.FC = () => {
 
   const formatTime = (timestamp: string) => {
     if (!timestamp) return "";
-    try {
-      return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch (e) {
-      return "";
-    }
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const ProfileHeader = () => {
-    if (!profile) {
-      return (
+  return (
+    <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
+      {/* Header with profile info */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
         <div className="flex items-center">
           <Button 
             variant="ghost" 
@@ -222,48 +163,19 @@ const ChatPage: React.FC = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           
-          <Skeleton className="h-10 w-10 rounded-full mr-3" />
+          <Avatar className="h-10 w-10 mr-3">
+            {profile.image ? (
+              <AvatarImage src={profile.image} alt={profile.name} />
+            ) : (
+              <AvatarFallback>{profile.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+            )}
+          </Avatar>
           
           <div>
-            <Skeleton className="h-4 w-28 mb-1" />
-            <Skeleton className="h-3 w-20" />
+            <h1 className="font-semibold text-base">{profile.name}</h1>
+            <p className="text-xs text-gray-500">Online now</p>
           </div>
         </div>
-      );
-    }
-    
-    return (
-      <div className="flex items-center">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => navigate("/matches")} 
-          className="mr-2"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        
-        <Avatar className="h-10 w-10 mr-3">
-          {profile.image ? (
-            <AvatarImage src={profile.image} alt={profile.name} />
-          ) : (
-            <AvatarFallback>{profile.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-          )}
-        </Avatar>
-        
-        <div>
-          <h1 className="font-semibold text-base">{profile.name}</h1>
-          <p className="text-xs text-gray-500">Online now</p>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
-      {/* Header with profile info */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
-        <ProfileHeader />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -272,7 +184,7 @@ const ChatPage: React.FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleRetryConnection}>
+            <DropdownMenuItem onClick={retry}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh chat
             </DropdownMenuItem>
@@ -280,7 +192,7 @@ const ChatPage: React.FC = () => {
         </DropdownMenu>
       </div>
       
-      {/* Message input area */}
+      {/* Message input area - positioned at the top */}
       <div className="p-4 bg-white border-b shadow-sm sticky top-[60px] z-10">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
