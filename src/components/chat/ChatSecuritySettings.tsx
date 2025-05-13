@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Trash2, RefreshCw, Clock } from "lucide-react";
+import { Shield, Trash2, RefreshCw } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getChatStoragePrefs, saveChatStoragePrefs, purgeOldLocalMessages } from "@/utils/storagePrefsUtils";
 
@@ -17,7 +17,6 @@ const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) 
   const { user } = useAuth();
   const { toast } = useToast();
   const [useLocalStorage, setUseLocalStorage] = useState(true);
-  const [encryptMessages, setEncryptMessages] = useState(true);
   const [autoDelete, setAutoDelete] = useState(true);
   const [retentionDays, setRetentionDays] = useState(7);
   
@@ -26,7 +25,6 @@ const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) 
     if (user) {
       const prefs = getChatStoragePrefs(user.id);
       setUseLocalStorage(prefs.useLocalStorage);
-      setEncryptMessages(prefs.encryptLocalMessages);
       setAutoDelete(prefs.autoDeleteAfterSync);
       setRetentionDays(prefs.localStorageTimeout / (24 * 60 * 60 * 1000)); // Convert ms to days
     }
@@ -37,7 +35,6 @@ const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) 
     
     saveChatStoragePrefs(user.id, {
       useLocalStorage,
-      encryptLocalMessages: encryptMessages,
       autoDeleteAfterSync: autoDelete,
       localStorageTimeout: retentionDays * 24 * 60 * 60 * 1000 // Days to ms
     });
@@ -83,18 +80,6 @@ const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) 
         
         {useLocalStorage && (
           <>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="encrypt-messages" className="font-medium">Encrypt Local Messages</Label>
-                <p className="text-sm text-gray-500">Protect locally stored messages with encryption</p>
-              </div>
-              <Switch
-                id="encrypt-messages"
-                checked={encryptMessages}
-                onCheckedChange={setEncryptMessages}
-              />
-            </div>
-            
             <div className="flex items-center justify-between">
               <div>
                 <Label htmlFor="auto-delete" className="font-medium">Auto-Delete Old Messages</Label>
