@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,18 +135,36 @@ export const useChat = ({ profileId }: UseChatProps) => {
   }, [chatId, user?.id, toast]);
 
   // Fetch existing messages
-  const fetchMessages = async (chatIdToUse: string) => {
+  const fetchMessages = async (chatId: string) => {
     try {
-      const messagesData = await fetchChatMessages(chatIdToUse);
-      console.log(`Fetched ${messagesData.length} messages for chat:`, chatIdToUse);
-      setMessages(messagesData);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
+      setIsLoading(true);
+      
+      console.log("Fetching messages for chat ID:", chatId);
+      
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("chat_id", chatId)
+        .order("created_at", { ascending: true });
+      
+      if (error) {
+        console.error("Supabase error fetching messages:", error);
+        throw error;
+      }
+      
+      console.log("Messages fetched successfully:", data?.length || 0);
+      
+      return data || [];
+    } catch (error: any) {
+      console.error("Error in fetchMessages:", error.message, error);
       toast({
-        title: "Error",
-        description: "Failed to load messages. Please try again later.",
+        title: "Error loading messages",
+        description: `Details: ${error.message || "Unknown error"}`,
         variant: "destructive",
       });
+      return [];
+    } finally {
+      setIsLoading(false);
     }
   };
 

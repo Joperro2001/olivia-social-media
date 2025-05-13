@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, Trash2, RefreshCw } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getChatStoragePrefs, saveChatStoragePrefs, purgeOldLocalMessages } from "@/utils/storagePrefsUtils";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ChatSecuritySettingsProps {
   onClose?: () => void;
@@ -19,6 +19,8 @@ const ChatSecuritySettings: React.FC<ChatSecuritySettingsProps> = ({ onClose }) 
   const [useLocalStorage, setUseLocalStorage] = useState(false);
   const [autoDelete, setAutoDelete] = useState(true);
   const [retentionDays, setRetentionDays] = useState(7);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Load current preferences
   useEffect(() => {
