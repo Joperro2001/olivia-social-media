@@ -582,6 +582,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: string[]
       }
+      is_chat_participant: {
+        Args: { chat_id: string; user_id: string }
+        Returns: boolean
+      }
       migrate_old_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
