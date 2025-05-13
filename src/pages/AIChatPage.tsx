@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useAIChat } from "@/hooks/useAIChat";
+import { useAuth } from "@/context/AuthContext";
 import ChatInput from "@/components/chat/ChatInput";
 import ChatBubble from "@/components/chat/ChatBubble";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_AVATAR, MESSAGE_TYPES } from "@/constants/chatConstants";
+import { sendChatMessage } from "@/utils/apiService";
+import { useAIChat } from "@/hooks/useAIChat";
 
 const AIChatPage: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -19,7 +20,8 @@ const AIChatPage: React.FC = () => {
     messages, 
     isLoading, 
     error, 
-    sendMessage 
+    sendMessage: hookSendMessage,
+    sessionId: currentSessionId 
   } = useAIChat({ sessionId });
 
   const handleSendMessage = async (content: string) => {
@@ -29,8 +31,26 @@ const AIChatPage: React.FC = () => {
     setIsTyping(true);
     
     try {
-      await sendMessage(content);
-      return true;
+      // Use the API service instead of the hook's sendMessage function
+      if (user) {
+        // Get AI response from the API
+        const response = await sendChatMessage(
+          user.id, 
+          sessionId || currentSessionId, 
+          content
+        );
+        
+        if (response) {
+          // Update messages through the hook method to maintain state consistency
+          await hookSendMessage(content);
+          return true;
+        }
+        return false;
+      } else {
+        // Fallback to the hook method if no user
+        await hookSendMessage(content);
+        return true;
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       return false;
