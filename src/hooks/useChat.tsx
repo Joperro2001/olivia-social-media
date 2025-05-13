@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,20 +142,10 @@ export const useChat = ({ profileId }: UseChatProps) => {
       
       console.log("Fetching messages for chat ID:", chatId);
       
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("chat_id", chatId)
-        .order("created_at", { ascending: true });
+      const messages = await fetchChatMessages(chatId);
+      setMessages(messages);
       
-      if (error) {
-        console.error("Supabase error fetching messages:", error);
-        throw error;
-      }
-      
-      console.log("Messages fetched successfully:", data?.length || 0);
-      
-      return data || [];
+      return messages;
     } catch (error: any) {
       console.error("Error in fetchMessages:", error.message, error);
       toast({
