@@ -65,7 +65,6 @@ export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
   console.log('Fetching messages for chat:', chatId);
   
   try {
-    // Use a simpler query that doesn't trigger recursion
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -90,7 +89,6 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
   try {
-    // Using a stored procedure to avoid direct queries that might trigger recursion
     const { data, error } = await supabase
       .rpc('get_or_create_private_chat', {
         other_user_id: profileId
@@ -164,9 +162,8 @@ export const subscribeToChat = (
   console.log('Setting up real-time subscription for chat:', chatId);
   
   try {
-    // Using a channel name without special characters to avoid potential issues
-    const channelName = `chat_${chatId}`;
-    const channel = supabase.channel(channelName);
+    // Channel name should follow proper format for Supabase realtime
+    const channel = supabase.channel('realtime:public:messages');
     
     channel
       .on(

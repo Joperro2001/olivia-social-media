@@ -84,14 +84,27 @@ export const useChat = ({ profileId }: UseChatProps) => {
   useEffect(() => {
     if (!chatId || usingLocalMode) return;
     
-    const channel = subscribeToChat(chatId, (newMessage) => {
-      dispatch({ type: 'ADD_MESSAGE', payload: newMessage });
-    });
-    
-    return () => {
-      console.log('Removing channel');
-      supabase.removeChannel(channel);
-    };
+    try {
+      const channel = subscribeToChat(chatId, (newMessage) => {
+        // Only add messages from other users, not our own (to avoid duplicates)
+        if (newMessage.sender_id !== user?.id) {
+          dispatch({ type: 'ADD_MESSAGE', payload: newMessage });
+        }
+      });
+      
+      return () => {
+        console.log('Removing channel');
+        supabase.removeChannel(channel);
+      };
+    } catch (error) {
+      console.error('Error setting up realtime subscription:', error);
+      dispatch({ type: 'SET_USING_LOCAL_MODE', payload: true });
+      toast({
+        title: "Connection Error",
+        description: "Failed to set up real-time updates. Using local mode.",
+        variant: "destructive",
+      });
+    }
   }, [chatId, user?.id, usingLocalMode]);
 
   // Save local messages to localStorage when they change
