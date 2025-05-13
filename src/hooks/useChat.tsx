@@ -181,6 +181,15 @@ export const useChat = ({ profileId }: UseChatProps) => {
 
     try {
       console.log('Attempting to send message to chat:', chatId);
+      
+      // Add more detailed logging here
+      console.log('Message details:', {
+        chatId,
+        senderId: user.id,
+        contentLength: content.length,
+        timestamp: new Date().toISOString()
+      });
+      
       const newMessage = await sendMessageToDatabase(chatId, user.id, content);
       console.log('Message sent successfully:', newMessage);
       
@@ -188,7 +197,14 @@ export const useChat = ({ profileId }: UseChatProps) => {
       setMessages(prev => [...prev, newMessage]);
       return true;
     } catch (error) {
+      // More detailed error logging
       console.error('Error sending message:', error);
+      console.error('Error details:', {
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack
+      });
+      
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
