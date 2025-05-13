@@ -41,7 +41,7 @@ export type AIConversation = {
   updated_at: string;
 };
 
-// New types for the updated schema
+// Simplified types for the updated schema
 export type UserConversationMessage = {
   message_id: string;
   user_id: string;
@@ -72,7 +72,7 @@ export type ChecklistItemData = {
   description: string;
   is_checked: boolean;
   auto_checked?: boolean;
-  category?: string;  // Added the category property
+  category?: string;
   created_at?: string;
   updated_at?: string;
 };
