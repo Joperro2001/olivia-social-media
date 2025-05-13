@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -21,12 +21,15 @@ export const useChat = ({ profileId }: UseChatProps) => {
   const { toast } = useToast();
   const [state, dispatch] = useChatReducer();
   const [connectionError, setConnectionError] = useState<boolean>(false);
+  const [retryAttempt, setRetryAttempt] = useState<number>(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const retryCount = useRef<number>(0);
   const maxRetries = 3;
 
   // Get or create chat with the matched profile
   useEffect(() => {
+    let isMounted = true;
+    
     const initializeChat = async () => {
       if (!user || !profileId) {
         console.log("Missing user or profileId, cannot initialize chat");
@@ -34,8 +37,10 @@ export const useChat = ({ profileId }: UseChatProps) => {
       }
       
       try {
-        dispatch({ type: 'SET_LOADING', payload: true });
-        setConnectionError(false);
+        if (isMounted) {
+          dispatch({ type: 'SET_LOADING', payload: true });
+          setConnectionError(false);
+        }
         
         console.log("Starting chat initialization with profile:", profileId);
         
@@ -43,19 +48,26 @@ export const useChat = ({ profileId }: UseChatProps) => {
         const isConnected = await testDatabaseConnection();
         if (!isConnected) {
           console.error("Database connection test failed");
-          setConnectionError(true);
-          throw new Error('Database connection failed');
+          if (isMounted) {
+            setConnectionError(true);
+            throw new Error('Database connection failed');
+          }
+          return;
         }
         
         // Try to get or create a chat using our RPC function
         const chatIdFromDB = await getOrCreateChat(profileId);
         console.log('Chat initialized with ID:', chatIdFromDB);
-        dispatch({ type: 'SET_CHAT_ID', payload: chatIdFromDB });
+        if (isMounted) {
+          dispatch({ type: 'SET_CHAT_ID', payload: chatIdFromDB });
+        }
         
         // Fetch existing messages
         const chatMessages = await fetchChatMessages(chatIdFromDB);
         console.log('Fetched messages:', chatMessages?.length || 0);
-        dispatch({ type: 'SET_MESSAGES', payload: chatMessages || [] });
+        if (isMounted) {
+          dispatch({ type: 'SET_MESSAGES', payload: chatMessages || [] });
+        }
         
         // Reset retry count on success
         retryCount.current = 0;
@@ -70,20 +82,26 @@ export const useChat = ({ profileId }: UseChatProps) => {
           
           // Add a small delay before retrying
           setTimeout(() => {
-            initializeChat();
+            if (isMounted) {
+              initializeChat();
+            }
           }, 1000 * retryCount.current); // Increasing delay for each retry
           
           return;
         }
         
-        toast({
-          title: "Error initializing chat",
-          description: `Failed to load chat. ${error.message || "Please try again later."}`,
-          variant: "destructive",
-        });
-        setConnectionError(true);
+        if (isMounted) {
+          toast({
+            title: "Error initializing chat",
+            description: `Failed to load chat. ${error.message || "Please try again later."}`,
+            variant: "destructive",
+          });
+          setConnectionError(true);
+        }
       } finally {
-        dispatch({ type: 'SET_LOADING', payload: false });
+        if (isMounted) {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
       }
     };
     
@@ -91,16 +109,19 @@ export const useChat = ({ profileId }: UseChatProps) => {
     
     // Clean up any existing channel subscription when component unmounts or profileId changes
     return () => {
+      isMounted = false;
       if (channelRef.current) {
         console.log('Cleaning up channel subscription');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
     };
-  }, [user, profileId, toast, dispatch]);
+  }, [user, profileId, toast, dispatch, retryAttempt]);
 
   // Subscribe to real-time message updates
   useEffect(() => {
+    let isMounted = true;
+    
     if (!state.chatId || !user?.id) return;
     
     try {
@@ -109,6 +130,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
       // Clean up any existing subscription
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
       }
       
       // Create a new channel subscription
@@ -148,14 +170,17 @@ export const useChat = ({ profileId }: UseChatProps) => {
       console.error('Error setting up realtime subscription:', error);
       console.error('Error details:', error.message, error.stack);
       
-      toast({
-        title: "Connection Error",
-        description: "Failed to set up real-time updates. Please try reloading the page.",
-        variant: "destructive",
-      });
+      if (isMounted) {
+        toast({
+          title: "Connection Error",
+          description: "Failed to set up real-time updates. Please try reloading the page.",
+          variant: "destructive",
+        });
+      }
     }
     
     return () => {
+      isMounted = false;
       if (channelRef.current) {
         console.log('Removing channel on cleanup');
         supabase.removeChannel(channelRef.current);
@@ -210,38 +235,21 @@ export const useChat = ({ profileId }: UseChatProps) => {
     }
   };
 
-  const retry = async () => {
+  const retry = useCallback(() => {
     if (!user || !profileId) return;
-    dispatch({ type: 'SET_LOADING', payload: true });
-    setConnectionError(false);
-    retryCount.current = 0; // Reset retry count
     
-    try {
-      // Test connection first
-      const isConnected = await testDatabaseConnection();
-      if (!isConnected) {
-        setConnectionError(true);
-        throw new Error('Database connection failed');
-      }
-      
-      const chatIdFromDB = await getOrCreateChat(profileId);
-      dispatch({ type: 'SET_CHAT_ID', payload: chatIdFromDB });
-      const chatMessages = await fetchChatMessages(chatIdFromDB);
-      dispatch({ type: 'SET_MESSAGES', payload: chatMessages || [] });
-    } catch (error: any) {
-      console.error('Retry failed:', error);
-      console.error('Error details:', error.message, error.stack);
-      
-      setConnectionError(true);
-      toast({
-        title: "Connection failed",
-        description: `Still unable to connect: ${error.message || "Please try again later."}`,
-        variant: "destructive",
-      });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
+    // Increment the retry attempt to trigger the useEffect
+    setRetryAttempt(prev => prev + 1);
+    
+    toast({
+      title: "Retrying connection",
+      description: "Attempting to reconnect to chat...",
+    });
+    
+    // Reset error state immediately for user feedback
+    setConnectionError(false);
+    retryCount.current = 0;
+  }, [user, profileId, toast]);
 
   return {
     messages: state.messages,

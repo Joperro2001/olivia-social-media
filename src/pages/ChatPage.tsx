@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import ChatMessageSkeleton from "@/components/chat/ChatMessageSkeleton";
 
 interface Profile {
   id: string;
@@ -33,6 +34,7 @@ const ChatPage: React.FC = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { 
@@ -91,7 +93,7 @@ const ChatPage: React.FC = () => {
     };
     
     fetchProfile();
-  }, [profileId, toast]);
+  }, [profileId, toast, retryCount]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
@@ -127,6 +129,12 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const handleRetryConnection = () => {
+    // Increment retry count to trigger re-fetching of profile and chat data
+    setRetryCount(prev => prev + 1);
+    retry(); 
+  };
+
   if (!user) {
     return (
       <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
@@ -140,7 +148,35 @@ const ChatPage: React.FC = () => {
   if (isLoading || isLoadingProfile) {
     return (
       <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
-        <LoadingSpinner message="Loading chat..." />
+        <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate("/matches")} 
+              className="mr-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            
+            <Skeleton className="h-10 w-10 rounded-full mr-3" />
+            
+            <div>
+              <Skeleton className="h-4 w-28 mb-1" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 bg-white border-b shadow-sm">
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+        
+        <div className="flex-1 flex items-center justify-center p-4 space-y-6">
+          <div className="w-full">
+            <ChatMessageSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
@@ -153,7 +189,10 @@ const ChatPage: React.FC = () => {
           <p className="text-gray-600 mb-4">
             We're having trouble connecting to the chat service. This could be due to network issues or server problems.
           </p>
-          <Button onClick={retry} className="inline-flex items-center">
+          <Button 
+            onClick={handleRetryConnection} 
+            className="inline-flex items-center"
+          >
             <RefreshCw className="mr-2 h-4 w-4" /> Try Again
           </Button>
         </div>
@@ -233,7 +272,7 @@ const ChatPage: React.FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={retry}>
+            <DropdownMenuItem onClick={handleRetryConnection}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh chat
             </DropdownMenuItem>
