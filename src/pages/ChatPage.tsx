@@ -1,11 +1,10 @@
-
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import { supabase } from "@/integrations/supabase/client";
-import ChatInput from "@/components/olivia/ChatInput";
+import ChatInput from "@/components/chat/ChatInput";
 import ChatHeader from "@/components/chat/ChatHeader";
 import ChatMessageList from "@/components/chat/ChatMessageList";
 import ChatLoadingSkeleton from "@/components/chat/ChatLoadingSkeleton";
