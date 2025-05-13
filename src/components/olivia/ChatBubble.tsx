@@ -45,8 +45,8 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
       <div
         className={`max-w-[75%] rounded-2xl px-4 py-3 ${
           isUser 
-            ? "bg-primary text-white rounded-tr-none" 
-            : "bg-[#3D2748] text-white rounded-tl-none"
+            ? "bg-primary text-white" 
+            : "bg-[#3D2748] text-white"
         }`}
       >
         <p className="text-sm break-words">{message}</p>
