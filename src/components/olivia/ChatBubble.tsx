@@ -13,6 +13,7 @@ interface ChatBubbleProps {
   groupName?: string;
   memberCount?: number;
   onGroupAction?: () => void;
+  isFirstMessage?: boolean;
 }
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({
@@ -24,12 +25,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   groupName,
   memberCount,
   onGroupAction,
+  isFirstMessage = false,
 }) => {
   return (
     <div
       className={`flex items-end gap-2 mb-4 ${
         isUser ? "justify-end" : "justify-start"
-      }`}
+      } ${isFirstMessage ? "mt-4" : ""}`}
     >
       {!isUser && (
         <Avatar className="w-8 h-8">

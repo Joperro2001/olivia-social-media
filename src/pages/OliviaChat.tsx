@@ -292,13 +292,14 @@ const OliviaChat: React.FC = () => {
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto pb-2 px-4">
-        {messages.map(message => <ChatBubble 
+      <div className="flex-1 overflow-y-auto pb-2 px-4 pt-2">
+        {messages.map((message, index) => <ChatBubble 
           key={message.id} 
           message={message.content} 
           isUser={message.isUser} 
           timestamp={message.timestamp} 
           avatar={!message.isUser ? "/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png" : undefined} 
+          isFirstMessage={index === 0}
         />)}
         
         {isTyping && <TypingIndicator />}
