@@ -49,6 +49,7 @@ const ChatPage: React.FC = () => {
       if (!profileId) return;
       
       try {
+        console.log(`Fetching profile for ID: ${profileId}`);
         // Fetch the actual profile from Supabase
         const { data, error } = await supabase
           .from('profiles')
@@ -56,17 +57,25 @@ const ChatPage: React.FC = () => {
           .eq('id', profileId)
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching profile:', error);
+          throw error;
+        }
         
         if (data) {
+          console.log('Profile data fetched:', data);
           setProfile({
             id: data.id,
             name: data.full_name || 'Chat Partner',
             image: data.avatar_url
           });
+        } else {
+          console.warn('No profile found for ID:', profileId);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching profile:', error);
+        console.error('Error details:', error.message);
+        
         toast({
           title: "Error",
           description: "Failed to load contact information.",
@@ -99,11 +108,13 @@ const ChatPage: React.FC = () => {
         });
       }
       return success;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in handleSendMessage:", error);
+      console.error("Error details:", error.message);
+      
       toast({
         title: "Error",
-        description: "An unexpected error occurred while sending your message.",
+        description: `An unexpected error occurred: ${error.message || "Please try again."}`,
         variant: "destructive",
       });
       return false;
@@ -146,7 +157,11 @@ const ChatPage: React.FC = () => {
 
   const formatTime = (timestamp: string) => {
     if (!timestamp) return "";
-    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    try {
+      return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return "";
+    }
   };
 
   return (

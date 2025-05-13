@@ -15,6 +15,7 @@ export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
     
     if (error) {
       console.error('Error fetching messages:', error);
+      console.error('Error code:', error.code, 'Details:', error.details);
       throw error;
     }
     
@@ -39,6 +40,7 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     
     if (error) {
       console.error('Error in get_or_create_private_chat RPC:', error);
+      console.error('Error code:', error.code, 'Details:', error.details);
       throw error;
     }
     
@@ -63,12 +65,18 @@ export const sendMessageToDatabase = async (
   console.log('Sending message to chat:', chatId);
   
   try {
+    if (!content.trim()) {
+      throw new Error("Message content cannot be empty");
+    }
+    
     // Now send the message
     const newMessage = {
       chat_id: chatId,
       sender_id: userId,
       content: content.trim()
     };
+    
+    console.log('Message payload:', newMessage);
     
     const { data, error } = await supabase
       .from('messages')
@@ -78,6 +86,7 @@ export const sendMessageToDatabase = async (
     
     if (error) {
       console.error('Error sending message:', error);
+      console.error('Error code:', error.code, 'Details:', error.details);
       throw error;
     }
     
@@ -117,6 +126,10 @@ export const subscribeToChat = (
       )
       .subscribe((status) => {
         console.log('Subscription status:', status);
+        
+        if (status !== 'SUBSCRIBED') {
+          console.warn('Failed to subscribe to chat updates:', status);
+        }
       });
       
     return channel;
@@ -131,7 +144,7 @@ export const testDatabaseConnection = async (): Promise<boolean> => {
   try {
     // Simple query to test connection
     console.log('Testing database connection');
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('id')
       .limit(1);

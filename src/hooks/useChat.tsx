@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +30,10 @@ export const useChat = ({ profileId }: UseChatProps) => {
   // Get or create chat with the matched profile
   useEffect(() => {
     const initializeChat = async () => {
-      if (!user || !profileId) return;
+      if (!user || !profileId) {
+        console.log("Missing user or profileId, cannot initialize chat");
+        return;
+      }
       
       try {
         setIsLoading(true);
@@ -51,12 +55,15 @@ export const useChat = ({ profileId }: UseChatProps) => {
         setChatId(chatIdFromDB);
         
         // Fetch existing messages
-        await fetchMessages(chatIdFromDB);
+        const chatMessages = await fetchChatMessages(chatIdFromDB);
+        console.log('Fetched messages:', chatMessages?.length || 0);
+        setMessages(chatMessages || []);
         
         // Reset retry count on success
         retryCount.current = 0;
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error initializing chat:', error);
+        console.error('Error details:', error.message, error.stack);
         
         // Check if we should retry
         if (retryCount.current < maxRetries) {
@@ -73,7 +80,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
         
         toast({
           title: "Error initializing chat",
-          description: "Failed to load chat. Please try again later.",
+          description: `Failed to load chat. ${error.message || "Please try again later."}`,
           variant: "destructive",
         });
         setConnectionError(true);
@@ -106,18 +113,43 @@ export const useChat = ({ profileId }: UseChatProps) => {
         supabase.removeChannel(channelRef.current);
       }
       
-      const channel = subscribeToChat(chatId, (newMessage) => {
-        // Only add messages from other users, not our own (to avoid duplicates)
-        if (newMessage.sender_id !== user.id) {
-          console.log('Received real-time message:', newMessage);
-          setMessages(prev => [...prev, newMessage]);
-        }
-      });
+      // Create a new channel subscription
+      const channel = supabase.channel(`public:messages:chat_id=eq.${chatId}`);
+      
+      channel
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `chat_id=eq.${chatId}`
+          },
+          (payload) => {
+            console.log('Received real-time message:', payload);
+            const newMessage = payload.new as Message;
+            
+            // Only add messages from other users, not our own (to avoid duplicates)
+            if (newMessage.sender_id !== user.id) {
+              console.log('Adding received message to chat');
+              setMessages(prev => [...prev, newMessage]);
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log('Real-time subscription status:', status);
+          
+          if (status !== 'SUBSCRIBED') {
+            console.warn('Failed to subscribe to real-time updates:', status);
+          }
+        });
       
       channelRef.current = channel;
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error setting up realtime subscription:', error);
+      console.error('Error details:', error.message, error.stack);
+      
       toast({
         title: "Connection Error",
         description: "Failed to set up real-time updates. Please try reloading the page.",
@@ -133,40 +165,6 @@ export const useChat = ({ profileId }: UseChatProps) => {
       }
     };
   }, [chatId, user?.id, toast]);
-
-  // Fetch existing messages
-  const fetchMessages = async (chatId: string) => {
-    try {
-      setIsLoading(true);
-      
-      console.log("Fetching messages for chat ID:", chatId);
-      
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("chat_id", chatId)
-        .order("created_at", { ascending: true });
-      
-      if (error) {
-        console.error("Supabase error fetching messages:", error);
-        throw error;
-      }
-      
-      console.log("Messages fetched successfully:", data?.length || 0);
-      
-      return data || [];
-    } catch (error: any) {
-      console.error("Error in fetchMessages:", error.message, error);
-      toast({
-        title: "Error loading messages",
-        description: `Details: ${error.message || "Unknown error"}`,
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Send a new message
   const sendMessage = async (content: string) => {
@@ -196,7 +194,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
       // Add the message to local state immediately for better UX
       setMessages(prev => [...prev, newMessage]);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       // More detailed error logging
       console.error('Error sending message:', error);
       console.error('Error details:', {
@@ -207,7 +205,7 @@ export const useChat = ({ profileId }: UseChatProps) => {
       
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: `Failed to send message: ${error.message || "Please try again."}`,
         variant: "destructive",
       });
       return false;
@@ -230,13 +228,16 @@ export const useChat = ({ profileId }: UseChatProps) => {
       
       const chatIdFromDB = await getOrCreateChat(profileId);
       setChatId(chatIdFromDB);
-      await fetchMessages(chatIdFromDB);
-    } catch (error) {
+      const chatMessages = await fetchChatMessages(chatIdFromDB);
+      setMessages(chatMessages || []);
+    } catch (error: any) {
       console.error('Retry failed:', error);
+      console.error('Error details:', error.message, error.stack);
+      
       setConnectionError(true);
       toast({
         title: "Connection failed",
-        description: "Still unable to connect. Please try again later.",
+        description: `Still unable to connect: ${error.message || "Please try again later."}`,
         variant: "destructive",
       });
     } finally {
