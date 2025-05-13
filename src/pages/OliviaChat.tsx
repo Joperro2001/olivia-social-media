@@ -3,6 +3,8 @@ import ChatBubble from "@/components/olivia/ChatBubble";
 import ChatInput from "@/components/olivia/ChatInput";
 import TypingIndicator from "@/components/olivia/TypingIndicator";
 import SuggestionCarousel from "@/components/olivia/SuggestionCarousel";
+import { useAuth } from "@/context/AuthContext";
+import { saveChecklistToLocalStorage } from "@/utils/checklistUtils";
 
 interface Message {
   id: string;
@@ -101,6 +103,72 @@ const OliviaChat: React.FC = () => {
       if (cityMatch && cityMatch[1]) {
         localStorage.setItem("matchedCity", cityMatch[1]);
       }
+    }
+    
+    // Handle checklist creation flow
+    if (lowerCaseMessage.includes("create my") && (lowerCaseMessage.includes("moving checklist") || lowerCaseMessage.includes("packing checklist"))) {
+      return "I'd be happy to help you create a moving checklist! Let's start with the basics. Which city are you moving to?";
+    }
+    
+    // Extract destination from user's message
+    if (messages.some(m => m.content.includes("Which city are you moving to"))) {
+      // Save the destination in temporary checklist
+      const checklistData = {
+        title: "Moving to " + userMessage.trim(),
+        destination: userMessage.trim(),
+      };
+      saveChecklistToLocalStorage(checklistData);
+      return "Great! And what's the purpose of your move? (e.g., work, study, lifestyle change)";
+    }
+    
+    // Extract purpose from user's message
+    if (messages.some(m => m.content.includes("what's the purpose of your move"))) {
+      const checklistData = JSON.parse(localStorage.getItem("cityPackerData") || "{}");
+      checklistData.purpose = userMessage.trim();
+      saveChecklistToLocalStorage(checklistData);
+      return "Excellent! How long are you planning to stay there? (e.g., 3 months, 1 year, permanent)";
+    }
+    
+    // Extract duration from user's message and finalize checklist
+    if (messages.some(m => m.content.includes("How long are you planning to stay"))) {
+      const checklistData = JSON.parse(localStorage.getItem("cityPackerData") || "{}");
+      checklistData.duration = userMessage.trim();
+      
+      // Add some default checklist items based on destination and duration
+      const longStay = userMessage.toLowerCase().includes("permanent") || 
+                      userMessage.toLowerCase().includes("year") ||
+                      userMessage.includes("long");
+      
+      const items = [
+        { category: "Documents", text: "Passport and ID documents", checked: false },
+        { category: "Documents", text: "Visa documentation", checked: false },
+        { category: "Documents", text: "Health insurance documents", checked: false },
+        { category: "Essentials", text: "Medications and prescriptions", checked: false },
+        { category: "Electronics", text: "Phone and charger", checked: false },
+        { category: "Electronics", text: "Laptop and charger", checked: false },
+        { category: "Electronics", text: "Travel adapters", checked: false },
+        { category: "Clothing", text: "Weather-appropriate clothing", checked: false },
+        { category: "Clothing", text: "Comfortable shoes", checked: false },
+      ];
+      
+      if (longStay) {
+        items.push(
+          { category: "Housing", text: "Rental agreements", checked: false },
+          { category: "Housing", text: "Utility setup information", checked: false },
+          { category: "Financial", text: "Banking information", checked: false },
+          { category: "Financial", text: "Budget plan for first 3 months", checked: false },
+        );
+      }
+      
+      checklistData.items = items;
+      saveChecklistToLocalStorage(checklistData);
+      
+      return `Perfect! I've created a customized moving checklist for your ${checklistData.duration} stay in ${checklistData.destination} for ${checklistData.purpose}. You can view and manage your checklist by visiting the My City Packer section. Would you like to view your checklist now?`;
+    }
+    
+    // User wants to view checklist
+    if (lowerCaseMessage.includes("yes") && messages.some(m => m.content.includes("Would you like to view your checklist now"))) {
+      return "Great! You can find your moving checklist in the My City Packer section. I've just added it there for you. Is there anything else you'd like to know about your move?";
     }
     
     if (lowerCaseMessage.includes("find my city match") || lowerCaseMessage.includes("city match")) {

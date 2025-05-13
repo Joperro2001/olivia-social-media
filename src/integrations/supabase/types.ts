@@ -34,7 +34,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_agents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_messages: {
         Row: {
@@ -111,6 +119,44 @@ export type Database = {
           type?: string
         }
         Relationships: []
+      }
+      checklist_items: {
+        Row: {
+          category: string
+          checklist_id: string
+          created_at: string
+          id: string
+          is_checked: boolean
+          item_text: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          checklist_id: string
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          item_text: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          item_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "packing_checklists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
@@ -398,6 +444,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      packing_checklists: {
+        Row: {
+          created_at: string
+          destination: string
+          duration: string | null
+          id: string
+          purpose: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination: string
+          duration?: string | null
+          id?: string
+          purpose?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string
+          duration?: string | null
+          id?: string
+          purpose?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       preparation_list_items: {
         Row: {

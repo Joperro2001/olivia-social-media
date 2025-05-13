@@ -1,5 +1,4 @@
 
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,7 @@ import CityPage from "./pages/CityPage";
 import MyCityMatchPage from "./pages/MyCityMatchPage";
 import MyCityPackerPage from "./pages/MyCityPackerPage";
 import MyCityExplorerPage from "./pages/MyCityExplorerPage";
+import ChecklistDetailPage from "./pages/ChecklistDetailPage";
 import MatchesPage from "./pages/MatchesPage";
 import ChatPage from "./pages/ChatPage";
 import AIChatPage from "./pages/AIChatPage";
@@ -96,6 +96,11 @@ const App = () => (
               <Route path="/my-city-packer" element={
                 <ProtectedRoute>
                   <AppLayout><MyCityPackerPage /></AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/checklist/:checklistId" element={
+                <ProtectedRoute>
+                  <AppLayout><ChecklistDetailPage /></AppLayout>
                 </ProtectedRoute>
               } />
               <Route path="/my-city-explorer" element={
