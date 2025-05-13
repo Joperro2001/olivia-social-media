@@ -37,9 +37,7 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     
     console.log('Current user ID:', user.id);
     
-    // Use a direct approach to find existing chats
-    // This avoids the recursive RLS policy issue by directly querying
-    // both participants in a single query
+    // Use the RPC function to get or create a chat
     const { data, error } = await supabase.rpc(
       'get_or_create_private_chat',
       { other_user_id: profileId }
