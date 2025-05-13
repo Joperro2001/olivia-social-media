@@ -245,19 +245,26 @@ const ChatPage: React.FC = () => {
         </DropdownMenu>
       </div>
       
+      {/* Message input area - moved to top */}
+      <div className="p-4 bg-white border-b shadow-sm">
+        <ChatInput onSendMessage={handleSendMessage} />
+      </div>
+      
       {/* Chat background with messages */}
       <div 
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FDF5EF] bg-opacity-80"
+        className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FDF5EF] bg-opacity-80 flex flex-col-reverse"
         style={{
           backgroundImage: "url('data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 16c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zm33.414-6l5.95-5.95L45.95.636 40 6.586 34.05.636 32.636 2.05 38.586 8l-5.95 5.95 1.414 1.414L40 9.414l5.95 5.95 1.414-1.414L41.414 8zM40 48c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zM9.414 40l5.95-5.95-1.414-1.414L8 38.586l-5.95-5.95L.636 34.05 6.586 40l-5.95 5.95 1.414 1.414L8 41.414l5.95 5.95 1.414-1.414L9.414 40z' fill='%23B892FF' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E"
         }}
       >
+        <div ref={messagesEndRef} />
+        
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 text-center">No messages yet. Say hello!</p>
           </div>
         ) : (
-          messages.map((message) => (
+          [...messages].reverse().map((message) => (
             <div 
               key={message.id} 
               className={`flex ${message.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
@@ -281,12 +288,6 @@ const ChatPage: React.FC = () => {
             </div>
           ))
         )}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      {/* Message input area */}
-      <div className="p-4 bg-white border-t shadow-sm">
-        <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
   );
