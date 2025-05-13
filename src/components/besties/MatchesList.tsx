@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -149,39 +150,44 @@ const MatchesList: React.FC<MatchesListProps> = ({
         return (
           <div 
             key={profile.id} 
-            className="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer"
+            className="flex items-center px-4 py-3.5 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
             onClick={() => handleCardClick(profile.id)}
           >
             <div className="relative">
-              <Avatar className="h-14 w-14">
+              <Avatar className="h-12 w-12 rounded-full">
                 {profile.image ? (
                   <AvatarImage src={profile.image} alt={profile.name} />
                 ) : (
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-primary/20 text-primary-dark">
                     {profile.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 )}
               </Avatar>
+              {profile.online && (
+                <span className="absolute right-0 bottom-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+              )}
             </div>
             
-            <div className="ml-3 flex-1 overflow-hidden">
-              <div className="flex justify-between items-baseline">
-                <h3 className="font-semibold text-base truncate">{profile.name}</h3>
-                <span className="text-xs text-gray-500">{timestamp}</span>
+            <div className="ml-3 flex-1 min-w-0 pr-1">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="font-semibold text-base truncate max-w-[65%]">{profile.name}</h3>
+                <span className="text-xs text-gray-500 whitespace-nowrap">
+                  {typeof timestamp === 'string' ? timestamp : 'Just now'}
+                </span>
               </div>
               
-              <div className="flex justify-between items-center mt-1">
-                <p className="text-sm text-gray-600 truncate pr-4 flex-1">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-gray-600 truncate max-w-[85%]">
                   {lastMessage}
                 </p>
                 
                 {unreadCount > 0 ? (
-                  <div className="bg-primary rounded-full h-5 w-5 flex items-center justify-center">
+                  <div className="bg-primary rounded-full h-5 w-5 flex items-center justify-center shrink-0">
                     <span className="text-xs font-medium text-white">{unreadCount}</span>
                   </div>
-                ) : (
-                  <CircleDot className="h-4 w-4 text-gray-400" />
-                )}
+                ) : profile.seen === false ? (
+                  <div className="bg-primary rounded-full h-2.5 w-2.5 shrink-0" />
+                ) : null}
               </div>
             </div>
           </div>

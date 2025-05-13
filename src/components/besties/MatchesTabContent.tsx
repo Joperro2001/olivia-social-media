@@ -48,7 +48,7 @@ const MatchesTabContent: React.FC<MatchesTabContentProps> = ({ profiles }) => {
           <p className="text-gray-500">No matches found for "{searchQuery}"</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg overflow-hidden shadow-sm">
           <MatchesList 
             profiles={filteredProfiles} 
             showRequests={false}
