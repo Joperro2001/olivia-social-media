@@ -37,37 +37,38 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     
     console.log('Current user ID:', user.id);
     
-    // First check if a chat already exists between these users
-    const { data: chatParticipants, error: fetchParticipantsError } = await supabase
-      .from('chat_participants')
-      .select('chat_id')
-      .eq('user_id', user.id);
+    // Use RPC function to check if a chat exists between these users
+    // First, get all chats the current user is in
+    const { data: userChats, error: userChatsError } = await supabase
+      .rpc('get_user_chat_ids');
       
-    if (fetchParticipantsError) {
-      console.error('Error checking for existing chats:', fetchParticipantsError);
-      throw fetchParticipantsError;
+    if (userChatsError) {
+      console.error('Error getting user chats:', userChatsError);
+      throw userChatsError;
     }
     
-    if (chatParticipants && chatParticipants.length > 0) {
-      // Get the chat IDs where the current user is a participant
-      const userChatIds = chatParticipants.map(p => p.chat_id);
-      
-      // Now check if the other user is also a participant in any of these chats
-      const { data: matchingChats, error: matchError } = await supabase
-        .from('chat_participants')
-        .select('chat_id')
-        .eq('user_id', profileId)
-        .in('chat_id', userChatIds);
+    if (userChats && userChats.length > 0) {
+      // For each chat, check if the other user is a participant
+      for (const chatId of userChats) {
+        // Get all participants for this chat except the current user
+        const { data: otherParticipants, error: participantsError } = await supabase
+          .from('chat_participants')
+          .select('user_id')
+          .eq('chat_id', chatId)
+          .neq('user_id', user.id);
+          
+        if (participantsError) {
+          console.error('Error checking chat participants:', participantsError);
+          continue; // Try next chat
+        }
         
-      if (matchError) {
-        console.error('Error finding matching chats:', matchError);
-        throw matchError;
-      }
-      
-      // If a matching chat is found, return that chat ID
-      if (matchingChats && matchingChats.length > 0) {
-        console.log('Found existing chat:', matchingChats[0].chat_id);
-        return matchingChats[0].chat_id;
+        // Check if the target profile is in this chat
+        const isProfileInChat = otherParticipants?.some(p => p.user_id === profileId);
+        
+        if (isProfileInChat) {
+          console.log('Found existing chat:', chatId);
+          return chatId;
+        }
       }
     }
     
@@ -118,18 +119,8 @@ export const sendMessageToDatabase = async (
   console.log('Sending message to chat:', chatId);
   
   try {
-    // Verify the user is a participant in this chat
-    const { data: participant, error: participantQueryError } = await supabase
-      .from('chat_participants')
-      .select('id')
-      .eq('chat_id', chatId)
-      .eq('user_id', userId)
-      .single();
-    
-    if (participantQueryError) {
-      console.error('Error verifying chat participant:', participantQueryError);
-      throw new Error('You are not a participant in this chat');
-    }
+    // We don't need to verify participation separately now since we have RLS policies
+    // that will prevent sending messages if the user is not a participant
     
     // Now send the message
     const newMessage = {
