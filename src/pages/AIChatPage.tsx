@@ -9,6 +9,7 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { useParams, useNavigate } from "react-router-dom";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { Textarea } from "@/components/ui/textarea";
+import ChatBubble from "@/components/olivia/ChatBubble";
 
 const AIChatPage: React.FC = () => {
   const { conversationId } = useParams<{ conversationId?: string }>();
@@ -109,29 +110,17 @@ const AIChatPage: React.FC = () => {
           </div>
         )}
 
-        {messages.map((message) => (
-          <div 
-            key={message.id} 
-            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div 
-              className={`max-w-[75%] p-3 rounded-lg ${
-                message.sender === 'user' 
-                  ? 'bg-primary text-white rounded-br-none' 
-                  : 'bg-white rounded-bl-none shadow-sm'
-              }`}
-            >
-              <p className="break-words">{message.content}</p>
-              <p 
-                className={`text-xs mt-1 text-right ${
-                  message.sender === 'user' ? 'text-white/70' : 'text-gray-500'
-                }`}
-              >
-                {formatTime(message.created_at)}
-              </p>
-            </div>
-          </div>
+        {messages.map((message, index) => (
+          <ChatBubble
+            key={message.id}
+            message={message.content}
+            isUser={message.sender === 'user'}
+            timestamp={formatTime(message.created_at)}
+            avatar={message.sender !== 'user' ? "/lovable-uploads/eec42500-64ac-429a-b4d6-e87431861420.png" : undefined}
+            isFirstMessage={index === 0}
+          />
         ))}
+        
         <div ref={messagesEndRef} />
       </div>
       

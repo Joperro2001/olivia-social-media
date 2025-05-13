@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -121,17 +122,7 @@
     @apply text-primary relative after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-primary;
   }
   
-  .chat-bubble {
-    @apply px-4 py-3 rounded-2xl max-w-xs md:max-w-md animate-bubble-in;
-  }
-  
-  .chat-bubble-user {
-    @apply chat-bubble bg-primary text-white ml-auto rounded-tr-none;
-  }
-  
-  .chat-bubble-assistant {
-    @apply chat-bubble bg-[#3D2748] text-white mr-auto rounded-tl-none;
-  }
+  /* Remove the old chat bubble styles since we're now applying them directly in the component */
   
   .typing-indicator {
     @apply flex space-x-1 px-4 py-3 rounded-2xl bg-secondary/50 w-16;

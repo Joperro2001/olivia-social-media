@@ -43,11 +43,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
         </Avatar>
       )}
       <div
-        className={`${
-          isUser ? "chat-bubble-user" : "chat-bubble-assistant"
+        className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+          isUser 
+            ? "bg-primary text-white rounded-tr-none" 
+            : "bg-[#3D2748] text-white rounded-tl-none"
         }`}
       >
-        <p className="text-sm">{message}</p>
+        <p className="text-sm break-words">{message}</p>
         
         {showGroupPreview && (
           <div className="mt-2 p-3 bg-white/80 rounded-md shadow-sm">
@@ -68,11 +70,14 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
         )}
         
         {timestamp && (
-          <div className={`text-xs mt-1 ${isUser ? "text-white/70" : "text-gray-500"}`}>
+          <div className={`text-xs mt-1 ${isUser ? "text-white/70" : "text-white/70"}`}>
             {timestamp}
           </div>
         )}
       </div>
+      {isUser && (
+        <div className="w-2" />
+      )}
     </div>
   );
 };
