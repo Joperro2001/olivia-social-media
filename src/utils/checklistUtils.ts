@@ -4,8 +4,18 @@ import { ChecklistItemData, UserChecklist } from '@/types/Chat';
 import { useAuth } from "@/context/AuthContext";
 import { useCallback } from "react";
 
+// Helper function to convert database response to our app type
+function convertDbResponseToUserChecklist(data: any): UserChecklist {
+  return {
+    user_id: data.user_id,
+    checklist_data: {
+      items: data.checklist_data?.items || []
+    }
+  };
+}
+
 // Fetch a user's checklists
-export async function fetchUserChecklists() {
+export async function fetchUserChecklists(): Promise<UserChecklist[]> {
   try {
     const { data, error } = await supabase
       .from("user_checklists")
@@ -16,7 +26,8 @@ export async function fetchUserChecklists() {
       return [];
     }
 
-    return (data || []) as UserChecklist[];
+    // Convert the database response to our app type
+    return (data || []).map(item => convertDbResponseToUserChecklist(item));
   } catch (err) {
     console.error("Error in fetchUserChecklists:", err);
     return [];
@@ -37,7 +48,7 @@ export async function fetchChecklist(userId: string): Promise<UserChecklist | nu
       return null;
     }
 
-    return data as UserChecklist;
+    return convertDbResponseToUserChecklist(data);
   } catch (err) {
     console.error("Error in fetchChecklist:", err);
     return null;
@@ -48,12 +59,13 @@ export async function fetchChecklist(userId: string): Promise<UserChecklist | nu
 export async function createChecklist(checklist: {
   items: ChecklistItemData[];
   user_id: string;
-}) {
+}): Promise<UserChecklist | null> {
   try {
     const { data, error } = await supabase
       .from("user_checklists")
       .insert({
         user_id: checklist.user_id,
+        title: "Relocation Checklist", // Add required title field
         checklist_data: {
           items: checklist.items
         }
@@ -66,7 +78,7 @@ export async function createChecklist(checklist: {
       return null;
     }
 
-    return data as UserChecklist;
+    return convertDbResponseToUserChecklist(data);
   } catch (err) {
     console.error("Error in createChecklist:", err);
     return null;
@@ -74,7 +86,7 @@ export async function createChecklist(checklist: {
 }
 
 // Update an existing checklist
-export async function updateChecklist(userId: string, items: ChecklistItemData[]) {
+export async function updateChecklist(userId: string, items: ChecklistItemData[]): Promise<UserChecklist | null> {
   try {
     const { data, error } = await supabase
       .from("user_checklists")
@@ -92,7 +104,7 @@ export async function updateChecklist(userId: string, items: ChecklistItemData[]
       return null;
     }
 
-    return data as UserChecklist;
+    return convertDbResponseToUserChecklist(data);
   } catch (err) {
     console.error("Error in updateChecklist:", err);
     return null;
@@ -104,7 +116,7 @@ export async function updateChecklistItem(
   userId: string, 
   itemId: string, 
   isChecked: boolean
-) {
+): Promise<UserChecklist | null> {
   try {
     // Get current checklist
     const { data: checklist } = await supabase
@@ -117,9 +129,11 @@ export async function updateChecklistItem(
       throw new Error("Checklist not found");
     }
     
+    // Ensure we have the expected structure
+    const items = checklist.checklist_data?.items || [];
+    
     // Find and update the specific item
-    const items = checklist.checklist_data.items;
-    const updatedItems = items.map(item => {
+    const updatedItems = items.map((item: ChecklistItemData) => {
       if (item.id === itemId) {
         return { ...item, is_checked: isChecked };
       }
@@ -143,7 +157,7 @@ export async function updateChecklistItem(
       return null;
     }
 
-    return data as UserChecklist;
+    return convertDbResponseToUserChecklist(data);
   } catch (err) {
     console.error("Error in updateChecklistItem:", err);
     return null;
@@ -151,7 +165,7 @@ export async function updateChecklistItem(
 }
 
 // Delete a checklist
-export async function deleteChecklist(userId: string) {
+export async function deleteChecklist(userId: string): Promise<boolean> {
   try {
     const { error } = await supabase
       .from("user_checklists")
