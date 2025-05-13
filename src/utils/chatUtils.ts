@@ -26,17 +26,11 @@ export const fetchChatMessages = async (chatId: string): Promise<Message[]> => {
   }
 };
 
-// Get or create a chat with another user - using direct SQL approach to avoid RLS recursion
+// Get or create a chat with another user - using our get_or_create_private_chat RPC function
 export const getOrCreateChat = async (profileId: string): Promise<string> => {
   console.log('Getting or creating chat with profile:', profileId);
   
   try {
-    // Get the current user's ID
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No authenticated user found');
-    
-    console.log('Current user ID:', user.id);
-    
     // Use the RPC function to get or create a chat
     const { data, error } = await supabase.rpc(
       'get_or_create_private_chat',
@@ -54,7 +48,6 @@ export const getOrCreateChat = async (profileId: string): Promise<string> => {
     }
     
     return data;
-    
   } catch (error) {
     console.error('Failed to get or create chat:', error);
     throw error;
@@ -104,8 +97,8 @@ export const subscribeToChat = (
   console.log('Setting up real-time subscription for chat:', chatId);
   
   try {
-    // Set up the channel with proper formatting for Supabase realtime
-    const channel = supabase.channel(`messages:chat_id=eq.${chatId}`);
+    // Set up the channel for Supabase realtime
+    const channel = supabase.channel(`public:messages:chat_id=eq.${chatId}`);
     
     channel
       .on(
@@ -124,12 +117,6 @@ export const subscribeToChat = (
       )
       .subscribe((status) => {
         console.log('Subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to chat:', chatId);
-        }
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Error subscribing to chat:', chatId);
-        }
       });
       
     return channel;
