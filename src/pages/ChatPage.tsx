@@ -1,14 +1,37 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, MoreVertical, CloudSun, AlertCircle } from "lucide-react";
+import { 
+  ArrowLeft, 
+  MoreVertical, 
+  CloudSun, 
+  AlertCircle,
+  Shield,
+  Lock,
+  Database
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/hooks/useChat";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import { supabase } from "@/integrations/supabase/client";
 import ChatInput from "@/components/olivia/ChatInput";
+import ChatSecuritySettings from "@/components/chat/ChatSecuritySettings";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { getChatStoragePrefs } from "@/utils/storagePrefsUtils";
 
 interface Profile {
   id: string;
@@ -26,6 +49,11 @@ const ChatPage: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showSecuritySettings, setShowSecuritySettings] = useState(false);
+  const [storagePrefs, setStoragePrefs] = useState<{ 
+    useLocalStorage: boolean;
+    encryptLocalMessages: boolean;
+  }>({ useLocalStorage: true, encryptLocalMessages: true });
   
   const { 
     messages, 
@@ -38,6 +66,17 @@ const ChatPage: React.FC = () => {
   } = useChat({ 
     profileId: profileId || '' 
   });
+
+  // Load storage preferences
+  useEffect(() => {
+    if (user) {
+      const prefs = getChatStoragePrefs(user.id);
+      setStoragePrefs({
+        useLocalStorage: prefs.useLocalStorage,
+        encryptLocalMessages: prefs.encryptLocalMessages
+      });
+    }
+  }, [user]);
 
   // Fetch profile details
   useEffect(() => {
@@ -199,6 +238,19 @@ const ChatPage: React.FC = () => {
         </div>
         
         <div className="flex items-center space-x-2">
+          {/* Storage mode indicator */}
+          {storagePrefs.encryptLocalMessages && (
+            <div className="mr-1 text-primary" title="Messages are locally encrypted">
+              <Lock className="h-4 w-4" />
+            </div>
+          )}
+          
+          {usingLocalMode && (
+            <div className="text-amber-500" title="Using local storage only">
+              <Database className="h-4 w-4" />
+            </div>
+          )}
+          
           {usingLocalMode && hasLocalMessages && (
             <Button 
               variant="outline" 
@@ -211,9 +263,26 @@ const ChatPage: React.FC = () => {
               {isSyncing ? 'Syncing...' : 'Sync Messages'}
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="text-gray-500">
-            <MoreVertical className="h-5 w-5" />
-          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-gray-500">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setShowSecuritySettings(true)}>
+                <Shield className="h-4 w-4 mr-2" />
+                <span>Security Settings</span>
+              </DropdownMenuItem>
+              {usingLocalMode && (
+                <DropdownMenuItem onClick={handleRetryConnection}>
+                  <CloudSun className="h-4 w-4 mr-2" />
+                  <span>Reconnect Database</span>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       
@@ -234,7 +303,13 @@ const ChatPage: React.FC = () => {
             <div className="flex items-center">
               <AlertCircle className="h-4 w-4 mr-2" />
               <div className="flex-1">
-                Using local mode due to database connectivity issues. Messages may not be saved permanently.
+                Using local mode due to database connectivity issues. 
+                {storagePrefs.useLocalStorage 
+                  ? " Messages are being saved to your device."
+                  : " Local storage is disabled in your settings."}
+                {storagePrefs.encryptLocalMessages && storagePrefs.useLocalStorage 
+                  ? " Messages are encrypted." 
+                  : ""}
               </div>
               <Button 
                 variant="outline" 
@@ -266,19 +341,43 @@ const ChatPage: React.FC = () => {
                 }`}
               >
                 <p className="break-words">{message.content}</p>
-                <p 
-                  className={`text-xs mt-1 text-right ${
+                <div 
+                  className={`text-xs mt-1 flex items-center justify-end gap-1 ${
                     message.sender_id === user.id ? 'text-white/70' : 'text-gray-500'
                   }`}
                 >
                   {formatTime(message.sent_at)}
-                </p>
+                  
+                  {/* Show local storage/sync indicator for own messages */}
+                  {message.sender_id === user.id && (
+                    <span title={usingLocalMode ? "Stored locally only" : "Synced to database"}>
+                      {usingLocalMode ? (
+                        <Database className="h-3 w-3 text-yellow-200" />
+                      ) : (
+                        <CloudSun className="h-3 w-3" />
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))
         )}
         <div ref={messagesEndRef} />
       </div>
+      
+      {/* Security settings dialog */}
+      <Dialog open={showSecuritySettings} onOpenChange={setShowSecuritySettings}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              <span>Chat Security Settings</span>
+            </DialogTitle>
+          </DialogHeader>
+          <ChatSecuritySettings onClose={() => setShowSecuritySettings(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
