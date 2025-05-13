@@ -652,6 +652,10 @@ export type Database = {
         Args: { other_user_id: string }
         Returns: string
       }
+      get_user_chats: {
+        Args: { user_id: string }
+        Returns: string[]
+      }
     }
     Enums: {
       [_ in never]: never
