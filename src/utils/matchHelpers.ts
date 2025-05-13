@@ -17,6 +17,8 @@ export interface MatchProfile {
   messages?: string[];
   isRequestSender?: boolean;
   isRequestRecipient?: boolean;
+  online?: boolean;
+  seen?: boolean;
 }
 
 export interface ProfileMatch {
@@ -154,6 +156,8 @@ export const mapProfilesToMatchProfiles = (
       hasInitialMessage: match.status === 'accepted',
       isRequestSender: match.isRequestSender,
       isRequestRecipient: match.isRequestRecipient,
+      online: false,  // Default value for online status
+      seen: true,     // Default value for seen status (most messages are seen by default)
     };
   }).filter(Boolean) as MatchProfile[];
 
