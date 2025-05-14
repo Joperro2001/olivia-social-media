@@ -27,7 +27,6 @@ const getApiBaseUrl = (): string => {
   }
   
   // Fallback to environment variable if available
-  // This will be undefined in production, so we rely on the edge function
   return import.meta.env.VITE_API_BASE_URL || '';
 };
 
@@ -56,13 +55,20 @@ export const sendChatMessage = async (
       message
     };
     
+    // Set timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(request)
+      body: JSON.stringify(request),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       throw new Error(`Server responded with status ${response.status}`);
@@ -80,13 +86,55 @@ export const sendChatMessage = async (
     }
     
     return data.ai_response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending chat message:", error);
-    toast({
-      title: "Communication Error",
-      description: "Failed to reach the AI assistant. Please try again later.",
-      variant: "destructive",
-    });
+    
+    // Provide more specific error messages based on error type
+    if (error.name === 'AbortError') {
+      toast({
+        title: "Request Timeout",
+        description: "The AI assistant took too long to respond. Please try again.",
+        variant: "destructive",
+      });
+    } else if (error.message?.includes('Failed to fetch')) {
+      toast({
+        title: "Connection Error",
+        description: "Failed to reach the AI assistant. Please check your internet connection.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Communication Error",
+        description: "Failed to reach the AI assistant. Please try again later.",
+        variant: "destructive",
+      });
+    }
+    
     return null;
+  }
+};
+
+// New function to test API connectivity
+export const testApiConnection = async (): Promise<boolean> => {
+  const baseUrl = getApiBaseUrl();
+  
+  if (!baseUrl) {
+    return false;
+  }
+  
+  try {
+    // Just do a HEAD request to test connectivity
+    const response = await fetch(`${baseUrl}`, {
+      method: 'HEAD',
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    return response.ok;
+  } catch (error) {
+    console.error("API connectivity test failed:", error);
+    return false;
   }
 };
