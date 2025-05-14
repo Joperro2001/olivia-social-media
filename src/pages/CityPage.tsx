@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ const CityPage: React.FC = () => {
               <p>
                 Get Olivia's curated local guides, event suggestions, friend-finder features, must-know tips, and city-specific hacks to feel at home fast.
               </p>
-              <Button className="w-full" variant="accent" onClick={() => handleChatRedirect("Help me explore my new city")}>
+              <Button className="w-full" variant="accent" onClick={() => navigate("/my-city-explorer")}>
                 Explore My City
               </Button>
             </CardContent>
