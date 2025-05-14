@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,22 +9,15 @@ import { UserChecklist } from "@/types/Chat";
 import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklistUtils";
 import { Check, FileText, Plus, FileCheck } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const ChecklistList = () => {
-  const {
-    user
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [checklist, setChecklist] = useState<UserChecklist | null>(null);
   const [loading, setLoading] = useState(true);
-  const {
-    syncLocalChecklistToDatabase
-  } = useChecklist();
+  const { syncLocalChecklistToDatabase } = useChecklist();
   const [showDefaultChecklist, setShowDefaultChecklist] = useState(false);
   const [isCreatingChecklist, setIsCreatingChecklist] = useState(false);
   const isMobile = useIsMobile();
@@ -74,12 +68,14 @@ const ChecklistList = () => {
       syncAndLoad();
     }
   }, [user]);
+  
   const handleCreateChecklist = () => {
     // Redirect to chat with Olivia to create a new checklist
     sessionStorage.setItem("autoSendMessage", "Create my relocation document checklist");
     sessionStorage.setItem("showDefaultChecklist", "true");
     navigate("/");
   };
+  
   const handleCreateDefaultChecklist = async () => {
     if (!user) {
       toast({
@@ -221,29 +217,33 @@ const ChecklistList = () => {
       setIsCreatingChecklist(false);
     }
   };
+  
   const handleDeletedChecklist = () => {
     setChecklist(null);
     loadChecklist();
   };
+  
   const navigateToCategory = (category: string) => {
     // Navigate to the category page even if there might not be items yet
     // The category page will handle the empty state
     navigate(`/checklist-category/${encodeURIComponent(category)}`);
   };
+  
   const renderCategoryCard = (category: string, itemCount: number = 0, completedCount: number = 0) => {
     const percentage = itemCount > 0 ? Math.round(completedCount / itemCount * 100) : 0;
-    return <div key={category} className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
-        <div className="w-full h-16 flex items-center justify-center mb-2">
+    return <div key={category} className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full aspect-square" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
+        <div className="w-full flex items-center justify-center mb-2 flex-1">
           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${completedCount > 0 && completedCount === itemCount ? "bg-primary/10" : "border-2 border-dashed border-primary/40"}`}>
             {completedCount > 0 && completedCount === itemCount ? <Check className="h-5 w-5 text-primary" /> : <span className="text-xs font-medium text-primary/80">{completedCount}/{itemCount}</span>}
           </div>
         </div>
         <p className="text-sm font-medium">{category}</p>
         <p className="text-xs text-muted-foreground mt-1">
-          {itemCount === 0 ? "No documents" : `${percentage}% complete`}
+          {itemCount === 0 ? "Required documents" : `${percentage}% complete`}
         </p>
       </div>;
   };
+  
   if (loading) {
     return <div className="flex flex-col h-64 items-center justify-center">
         <Spinner size="lg" className="text-primary" />
@@ -251,173 +251,106 @@ const ChecklistList = () => {
       </div>;
   }
 
-  // If we have a checklist, show it with clickable categories
-  if (checklist) {
-    const categories: {
+  // Consistent UI template for both states - with categories in a grid
+  const renderDocumentCard = () => {
+    // Setup the categories we want to display
+    const topCategories = ["Visa", "Health Insurance", "SIM Card"];
+    const bottomCategories = checklist ? 
+      Object.keys(groupedCategories).filter(cat => !topCategories.includes(cat)).slice(0, 3) :
+      ["Incoming University Documents", "Home University Documents", "Bank Account"];
+    
+    // Group items by category and count completion (if we have a checklist)
+    const groupedCategories: {
       [key: string]: {
         total: number;
         completed: number;
       };
     } = {};
-
-    // Group items by category and count completion
-    if (checklist.checklist_data?.items) {
+    
+    if (checklist?.checklist_data?.items) {
       checklist.checklist_data.items.forEach(item => {
         const category = item.category || "General";
-        if (!categories[category]) {
-          categories[category] = {
+        if (!groupedCategories[category]) {
+          groupedCategories[category] = {
             total: 0,
             completed: 0
           };
         }
-        categories[category].total += 1;
+        groupedCategories[category].total += 1;
         if (item.is_checked) {
-          categories[category].completed += 1;
+          groupedCategories[category].completed += 1;
         }
       });
     }
-    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
+    
+    return (
+      <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
-            <FileCheck className="h-5 w-5 text-primary" />
-            <CardTitle>Your Relocation Documents</CardTitle>
+            {checklist ? 
+              <FileCheck className="h-5 w-5 text-primary" /> : 
+              <FileText className="h-5 w-5 text-primary" />
+            }
+            <CardTitle>
+              {checklist ? "Your Relocation Documents" : "Relocation Documents"}
+            </CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="mb-4">Click on a category to view and manage its documents:</p>
+          <p className="mb-4">
+            {checklist 
+              ? "Click on a category to view and manage its documents:" 
+              : "Track your essential documents with a structured list:"}
+          </p>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {Object.entries(categories).map(([category, counts], index) => <div key={category} className="opacity-0 animate-fade-in" style={{
-            animationDelay: `${index * 50}ms`,
-            animationFillMode: 'forwards'
-          }}>
-                {renderCategoryCard(category, counts.total, counts.completed)}
-              </div>)}
+          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-md`}>
+            {topCategories.map((category, index) => {
+              const counts = groupedCategories[category] || { total: 0, completed: 0 };
+              return (
+                <div key={category} className="opacity-0 animate-fade-in" style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}>
+                  {renderCategoryCard(category, counts.total, counts.completed)}
+                </div>
+              );
+            })}
           </div>
           
-          <div className="flex justify-between mt-6">
-            <Button variant="outline" size="sm" onClick={() => navigate("/checklist-detail")} className="hover:shadow-sm transition-shadow">
-              View Full Document List
+          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-md mt-3`}>
+            {bottomCategories.map((category, index) => {
+              const counts = groupedCategories[category] || { total: 0, completed: 0 };
+              return (
+                <div key={category} className="opacity-0 animate-fade-in" style={{
+                  animationDelay: `${(index + 3) * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}>
+                  {renderCategoryCard(category, counts.total, counts.completed)}
+                </div>
+              );
+            })}
+          </div>
+          
+          {checklist ? (
+            <div className="flex justify-between mt-6">
+              <Button variant="outline" size="sm" onClick={() => navigate("/checklist-detail")} className="hover:shadow-sm transition-shadow">
+                View Full Document List
+              </Button>
+            </div>
+          ) : (
+            <Button className="w-full mt-6 hover:shadow-md transition-shadow" 
+              onClick={showDefaultChecklist ? handleCreateDefaultChecklist : handleCreateChecklist}>
+              Create My Document List
             </Button>
-          </div>
-        </CardContent>
-      </Card>;
-  }
-
-  // If showDefaultChecklist is true but we don't have a checklist yet, 
-  // show the default checklist creation screen without the empty state
-  if (showDefaultChecklist) {
-    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <FileCheck className="h-5 w-5 text-primary" />
-            <CardTitle>Your Relocation Documents</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Create your personalized document list:</p>
-          
-          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-4xl`}>
-            {["Visa", "Health Insurance", "SIM Card"].map((category, index) => (
-              <div key={category} className="opacity-0 animate-fade-in aspect-square" style={{
-                animationDelay: `${index * 50}ms`,
-                animationFillMode: 'forwards'
-              }}>
-                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full">
-                  <div className="flex items-center justify-center mb-2 flex-1">
-                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary/60" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium">{category}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Required documents</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-4xl mt-3`}>
-            {["Incoming University Documents", "Home University Documents", "Bank Account"].map((category, index) => (
-              <div key={category} className="opacity-0 animate-fade-in aspect-square" style={{
-                animationDelay: `${(index + 3) * 50}ms`,
-                animationFillMode: 'forwards'
-              }}>
-                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full">
-                  <div className="flex items-center justify-center mb-2 flex-1">
-                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary/60" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium">{category}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Required documents</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <Button className="w-full mt-6 hover:shadow-md transition-shadow" onClick={handleCreateDefaultChecklist}>
-            Create My Document List
-          </Button>
-        </CardContent>
-      </Card>;
-  }
-
-  // Updated empty state to match the styling of the other cards
-  return <div className="animate-fade-in w-full">
-      <Card className="border-primary/10 hover:shadow-md transition-shadow w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            <CardTitle>Relocation Documents</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Track your essential documents with a structured list:</p>
-          
-          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-4xl`}>
-            {["Visa", "Health Insurance", "SIM Card"].map((category, index) => (
-              <div key={category} className="opacity-0 animate-fade-in aspect-square" style={{
-                animationDelay: `${index * 50}ms`,
-                animationFillMode: 'forwards'
-              }}>
-                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
-                  <div className="flex items-center justify-center mb-2 flex-1">
-                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary/60" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium">{category}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Not started</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-4xl mt-3`}>
-            {["University Documents", "Housing", "Bank Account"].map((category, index) => (
-              <div key={category} className="opacity-0 animate-fade-in aspect-square" style={{
-                animationDelay: `${(index + 3) * 50}ms`,
-                animationFillMode: 'forwards'
-              }}>
-                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
-                  <div className="flex items-center justify-center mb-2 flex-1">
-                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary/60" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium">{category}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Not started</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <Button className="w-full mt-6 hover:shadow-md transition-shadow" onClick={handleCreateChecklist}>
-            Create My Document List
-          </Button>
+          )}
         </CardContent>
       </Card>
-    </div>;
+    );
+  };
+
+  return <div className="animate-fade-in w-full">
+    {renderDocumentCard()}
+  </div>;
 };
 
 export default ChecklistList;
