@@ -6,7 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
-import { Flag, Globe } from "lucide-react";
+import { Flag, Globe, University, CalendarClock, MapPin, Search } from "lucide-react";
 
 interface UserHeaderProps {
   userAge: number;
@@ -81,44 +81,135 @@ const UserHeader: React.FC<UserHeaderProps> = ({
       {/* Profile Card Preview Dialog */}
       <Dialog open={showProfileCard} onOpenChange={setShowProfileCard}>
         <DialogContent className="p-0 max-w-md mx-auto w-full rounded-lg overflow-hidden h-[80vh] sm:h-[70vh]">
-          <div className="w-full h-full rounded-lg overflow-hidden relative shadow-xl">
-            <div 
-              className="absolute inset-0 bg-cover bg-center" 
-              style={{ 
-                backgroundImage: profile?.avatar_url 
-                  ? `url(${profile.avatar_url})` 
-                  : "url(https://api.dicebear.com/7.x/thumbs/svg?seed=user)" 
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
+          <div className="w-full h-full rounded-lg overflow-hidden relative shadow-xl flex flex-col">
+            <div className="h-1/3 relative">
+              <div 
+                className="absolute inset-0 bg-cover bg-center" 
+                style={{ 
+                  backgroundImage: profile?.avatar_url 
+                    ? `url(${profile.avatar_url})` 
+                    : "url(https://api.dicebear.com/7.x/thumbs/svg?seed=user)" 
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
+              </div>
+              
+              <div className="absolute bottom-4 left-4 right-4 text-white z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-2xl font-bold">{userName || "Anonymous"}</h2>
+                  <span className="text-xl">{userAge || "?"}</span>
+                </div>
+              </div>
             </div>
-            
-            <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-2xl font-bold">{userName || "Anonymous"}</h2>
-                <span className="text-xl">{userAge || "?"}</span>
+
+            <div className="flex-grow overflow-y-auto p-5 bg-white">
+              {/* Bio section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Bio</h3>
+                <p className="text-gray-700">{profile?.about_me || "No bio available"}</p>
               </div>
               
-              <div className="flex items-center gap-2 mb-4">
-                <Flag className="h-4 w-4" />
-                <p className="text-sm">{profile?.current_city || "Unknown location"}</p>
+              {/* Location & University */}
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Current city</p>
+                    <p className="font-medium">{profile?.current_city || "Not specified"}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Globe className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Nationality</p>
+                    <p className="font-medium">{profile?.nationality || "Not specified"}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <University className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">University</p>
+                    <p className="font-medium">{profile?.university || "Not specified"}</p>
+                  </div>
+                </div>
               </div>
               
-              <p className="text-sm mb-4 line-clamp-3">{profile?.about_me || "No bio available"}</p>
+              {/* Relocation info */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-2">Relocation</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Flag className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Moving to</p>
+                      <p className="font-medium">{profile?.move_in_city || "Not specified"}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <CalendarClock className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">When</p>
+                      <p className="font-medium">{profile?.relocation_timeframe || "Not specified"}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Search className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Looking for</p>
+                      <div className="flex gap-2 mt-1 flex-wrap">
+                        {profile?.relocation_interests && profile.relocation_interests.length > 0 ? (
+                          profile.relocation_interests.map((interest, index) => (
+                            <Badge 
+                              key={index}
+                              variant="secondary" 
+                              className="bg-lavender-light text-primary-dark"
+                            >
+                              {interest}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-sm text-gray-500">Not specified</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
-              <div className="flex flex-wrap gap-2 mb-16">
-                {interests.length > 0 ? interests.map(tag => (
-                  <Badge 
-                    key={tag} 
-                    className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
-                  >
-                    {tag}
-                  </Badge>
-                )) : (
-                  <Badge className="bg-white/20 hover:bg-white/30 text-white border border-white/30">
-                    No tags
-                  </Badge>
-                )}
+              {/* Interests */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Interests</h3>
+                <div className="flex flex-wrap gap-2">
+                  {profile?.interests ? (
+                    profile.interests.map((tag, index) => (
+                      <Badge 
+                        key={index} 
+                        className="bg-primary/10 text-primary border border-primary/20"
+                      >
+                        {tag}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-gray-500">No interests added yet</span>
+                  )}
+                </div>
               </div>
             </div>
 
