@@ -40,7 +40,9 @@ export const useProfileData = () => {
 
       if (interestsError) throw interestsError;
 
-      // Convert profileData to Profile type
+      // Convert profileData to Profile type with proper type casting for enum fields
+      const relocationStatus = profileData.relocation_status as Profile["relocation_status"];
+      
       setProfile({
         about_me: profileData.about_me,
         age: profileData.age,
@@ -52,7 +54,10 @@ export const useProfileData = () => {
         nationality: profileData.nationality,
         university: profileData.university,
         updated_at: profileData.updated_at,
-        avatar_url: profileData.avatar_url
+        avatar_url: profileData.avatar_url,
+        relocation_status: relocationStatus,
+        relocation_timeframe: profileData.relocation_timeframe,
+        relocation_interests: profileData.relocation_interests
       });
       
       setInterests(interestsData || []);

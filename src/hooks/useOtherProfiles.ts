@@ -99,7 +99,12 @@ export const useOtherProfiles = () => {
       
       if (data && data.length > 0) {
         console.log("Profiles found:", data);
-        setProfiles(data);
+        // Properly type-cast the relocation_status field for each profile
+        const typedProfiles: Profile[] = data.map(profile => ({
+          ...profile,
+          relocation_status: profile.relocation_status as Profile["relocation_status"]
+        }));
+        setProfiles(typedProfiles);
       } else {
         console.log(`No other profiles found moving to ${moveInCity} or all users are already matched`);
         setProfiles([]);
