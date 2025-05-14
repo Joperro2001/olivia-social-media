@@ -9,11 +9,19 @@ interface CityMatchData {
 
 export async function saveCityMatch(cityMatch: CityMatchData) {
   try {
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+    
     const { data, error } = await supabase
       .from('city_matches')
       .insert({
         city: cityMatch.city,
-        match_data: cityMatch.matchData || {}
+        match_data: cityMatch.matchData || {},
+        user_id: user.id // Add the user_id field
       })
       .select()
       .single();
@@ -37,9 +45,19 @@ export async function saveCityMatch(cityMatch: CityMatchData) {
 
 export async function getUserCityMatch() {
   try {
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      // Return data from localStorage if user is not authenticated
+      const matchedCity = localStorage.getItem("matchedCity");
+      return matchedCity ? { city: matchedCity } : null;
+    }
+    
     const { data, error } = await supabase
       .from('city_matches')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -62,9 +80,19 @@ export async function getUserCityMatch() {
 
 export async function clearCityMatch() {
   try {
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      // Just clear localStorage if user is not authenticated
+      localStorage.removeItem("matchedCity");
+      return true;
+    }
+    
     const { error } = await supabase
       .from('city_matches')
       .delete()
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(1);
     
