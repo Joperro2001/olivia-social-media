@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Users } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 interface ProfileMatchingHeaderProps {
   onRefresh: () => void;
