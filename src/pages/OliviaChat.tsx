@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/chat/ChatBubble";
 import ChatInput from "@/components/chat/ChatInput";
@@ -10,17 +9,17 @@ import { useOliviaChat } from "@/hooks/useOliviaChat";
 import ChatError from "@/components/chat/ChatError";
 import { testApiConnection } from "@/utils/apiService";
 import { toast } from "@/hooks/use-toast";
-
 const OliviaChat: React.FC = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [connectionError, setConnectionError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
-  
-  const { 
-    messages, 
-    isTyping, 
+  const {
+    messages,
+    isTyping,
     handleSendMessage,
     handleCardAction,
     retryConnection
@@ -32,7 +31,6 @@ const OliviaChat: React.FC = () => {
       try {
         // First try from localStorage or session config
         const isConnected = await testApiConnection();
-        
         if (!isConnected) {
           console.log("Connection test failed, using offline mode");
           setErrorMessage("We can't connect to the API. You're in offline mode with limited functionality.");
@@ -47,7 +45,6 @@ const OliviaChat: React.FC = () => {
         // Don't set connection error to true so users can still use fallback mode
       }
     };
-    
     checkConnection();
   }, []); // Empty dependency array so this only runs once
 
@@ -57,15 +54,12 @@ const OliviaChat: React.FC = () => {
       title: "Checking connection",
       description: "Attempting to reconnect to the AI assistant..."
     });
-    
     setRetryCount(prev => prev + 1);
-    
     const success = await retryConnection();
     if (success) {
       setConnectionError(false);
       setRetryCount(0);
       setErrorMessage(undefined);
-      
       toast({
         title: "Connected",
         description: "Successfully connected to the AI assistant."
@@ -91,33 +85,19 @@ const OliviaChat: React.FC = () => {
   if (connectionError && retryCount > 3) {
     return <ChatError onRetry={handleRetry} message={errorMessage} />;
   }
-
-  return (
-    <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
+  return <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
-        {errorMessage && (
-          <div className="text-amber-600 text-sm flex items-center">
-            <span className="mr-2">⚠️ Offline Mode</span>
-            <button 
-              onClick={handleRetry} 
-              className="text-xs bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded"
-            >
+        {errorMessage && <div className="text-amber-600 text-sm flex items-center">
+            
+            <button onClick={handleRetry} className="text-xs bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded">
               Retry Connection
             </button>
-          </div>
-        )}
+          </div>}
       </div>
       
       <div className="flex-1 overflow-y-auto pb-2 px-4 pt-2">
-        {messages.map((message, index) => <ChatBubble 
-          key={message.id} 
-          message={message.content} 
-          isUser={message.isUser} 
-          timestamp={message.timestamp} 
-          avatar={!message.isUser ? DEFAULT_AVATAR : undefined} 
-          isFirstMessage={index === 0}
-        />)}
+        {messages.map((message, index) => <ChatBubble key={message.id} message={message.content} isUser={message.isUser} timestamp={message.timestamp} avatar={!message.isUser ? DEFAULT_AVATAR : undefined} isFirstMessage={index === 0} />)}
         
         {isTyping && <TypingIndicator />}
         
@@ -129,8 +109,6 @@ const OliviaChat: React.FC = () => {
       <div className="p-0 pb-8 sticky bottom-0 py-0 bg-gradient-to-t from-[#FDF5EF] to-transparent pt-4">
         <ChatInput onSendMessage={handleSendMessage} />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default OliviaChat;
