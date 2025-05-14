@@ -8,9 +8,10 @@ interface Config {
 
 export const useConfig = () => {
   const [config, setConfig] = useState<Config>({
-    apiBaseUrl: process.env.VITE_API_BASE_URL || "http://localhost:8000",
+    apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -27,6 +28,7 @@ export const useConfig = () => {
         }
       } catch (error) {
         console.error("Error fetching config:", error);
+        setError(error instanceof Error ? error : new Error("Failed to fetch configuration"));
       } finally {
         setIsLoading(false);
       }
@@ -38,5 +40,6 @@ export const useConfig = () => {
   return {
     ...config,
     isLoading,
+    error
   };
 };
