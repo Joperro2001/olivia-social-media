@@ -449,6 +449,9 @@ export type Database = {
           id: string
           move_in_city: string | null
           nationality: string | null
+          relocation_interests: string[] | null
+          relocation_status: string | null
+          relocation_timeframe: string | null
           university: string | null
           updated_at: string
         }
@@ -462,6 +465,9 @@ export type Database = {
           id: string
           move_in_city?: string | null
           nationality?: string | null
+          relocation_interests?: string[] | null
+          relocation_status?: string | null
+          relocation_timeframe?: string | null
           university?: string | null
           updated_at?: string
         }
@@ -475,6 +481,9 @@ export type Database = {
           id?: string
           move_in_city?: string | null
           nationality?: string | null
+          relocation_interests?: string[] | null
+          relocation_status?: string | null
+          relocation_timeframe?: string | null
           university?: string | null
           updated_at?: string
         }
