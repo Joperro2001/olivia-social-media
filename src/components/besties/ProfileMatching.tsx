@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { profiles, isLoading, refetchProfiles } = useOtherProfiles();
+  const { profiles, isLoading, refetchProfiles, addRejectedProfile } = useOtherProfiles();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -25,12 +26,14 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await refetchProfiles();
+    await refetchProfiles(false); // Don't reset rejected profiles
     setIsRefreshing(false);
   };
 
   const handleSwipeLeft = (id: string) => {
     console.log(`Swiped left on ${id}`);
+    // Add this profile to rejected profiles
+    addRejectedProfile(id);
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
@@ -179,7 +182,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         )}
       </div>
     </div>
-  );
+  };
 };
 
 export default ProfileMatching;

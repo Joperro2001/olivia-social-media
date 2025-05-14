@@ -81,9 +81,20 @@ const BestiesPage: React.FC = () => {
     }
   };
 
+  const handleRefreshProfiles = () => {
+    // Don't reset rejected profiles, just fetch new ones
+    refetchProfiles(false);
+    toast({
+      title: "Refreshing profiles",
+      description: userMoveInCity 
+        ? `Looking for new ${userMoveInCity} relocators...` 
+        : "Looking for new connections...",
+    });
+  };
+
   useEffect(() => {
-    // Force a refresh of profiles when the page loads
-    refetchProfiles();
+    // Force a refresh of profiles when the page loads, but don't reset rejected profiles
+    refetchProfiles(false);
   }, []);
 
   return (
@@ -110,15 +121,7 @@ const BestiesPage: React.FC = () => {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => {
-              refetchProfiles();
-              toast({
-                title: "Refreshing profiles",
-                description: userMoveInCity 
-                  ? `Looking for new ${userMoveInCity} relocators...` 
-                  : "Looking for new connections...",
-              });
-            }}
+            onClick={handleRefreshProfiles}
             aria-label="Refresh Profiles"
           >
             <RefreshCw className="h-5 w-5" />

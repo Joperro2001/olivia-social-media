@@ -12,6 +12,11 @@ export const useOtherProfiles = () => {
   const { toast } = useToast();
   const [userMoveInCity, setUserMoveInCity] = useState<string | null>(null);
   const [originalProfiles, setOriginalProfiles] = useState<Profile[]>([]);
+  const [rejectedProfileIds, setRejectedProfileIds] = useState<string[]>(() => {
+    // Initialize from localStorage if available
+    const saved = localStorage.getItem("rejectedProfiles");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const fetchCurrentUserProfile = async () => {
     if (!user) return null;
@@ -30,7 +35,7 @@ export const useOtherProfiles = () => {
     return data?.move_in_city || null;
   };
 
-  const fetchOtherProfiles = async () => {
+  const fetchOtherProfiles = async (resetRejected = false) => {
     try {
       if (!user) {
         console.log("No user is logged in, cannot fetch profiles");
@@ -76,18 +81,28 @@ export const useOtherProfiles = () => {
         ...(matchesAsUser2 ? matchesAsUser2.map(match => match.user_id_1) : [])
       ];
       
-      console.log("Excluding already matched users:", matchedUserIds);
+      // If we're not resetting rejected profiles, also exclude them
+      let excludeIds = [...matchedUserIds];
+      if (!resetRejected) {
+        excludeIds = [...excludeIds, ...rejectedProfileIds];
+      } else {
+        // If reset was requested, clear the rejected profiles
+        setRejectedProfileIds([]);
+        localStorage.setItem("rejectedProfiles", JSON.stringify([]));
+      }
       
-      // Get all profiles moving to the same city as the user, excluding the current user and already matched users
+      console.log("Excluding already matched/rejected users:", excludeIds);
+      
+      // Get all profiles moving to the same city as the user, excluding the current user and already matched/rejected users
       let query = supabase
         .from("profiles")
         .select("*")
         .neq("id", user.id)
         .eq("move_in_city", moveInCity);
       
-      // Only add the "not in" filter if there are matched users to exclude
-      if (matchedUserIds.length > 0) {
-        query = query.not('id', 'in', `(${matchedUserIds.join(',')})`);
+      // Only add the "not in" filter if there are matched/rejected users to exclude
+      if (excludeIds.length > 0) {
+        query = query.not('id', 'in', `(${excludeIds.join(',')})`);
       }
       
       const { data, error } = await query;
@@ -109,7 +124,7 @@ export const useOtherProfiles = () => {
         setProfiles(typedProfiles);
         setOriginalProfiles(typedProfiles); // Store the original profiles
       } else {
-        console.log(`No other profiles found moving to ${moveInCity} or all users are already matched`);
+        console.log(`No other profiles found moving to ${moveInCity} or all users are already matched/rejected`);
         setProfiles([]);
         setOriginalProfiles([]);
       }
@@ -125,6 +140,15 @@ export const useOtherProfiles = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Function to add a profile ID to rejected list
+  const addRejectedProfile = (profileId: string) => {
+    setRejectedProfileIds(prev => {
+      const updated = [...prev, profileId];
+      localStorage.setItem("rejectedProfiles", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   // Function to set custom profile ordering
@@ -157,12 +181,13 @@ export const useOtherProfiles = () => {
   useEffect(() => {
     if (user) {
       console.log("User detected, initiating profile fetch");
-      fetchOtherProfiles();
+      fetchOtherProfiles(false); // Don't reset rejected profiles on initial load
     } else {
       console.log("No user available, clearing profiles");
       setIsLoading(false);
       setProfiles([]);
       setOriginalProfiles([]);
+      setRejectedProfileIds([]);
     }
   }, [user]);
 
@@ -173,5 +198,7 @@ export const useOtherProfiles = () => {
     refetchProfiles: fetchOtherProfiles,
     setProfilesOrder,
     resetOrder,
+    addRejectedProfile,
+    rejectedProfileIds
   };
 };
