@@ -254,39 +254,24 @@ const ChecklistList = () => {
   
   const renderCategoryCard = (category: string, itemCount: number = 0, completedCount: number = 0) => {
     const percentage = itemCount > 0 ? Math.round(completedCount / itemCount * 100) : 0;
-    return (
-      <div 
-        key={category} 
-        className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full aspect-square" 
-        onClick={() => navigateToCategory(category)} 
-        role="button" 
-        aria-label={`View ${category} documents`}
-      >
+    return <div key={category} className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full aspect-square" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
         <div className="w-full flex items-center justify-center mb-2 flex-1">
           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${completedCount > 0 && completedCount === itemCount ? "bg-primary/10" : "border-2 border-dashed border-primary/40"}`}>
-            {completedCount > 0 && completedCount === itemCount ? 
-              <Check className="h-5 w-5 text-primary" /> : 
-              <span className="text-xs font-medium text-primary/80">{completedCount}/{itemCount}</span>
-            }
+            {completedCount > 0 && completedCount === itemCount ? <Check className="h-5 w-5 text-primary" /> : <span className="text-xs font-medium text-primary/80">{completedCount}/{itemCount}</span>}
           </div>
         </div>
-        <div className="mt-auto overflow-hidden">
-          <p className="text-sm font-medium truncate w-full">{category}</p>
-          <p className="text-xs text-muted-foreground mt-1 truncate">
-            {itemCount === 0 ? "Required documents" : `${percentage}% complete`}
-          </p>
-        </div>
-      </div>
-    );
+        <p className="text-sm font-medium">{category}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {itemCount === 0 ? "Required documents" : `${percentage}% complete`}
+        </p>
+      </div>;
   };
   
   if (loading) {
-    return (
-      <div className="flex flex-col h-64 items-center justify-center">
+    return <div className="flex flex-col h-64 items-center justify-center">
         <Spinner size="lg" className="text-primary" />
         <p className="mt-4 text-muted-foreground">{isCreatingChecklist ? "Creating your document list..." : "Loading your documents..."}</p>
-      </div>
-    );
+      </div>;
   }
 
   // Consistent UI template for both states - with categories in a grid
@@ -317,7 +302,7 @@ const ChecklistList = () => {
               : "Track your essential documents with a structured list:"}
           </p>
           
-          <div className="grid grid-cols-3 gap-3 mx-auto max-w-md">
+          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-md`}>
             {topCategories.map((category, index) => {
               const counts = groupedCategories[category] || { total: 0, completed: 0 };
               return (
@@ -331,7 +316,7 @@ const ChecklistList = () => {
             })}
           </div>
           
-          <div className="grid grid-cols-3 gap-3 mx-auto max-w-md mt-3">
+          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-md mt-3`}>
             {bottomCategories.map((category, index) => {
               const counts = groupedCategories[category] || { total: 0, completed: 0 };
               return (
@@ -362,11 +347,9 @@ const ChecklistList = () => {
     );
   };
 
-  return (
-    <div className="animate-fade-in w-full">
-      {renderDocumentCard()}
-    </div>
-  );
+  return <div className="animate-fade-in w-full">
+    {renderDocumentCard()}
+  </div>;
 };
 
 export default ChecklistList;
