@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,6 @@ import { Profile } from "@/types/Profile";
 import { Loader, Users, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import ProfileMatchingHeader from "./ProfileMatchingHeader";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -141,12 +139,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <ProfileMatchingHeader 
-        onRefresh={handleRefresh}
-        isRefreshing={isRefreshing}
-      />
-      
+    <div className="flex flex-col h-full">      
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center">
