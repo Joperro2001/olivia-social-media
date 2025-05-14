@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchProfile, ProfileMatch, fetchMatchedProfiles, mapProfilesToMatchProfiles } from "@/utils/matchHelpers";
+import { Profile } from "@/types/Profile"; // Add this import for the Profile type
 
 interface UseMatchesProps {
   userId: string;
