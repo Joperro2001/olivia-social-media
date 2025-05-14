@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Diamond, Heart, Sparkles, Users, RefreshCw, Brain, UserPlus } from "lucide-react";
+import { Diamond, Heart, Sparkles, Users, RefreshCw, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ProfileMatching from "@/components/besties/ProfileMatching";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +18,6 @@ const BestiesPage: React.FC = () => {
   const { refetchProfiles, userMoveInCity } = useOtherProfiles();
   const { user } = useAuth();
   const { isRanking, rankProfiles, isAIRankingActive, toggleAIRanking } = useAIRankProfiles();
-  const [isCreatingDemoUsers, setIsCreatingDemoUsers] = useState(false);
   
   const handleOpenMatches = () => {
     if (!user) {
@@ -82,45 +81,6 @@ const BestiesPage: React.FC = () => {
     }
   };
 
-  // Function to create demo profiles directly
-  const createDemoProfiles = async () => {
-    try {
-      setIsCreatingDemoUsers(true);
-      toast({
-        title: "Creating demo profiles",
-        description: "Please wait while we create profiles for you to match with...",
-      });
-
-      // Call the create-profiles function
-      const { data, error } = await supabase.functions.invoke('create-profiles');
-      
-      if (error) {
-        console.error("Error creating profiles:", error);
-        throw error;
-      }
-      
-      console.log("Demo profiles creation result:", data);
-      
-      toast({
-        title: "Demo profiles created successfully!",
-        description: data?.message || "New profiles are available for matching",
-        className: "bg-gradient-to-r from-green-500 to-green-700 text-white border-none",
-      });
-      
-      // Force a refresh of profiles
-      refetchProfiles();
-    } catch (error: any) {
-      console.error("Error creating demo profiles:", error);
-      toast({
-        title: "Error creating profiles",
-        description: error.message || "Failed to create demo profiles",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCreatingDemoUsers(false);
-    }
-  };
-
   useEffect(() => {
     // Force a refresh of profiles when the page loads
     refetchProfiles();
@@ -175,16 +135,6 @@ const BestiesPage: React.FC = () => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={createDemoProfiles}
-              disabled={isCreatingDemoUsers}
-              className="flex items-center gap-1"
-            >
-              <UserPlus className="h-4 w-4" />
-              {isCreatingDemoUsers ? "Creating..." : "Create Demo Profiles"}
-            </Button>
             <Button
               variant={isAIRankingActive ? "default" : "outline"}
               size="sm"
