@@ -9,7 +9,6 @@ import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAIRankProfiles } from "@/hooks/useAIRankProfiles";
-import { supabase } from "@/integrations/supabase/client";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
@@ -81,20 +80,9 @@ const BestiesPage: React.FC = () => {
     }
   };
 
-  const handleRefreshProfiles = () => {
-    // Don't reset rejected profiles, just fetch new ones
-    refetchProfiles(false);
-    toast({
-      title: "Refreshing profiles",
-      description: userMoveInCity 
-        ? `Looking for new ${userMoveInCity} relocators...` 
-        : "Looking for new connections...",
-    });
-  };
-
   useEffect(() => {
-    // Force a refresh of profiles when the page loads, but don't reset rejected profiles
-    refetchProfiles(false);
+    // Force a refresh of profiles when the page loads
+    refetchProfiles();
   }, []);
 
   return (
@@ -121,7 +109,15 @@ const BestiesPage: React.FC = () => {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={handleRefreshProfiles}
+            onClick={() => {
+              refetchProfiles();
+              toast({
+                title: "Refreshing profiles",
+                description: userMoveInCity 
+                  ? `Looking for new ${userMoveInCity} relocators...` 
+                  : "Looking for new connections...",
+              });
+            }}
             aria-label="Refresh Profiles"
           >
             <RefreshCw className="h-5 w-5" />
@@ -137,18 +133,16 @@ const BestiesPage: React.FC = () => {
               {userMoveInCity ? `Moving to ${userMoveInCity}` : "Find people moving to your city"}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isAIRankingActive ? "default" : "outline"}
-              size="sm"
-              onClick={handleAIRanking}
-              disabled={isRanking}
-              className={isAIRankingActive ? "bg-gradient-to-r from-blue-500 to-purple-500" : ""}
-            >
-              <Brain className="h-4 w-4 mr-1" />
-              AI {isRanking && "Ranking..."}
-            </Button>
-          </div>
+          <Button
+            variant={isAIRankingActive ? "default" : "outline"}
+            size="sm"
+            onClick={handleAIRanking}
+            disabled={isRanking}
+            className={isAIRankingActive ? "bg-gradient-to-r from-blue-500 to-purple-500" : ""}
+          >
+            <Brain className="h-4 w-4 mr-1" />
+            AI {isRanking && "Ranking..."}
+          </Button>
         </div>
 
         <ProfileMatching onMatchFound={handleMatchFound} />

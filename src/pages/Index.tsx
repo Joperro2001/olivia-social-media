@@ -11,8 +11,8 @@ const Index = () => {
   React.useEffect(() => {
     if (!isLoading) {
       if (user) {
-        // If user is logged in, redirect to Besties page
-        navigate("/besties");
+        // If user is logged in, redirect to Olivia chat
+        navigate("/");
       } else {
         // If no user, redirect to sign in
         navigate("/signin");
