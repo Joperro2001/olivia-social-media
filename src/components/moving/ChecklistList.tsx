@@ -273,7 +273,7 @@ const ChecklistList = () => {
         }
       });
     }
-    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in">
+    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
@@ -283,7 +283,7 @@ const ChecklistList = () => {
         <CardContent>
           <p className="mb-4">Click on a category to view and manage its documents:</p>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {Object.entries(categories).map(([category, counts], index) => <div key={category} className="opacity-0 animate-fade-in" style={{
             animationDelay: `${index * 50}ms`,
             animationFillMode: 'forwards'
@@ -304,7 +304,7 @@ const ChecklistList = () => {
   // If showDefaultChecklist is true but we don't have a checklist yet, 
   // show the default checklist creation screen without the empty state
   if (showDefaultChecklist) {
-    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in">
+    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
@@ -314,7 +314,7 @@ const ChecklistList = () => {
         <CardContent>
           <p className="mb-4">Create your personalized document list:</p>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {["Visa", "Health Insurance", "SIM Card", "Incoming University Documents", "Home University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
             animationDelay: `${index * 50}ms`,
             animationFillMode: 'forwards'
@@ -339,8 +339,8 @@ const ChecklistList = () => {
   }
 
   // Default empty state - show both cards
-  return <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-      <Card className="border-primary/10 hover:shadow-md transition-shadow">
+  return <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in w-full">
+      <Card className="border-primary/10 hover:shadow-md transition-shadow w-full">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -350,7 +350,7 @@ const ChecklistList = () => {
         <CardContent>
           <p className="mb-4">Track your essential documents with a structured list:</p>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
             animationDelay: `${index * 50}ms`,
             animationFillMode: 'forwards'
@@ -372,8 +372,6 @@ const ChecklistList = () => {
           </Button>
         </CardContent>
       </Card>
-      
-      
     </div>;
 };
 

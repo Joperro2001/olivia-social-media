@@ -29,7 +29,7 @@ const MyCityPackerPage: React.FC = () => {
         </div>
       </div>
       
-      <div className="px-4 flex-1 overflow-auto pb-28">
+      <div className="px-4 flex-1 overflow-auto pb-28 w-full max-w-full">
         <Suspense fallback={
           <div className="flex flex-col h-64 items-center justify-center">
             <Spinner size="lg" className="text-primary" />
