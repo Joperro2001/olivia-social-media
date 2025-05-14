@@ -91,6 +91,9 @@ const RelocationCard: React.FC<RelocationCardProps> = ({ moveInCity }) => {
   const currentTimeframe = profile?.relocation_timeframe || "Next 3 months";
   const currentInterests = profile?.relocation_interests || ["Accommodation tips", "Local guides", "Social events"];
   
+  // Get only the first interest to display
+  const primaryInterest = currentInterests && currentInterests.length > 0 ? currentInterests[0] : "None";
+  
   return (
     <>
       <motion.div 
@@ -136,16 +139,13 @@ const RelocationCard: React.FC<RelocationCardProps> = ({ moveInCity }) => {
             </div>
             <div>
               <p className="text-sm text-gray-500">Looking for</p>
-              <div className="flex gap-2 mt-1 flex-wrap">
-                {currentInterests.map(interest => (
-                  <Badge 
-                    key={interest}
-                    variant="secondary" 
-                    className="bg-lavender-light text-primary-dark"
-                  >
-                    {interest}
-                  </Badge>
-                ))}
+              <div className="mt-1">
+                <Badge 
+                  variant="secondary" 
+                  className="bg-lavender-light text-primary-dark"
+                >
+                  {primaryInterest}
+                </Badge>
               </div>
             </div>
           </div>
