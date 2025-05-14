@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ const CityPage: React.FC = () => {
                 Tell Olivia what matters to you — lifestyle, budget, weather, language, vibes — and she'll help you find your perfect match.
               </p>
               <Button className="w-full" onClick={() => handleChatRedirect("Find my City Match")}>
-                Find My Match
+                My Match
               </Button>
             </CardContent>
           </Card>
