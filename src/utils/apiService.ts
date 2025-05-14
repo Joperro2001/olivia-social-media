@@ -109,9 +109,9 @@ export const testApiConnection = async (): Promise<boolean> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
-    // Just do a HEAD request to test connectivity
-    const response = await fetch(`${baseUrl}/health`, {
-      method: 'HEAD',
+    // Use GET request to test connectivity
+    const response = await fetch(`${baseUrl}/health`, { 
+      method: 'GET',
       cache: 'no-cache',
       headers: {
         'Cache-Control': 'no-cache'
