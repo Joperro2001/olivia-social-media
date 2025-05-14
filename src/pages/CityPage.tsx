@@ -74,16 +74,10 @@ const CityPage: React.FC = () => {
               <p>
                 Olivia will build your personalized moving checklist: visa requirements, SIM cards, health insurance, local apps, housing tips, and exactly what to pack.
               </p>
-              {hasChecklist ? (
-                <Button className="w-full" variant="secondary" onClick={() => navigate("/my-city-packer")}>
-                  <Eye className="h-4 w-4 mr-1" />
-                  View My Checklist
-                </Button>
-              ) : (
-                <Button className="w-full" variant="secondary" onClick={() => handleChatRedirect("Create my moving checklist")}>
-                  Create My Checklist
-                </Button>
-              )}
+              <Button className="w-full" variant="secondary" onClick={() => navigate("/my-city-packer")}>
+                <Eye className="h-4 w-4 mr-1" />
+                My Checklist
+              </Button>
             </CardContent>
           </Card>
           
