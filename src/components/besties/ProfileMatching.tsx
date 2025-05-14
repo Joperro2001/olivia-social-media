@@ -130,9 +130,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
       });
 
       // Call the create-profiles function
-      const { error } = await supabase.functions.invoke('create-profiles');
+      const { data, error } = await supabase.functions.invoke('create-profiles');
       
       if (error) {
+        console.error("Error creating demo profiles:", error);
         throw error;
       }
       
@@ -212,9 +213,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
               <Button 
                 className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
                 onClick={createDemoProfiles}
+                disabled={isCreatingProfiles}
               >
                 <UserPlus className="h-4 w-4" />
-                Create Demo Profiles
+                {isCreatingProfiles ? "Creating..." : "Create Demo Profiles"}
               </Button>
             </div>
           </div>
@@ -240,7 +242,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
                 disabled={isCreatingProfiles}
               >
                 <UserPlus className="h-4 w-4" />
-                Add More Profiles
+                {isCreatingProfiles ? "Creating..." : "Add More Profiles"}
               </Button>
             </div>
           </div>
