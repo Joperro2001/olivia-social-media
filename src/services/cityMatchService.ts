@@ -53,7 +53,19 @@ export async function saveCityMatch(cityMatch: CityMatchData) {
   }
 }
 
-export async function getUserCityMatch() {
+// Define a proper return type for getUserCityMatch
+interface CityMatchReturn {
+  city: string;
+  matchData?: Record<string, any>;
+  // Include database fields if needed
+  id?: string;
+  user_id?: string;
+  match_data?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function getUserCityMatch(): Promise<CityMatchReturn | null> {
   try {
     // Get the current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -80,15 +92,26 @@ export async function getUserCityMatch() {
     
     // Transform the database response to match our expected format
     if (data) {
-      const transformedData = {
+      // Create a standardized return with proper type handling
+      const transformedData: CityMatchReturn = {
         ...data,
-        matchData: data.match_data || {}
+        // Add matchData for consistent interface
+        matchData: {}
       };
       
-      // Also store in localStorage as backup
-      localStorage.setItem("matchedCity", data.city);
-      if (data.match_data && typeof data.match_data === 'object' && data.match_data.reason) {
-        localStorage.setItem("matchedCityReason", data.match_data.reason as string);
+      // If match_data exists and is an object, handle reason properly
+      if (data.match_data && typeof data.match_data === 'object') {
+        // Check if reason exists in match_data
+        if ('reason' in data.match_data && data.match_data.reason) {
+          // Add to matchData for consistent access
+          transformedData.matchData = {
+            reason: String(data.match_data.reason)
+          };
+          
+          // Also store in localStorage as backup
+          localStorage.setItem("matchedCity", data.city);
+          localStorage.setItem("matchedCityReason", String(data.match_data.reason));
+        }
       }
       
       return transformedData;

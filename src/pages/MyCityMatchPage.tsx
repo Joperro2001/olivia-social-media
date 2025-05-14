@@ -24,14 +24,11 @@ const MyCityMatchPage: React.FC = () => {
         
         if (cityMatchData?.city) {
           setMatchedCity(cityMatchData.city);
-          // Extract reason if available
-          if (cityMatchData.matchData && cityMatchData.matchData.reason) {
-            setMatchReason(cityMatchData.matchData.reason);
-          } else if (cityMatchData.match_data && typeof cityMatchData.match_data === 'object') {
-            // Handle reason from match_data if present (from database)
-            const matchData = cityMatchData.match_data;
-            if (matchData && typeof matchData === 'object' && 'reason' in matchData) {
-              setMatchReason(matchData.reason as string);
+          
+          // First check matchData (our standardized format)
+          if (cityMatchData.matchData && typeof cityMatchData.matchData === 'object') {
+            if ('reason' in cityMatchData.matchData && cityMatchData.matchData.reason) {
+              setMatchReason(String(cityMatchData.matchData.reason));
             }
           }
         } else {
