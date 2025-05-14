@@ -7,6 +7,7 @@ import { clearCityMatch } from "@/services/cityMatchService";
 
 interface CityResultProps {
   city: string;
+  reason?: string | null;
   onReset: () => void;
 }
 
@@ -40,7 +41,7 @@ const defaultCityDetails = {
   description: "Based on your preferences, this vibrant city offers the perfect balance of culture, lifestyle, and opportunities that match your personality."
 };
 
-const CityResult: React.FC<CityResultProps> = ({ city, onReset }) => {
+const CityResult: React.FC<CityResultProps> = ({ city, reason, onReset }) => {
   const { toast } = useToast();
   const details = cityDetails[city] || defaultCityDetails;
 
@@ -75,9 +76,15 @@ const CityResult: React.FC<CityResultProps> = ({ city, onReset }) => {
       
       <h3 className="text-xl font-bold mb-2">You belong in {city}!</h3>
       
-      <p className="mb-8 text-muted-foreground">
-        {details.description}
-      </p>
+      {reason ? (
+        <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
+          <p className="text-muted-foreground">{reason}</p>
+        </div>
+      ) : (
+        <p className="mb-8 text-muted-foreground">
+          {details.description}
+        </p>
+      )}
       
       <Button onClick={handleShare} className="gap-2 mb-4">
         <Share className="h-4 w-4" />

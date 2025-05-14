@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface CityMatchData {
   city: string;
+  reason?: string;
   matchData?: Record<string, any>;
 }
 
@@ -16,12 +17,18 @@ export async function saveCityMatch(cityMatch: CityMatchData) {
       throw new Error("User not authenticated");
     }
     
+    // Prepare match data object, ensuring reason is included if provided
+    const matchData = {
+      ...(cityMatch.matchData || {}),
+      reason: cityMatch.reason || null
+    };
+    
     const { data, error } = await supabase
       .from('city_matches')
       .insert({
         city: cityMatch.city,
-        match_data: cityMatch.matchData || {},
-        user_id: user.id // Add the user_id field
+        match_data: matchData,
+        user_id: user.id
       })
       .select()
       .single();
@@ -30,6 +37,9 @@ export async function saveCityMatch(cityMatch: CityMatchData) {
     
     // Also save to localStorage as a fallback
     localStorage.setItem("matchedCity", cityMatch.city);
+    if (cityMatch.reason) {
+      localStorage.setItem("matchedCityReason", cityMatch.reason);
+    }
     
     return data;
   } catch (error) {
@@ -51,7 +61,11 @@ export async function getUserCityMatch() {
     if (!user) {
       // Return data from localStorage if user is not authenticated
       const matchedCity = localStorage.getItem("matchedCity");
-      return matchedCity ? { city: matchedCity } : null;
+      const matchedReason = localStorage.getItem("matchedCityReason");
+      return matchedCity ? { 
+        city: matchedCity,
+        matchData: matchedReason ? { reason: matchedReason } : null 
+      } : null;
     }
     
     const { data, error } = await supabase
@@ -67,6 +81,9 @@ export async function getUserCityMatch() {
     // If we have data, store it in localStorage as well
     if (data) {
       localStorage.setItem("matchedCity", data.city);
+      if (data.match_data && data.match_data.reason) {
+        localStorage.setItem("matchedCityReason", data.match_data.reason);
+      }
     }
     
     return data;
@@ -74,7 +91,11 @@ export async function getUserCityMatch() {
     console.error("Error fetching city match:", error);
     // Fallback to localStorage
     const matchedCity = localStorage.getItem("matchedCity");
-    return matchedCity ? { city: matchedCity } : null;
+    const matchedReason = localStorage.getItem("matchedCityReason");
+    return matchedCity ? { 
+      city: matchedCity,
+      matchData: matchedReason ? { reason: matchedReason } : null 
+    } : null;
   }
 }
 
@@ -86,6 +107,7 @@ export async function clearCityMatch() {
     if (!user) {
       // Just clear localStorage if user is not authenticated
       localStorage.removeItem("matchedCity");
+      localStorage.removeItem("matchedCityReason");
       return true;
     }
     
@@ -100,6 +122,7 @@ export async function clearCityMatch() {
     
     // Clear localStorage too
     localStorage.removeItem("matchedCity");
+    localStorage.removeItem("matchedCityReason");
     
     return true;
   } catch (error) {
