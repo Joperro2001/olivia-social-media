@@ -11,6 +11,9 @@ export type Profile = {
   university: string;
   updated_at: string;
   avatar_url?: string;
+  relocation_status?: "active" | "planning" | "paused" | "completed";
+  relocation_timeframe?: string;
+  relocation_interests?: string[];
   checklist_data?: {
     items: ChecklistItem[];
   };
