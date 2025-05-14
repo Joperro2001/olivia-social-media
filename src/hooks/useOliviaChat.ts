@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
 import { sendChatMessage, testApiConnection } from "@/utils/apiService";
