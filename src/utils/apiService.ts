@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 interface ChatRequest {
@@ -111,7 +110,7 @@ export const testApiConnection = async (): Promise<boolean> => {
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
     // Just do a HEAD request to test connectivity
-    const response = await fetch(`${baseUrl}`, {
+    const response = await fetch(`${baseUrl}/health`, {
       method: 'HEAD',
       cache: 'no-cache',
       headers: {
