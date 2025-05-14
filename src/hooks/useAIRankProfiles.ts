@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -7,6 +6,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { useToast } from "@/hooks/use-toast";
 import { getApiBaseUrl } from "@/utils/apiService";
 import { useRanking } from "@/context/RankingContext";
+import { Profile } from "@/types/Profile"; // Added import for Profile type
 
 interface RankResponse {
   ranking: {
@@ -113,7 +113,7 @@ export const useAIRankProfiles = () => {
     } finally {
       setIsRanking(false);
     }
-  }, [user, profiles, apiBaseUrl, toast, setProfilesOrder, setRankedProfiles]);
+  }, [user, profiles, apiBaseUrl, toast, setProfilesOrder, setRankedProfiles, setIsAIRankingActive]);
   
   const toggleAIRanking = useCallback((value: boolean) => {
     setIsAIRankingActive(value);
