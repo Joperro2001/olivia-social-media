@@ -22,8 +22,14 @@ export const useProfile = () => {
   const { uploadAvatar } = useProfileAvatar(updateProfile);
   const { addInterest, removeInterest } = useProfileInterests(interests, setInterests);
 
+  // Convert interests from Interest[] to string[] and add to profile
+  const profileWithInterests = profile ? {
+    ...profile,
+    interests: interests.map(i => i.interest)
+  } : null;
+
   return {
-    profile,
+    profile: profileWithInterests,
     interests,
     isLoading,
     fetchProfile,

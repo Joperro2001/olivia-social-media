@@ -17,6 +17,7 @@ export type Profile = {
   checklist_data?: {
     items: ChecklistItem[];
   };
+  interests?: string[]; // Added the interests property
 }; 
 
 export type ChecklistItem = {
