@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
@@ -15,16 +16,59 @@ interface Message {
 
 export function useOliviaChat() {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([{
-    id: "1",
-    content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
-    isUser: false,
-    timestamp: "Just now"
-  }]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [sessionId, setSessionId] = useState<string>(uuidv4());
+  const [sessionId, setSessionId] = useState<string>("");
   const autoMessageSent = useRef<boolean>(false);
   const offlineModeActive = useRef<boolean>(false);
+  
+  // Initialize chat on component mount
+  useEffect(() => {
+    // Generate a persistent sessionId for this user
+    const userId = user?.id || "anonymous";
+    const storedSessionId = localStorage.getItem(`olivia_session_${userId}`);
+    const newSessionId = storedSessionId || uuidv4();
+    
+    if (!storedSessionId) {
+      localStorage.setItem(`olivia_session_${userId}`, newSessionId);
+    }
+    
+    setSessionId(newSessionId);
+    
+    // Load saved messages from localStorage
+    const savedMessages = localStorage.getItem(`olivia_messages_${userId}`);
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages) as Message[];
+        setMessages(parsedMessages);
+      } catch (error) {
+        console.error("Error parsing saved messages:", error);
+        // If there's an error parsing, set the default welcome message
+        setMessages([{
+          id: "1",
+          content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
+          isUser: false,
+          timestamp: "Just now"
+        }]);
+      }
+    } else {
+      // Set default welcome message if no saved messages
+      setMessages([{
+        id: "1",
+        content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
+        isUser: false,
+        timestamp: "Just now"
+      }]);
+    }
+  }, [user]);
+  
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      const userId = user?.id || "anonymous";
+      localStorage.setItem(`olivia_messages_${userId}`, JSON.stringify(messages));
+    }
+  }, [messages, user]);
 
   const handleSendMessage = async (content: string): Promise<boolean> => {
     try {
@@ -230,6 +274,27 @@ export function useOliviaChat() {
     }
   };
 
+  // Clear chat history
+  const clearChatHistory = () => {
+    const userId = user?.id || "anonymous";
+    
+    // Remove messages from localStorage
+    localStorage.removeItem(`olivia_messages_${userId}`);
+    
+    // Reset to initial welcome message
+    setMessages([{
+      id: "1",
+      content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
+      isUser: false,
+      timestamp: "Just now"
+    }]);
+    
+    toast({
+      title: "Chat history cleared",
+      description: "Your conversation has been reset.",
+    });
+  };
+
   // Check for auto-send message from session storage
   useEffect(() => {
     const autoMessage = sessionStorage.getItem("autoSendMessage");
@@ -251,6 +316,7 @@ export function useOliviaChat() {
     isTyping,
     handleSendMessage,
     handleCardAction,
-    retryConnection
+    retryConnection,
+    clearChatHistory
   };
 }
