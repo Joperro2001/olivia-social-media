@@ -64,7 +64,7 @@ export async function getUserCityMatch() {
       const matchedReason = localStorage.getItem("matchedCityReason");
       return matchedCity ? { 
         city: matchedCity,
-        matchData: matchedReason ? { reason: matchedReason } : null 
+        matchData: matchedReason ? { reason: matchedReason } : {} 
       } : null;
     }
     
@@ -78,15 +78,23 @@ export async function getUserCityMatch() {
     
     if (error) throw error;
     
-    // If we have data, store it in localStorage as well
+    // Transform the database response to match our expected format
     if (data) {
+      const transformedData = {
+        ...data,
+        matchData: data.match_data || {}
+      };
+      
+      // Also store in localStorage as backup
       localStorage.setItem("matchedCity", data.city);
-      if (data.match_data && data.match_data.reason) {
-        localStorage.setItem("matchedCityReason", data.match_data.reason);
+      if (data.match_data && typeof data.match_data === 'object' && data.match_data.reason) {
+        localStorage.setItem("matchedCityReason", data.match_data.reason as string);
       }
+      
+      return transformedData;
     }
     
-    return data;
+    return null;
   } catch (error) {
     console.error("Error fetching city match:", error);
     // Fallback to localStorage
@@ -94,7 +102,7 @@ export async function getUserCityMatch() {
     const matchedReason = localStorage.getItem("matchedCityReason");
     return matchedCity ? { 
       city: matchedCity,
-      matchData: matchedReason ? { reason: matchedReason } : null 
+      matchData: matchedReason ? { reason: matchedReason } : {} 
     } : null;
   }
 }
