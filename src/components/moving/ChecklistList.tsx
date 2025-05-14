@@ -7,9 +7,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { UserChecklist } from "@/types/Chat";
 import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklistUtils";
-import { FileText } from "lucide-react";
+import { Check, FileText, Plus, FileCheck } from "lucide-react";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import ChecklistDetail from "@/components/moving/ChecklistDetail";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const ChecklistList = () => {
   const { user } = useAuth();
@@ -247,62 +248,143 @@ const ChecklistList = () => {
     return <ChecklistDetail checklist={checklist} onDeleted={handleDeletedChecklist} />;
   } else if (showDefaultChecklist) {
     return (
-      <Card className="border-primary/10 hover:shadow-md transition-shadow">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            <CardTitle>Create Your Relocation Checklist</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p>Let's set up your personalized relocation document checklist with all the essentials you need:</p>
-          
-          <ul className="list-disc pl-5 space-y-2">
-            <li>Visa & Residence Permit Documents</li>
-            <li>Health Insurance Papers</li>
-            <li>SIM Card & Communication</li>
-            <li>University Documentation</li>
-            <li>Housing Arrangements</li>
-            <li>Banking & Financial Setup</li>
-          </ul>
-          
-          <Button 
-            className="w-full" 
-            onClick={handleCreateDefaultChecklist}
-          >
-            Create My Checklist Now
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="border-primary/10 hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <FileCheck className="h-5 w-5 text-primary" />
+              <CardTitle>Your Relocation Checklist</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">Create your personalized document checklist:</p>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category) => (
+                <div 
+                  key={category} 
+                  className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
+                >
+                  <div className="w-full h-16 flex items-center justify-center mb-2">
+                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
+                      <Plus className="h-5 w-5 text-primary/60" />
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium">{category}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Required documents</p>
+                </div>
+              ))}
+            </div>
+            
+            <Button 
+              className="w-full mt-4" 
+              onClick={handleCreateDefaultChecklist}
+            >
+              Create My Checklist
+            </Button>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-primary/10 hover:shadow-md transition-shadow">
+          <AspectRatio ratio={16/9} className="bg-muted">
+            <img 
+              src="https://images.unsplash.com/photo-1579953891587-4dbae8ec814f?auto=format&fit=crop&w=600&h=400&q=80" 
+              alt="Passport and documents" 
+              className="rounded-t-lg object-cover w-full h-full"
+            />
+          </AspectRatio>
+          <CardContent className="pt-4">
+            <h3 className="font-semibold text-lg mb-2">Why a Document Checklist?</h3>
+            <ul className="space-y-2">
+              <li className="flex items-start">
+                <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
+                <span className="text-sm">Keep track of essential documents</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
+                <span className="text-sm">Never miss application deadlines</span>
+              </li>
+              <li className="flex items-start">
+                <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
+                <span className="text-sm">Ensure a smooth transition to your new city</span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
   
-  // Default empty state
+  // Default empty state - Updated with grid layout
   return (
-    <Card className="border-primary/10 hover:shadow-md transition-shadow">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" />
-          <CardTitle>You Don't Have a Relocation Checklist Yet</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p>You haven't created a relocation document checklist yet. Let Olivia help you build a personalized checklist with all the essential documents and requirements for your international move.</p>
-        
-        <img 
-          src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&h=400&q=80" 
-          alt="Important documents and passport" 
-          className="rounded-lg mb-6 w-full max-w-md object-cover h-48 mx-auto"
-        />
-        
-        <Button 
-          className="w-full" 
-          onClick={handleCreateChecklist}
-        >
-          Create My Checklist
-        </Button>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card className="border-primary/10 hover:shadow-md transition-shadow">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+            <CardTitle>Relocation Checklist</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">Track your essential documents with a structured checklist:</p>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category) => (
+              <div 
+                key={category} 
+                className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors"
+              >
+                <div className="w-full h-16 flex items-center justify-center mb-2">
+                  <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
+                    <Plus className="h-5 w-5 text-primary/60" />
+                  </div>
+                </div>
+                <p className="text-sm font-medium">{category}</p>
+                <p className="text-xs text-muted-foreground mt-1">Not started</p>
+              </div>
+            ))}
+          </div>
+          
+          <Button 
+            className="w-full mt-4" 
+            onClick={handleCreateChecklist}
+          >
+            Create My Checklist
+          </Button>
+        </CardContent>
+      </Card>
+      
+      <Card className="border-primary/10 hover:shadow-md transition-shadow">
+        <AspectRatio ratio={16/9} className="bg-muted">
+          <img 
+            src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=600&h=400&q=80" 
+            alt="Important documents and passport" 
+            className="rounded-t-lg object-cover w-full h-full"
+          />
+        </AspectRatio>
+        <CardContent className="pt-4">
+          <h3 className="font-semibold text-lg mb-2">Document Preparation</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Create a personalized document checklist for your international relocation.
+            Never miss an important document or deadline again.
+          </p>
+          <ul className="space-y-2">
+            <li className="flex items-start">
+              <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
+              <span className="text-sm">Visa & immigration documents</span>
+            </li>
+            <li className="flex items-start">
+              <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
+              <span className="text-sm">University enrollment paperwork</span>
+            </li>
+            <li className="flex items-start">
+              <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
+              <span className="text-sm">Housing & financial arrangements</span>
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

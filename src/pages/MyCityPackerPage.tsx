@@ -22,11 +22,8 @@ const MyCityPackerPage: React.FC = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Relocation Documents</h1>
-            <p className="text-sm text-muted-foreground">Manage your essential documents and requirements</p>
+            <p className="text-sm text-muted-foreground">Track your essential documents and requirements</p>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Placeholder for consistent spacing */}
         </div>
       </div>
       
