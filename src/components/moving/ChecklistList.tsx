@@ -372,10 +372,7 @@ const ChecklistList = () => {
         </CardContent>
       </Card>
       
-      <Card className="border-primary/10 hover:shadow-md transition-shadow">
-        
-        
-      </Card>
+      
     </div>;
 };
 export default ChecklistList;
