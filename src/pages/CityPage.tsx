@@ -61,21 +61,25 @@ const CityPage: React.FC = () => {
           </Card>
           
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
-            <CardHeader>
+            <CardHeader className="relative">
               <div className="flex items-center gap-2">
+                
                 <CardTitle>City Packer</CardTitle>
               </div>
               <CardDescription className="text-base italic">
                 "I know where I'm going. Now what do I need?"
               </CardDescription>
-              {/* Removed the button from here */}
+              <Button variant="outline" size={isMobile ? "sm" : "default"} className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-secondary/15 hover:bg-secondary/25 text-secondary-dark border-secondary/30`} onClick={() => navigate("/my-city-packer")}>
+                <Package className="h-4 w-4" />
+                {isMobile ? "View" : "My Checklist"}
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
                 Olivia will build your personalized moving checklist: visa requirements, SIM cards, health insurance, local apps, housing tips, and exactly what to pack.
               </p>
-              <Button className="w-full" variant="secondary" onClick={() => navigate("/my-city-packer")}>
-                My Checklist
+              <Button className="w-full" variant="secondary" onClick={() => handleChatRedirect("Create my moving checklist")}>
+                Create My Checklist
               </Button>
             </CardContent>
           </Card>

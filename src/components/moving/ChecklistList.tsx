@@ -1,33 +1,80 @@
 
-import React, { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Spinner } from "@/components/ui/spinner";
-import { useChecklist } from "@/utils/checklistUtils";
 import { useAuth } from "@/context/AuthContext";
-import { useCategoryChecklist } from "@/hooks/useCategoryChecklist";
-import DocumentCard from "./DocumentCard";
+import { UserChecklist } from "@/types/Chat";
+import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklistUtils";
+import { Check, FileText, Plus, FileCheck } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-const ChecklistList: React.FC = () => {
+const ChecklistList = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const [checklist, setChecklist] = useState<UserChecklist | null>(null);
+  const [loading, setLoading] = useState(true);
   const { syncLocalChecklistToDatabase } = useChecklist();
-  const { 
-    checklist,
-    loading,
-    isCreatingChecklist,
-    showDefaultChecklist,
-    groupedCategories,
-    loadChecklist,
-    handleCreateChecklist,
-    handleCreateDefaultChecklist,
-    handleDeletedChecklist
-  } = useCategoryChecklist();
+  const [showDefaultChecklist, setShowDefaultChecklist] = useState(false);
+  const [isCreatingChecklist, setIsCreatingChecklist] = useState(false);
+  const isMobile = useIsMobile();
   
-  const navigateToCategory = (category: string) => {
-    // Navigate to the category page even if there might not be items yet
-    // The category page will handle the empty state
-    navigate(`/checklist-category/${encodeURIComponent(category)}`);
+  // Group items by category and count completion (if we have a checklist)
+  const groupedCategories: {
+    [key: string]: {
+      total: number;
+      completed: number;
+    };
+  } = {};
+  
+  if (checklist?.checklist_data?.items) {
+    checklist.checklist_data.items.forEach(item => {
+      const category = item.category || "General";
+      if (!groupedCategories[category]) {
+        groupedCategories[category] = {
+          total: 0,
+          completed: 0
+        };
+      }
+      groupedCategories[category].total += 1;
+      if (item.is_checked) {
+        groupedCategories[category].completed += 1;
+      }
+    });
+  }
+  
+  const loadChecklist = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await fetchChecklist(user.id);
+      setChecklist(data);
+    } catch (error) {
+      console.error("Error loading checklist:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load your checklist",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Check if we should show default checklist from sessionStorage
+  useEffect(() => {
+    const showDefault = sessionStorage.getItem("showDefaultChecklist");
+    if (showDefault === "true") {
+      setShowDefaultChecklist(true);
+      sessionStorage.removeItem("showDefaultChecklist");
+    }
+  }, []);
 
   // Sync local storage checklist to database on initial load if user is logged in
   useEffect(() => {
@@ -36,36 +83,274 @@ const ChecklistList: React.FC = () => {
         const syncedChecklist = await syncLocalChecklistToDatabase();
         loadChecklist();
         if (syncedChecklist) {
-          // The toast is moved to the hook for better code organization
+          toast({
+            title: "Checklist Synced",
+            description: "Your checklist has been saved to your account"
+          });
         }
       };
       syncAndLoad();
     }
-  }, [user, syncLocalChecklistToDatabase, loadChecklist]);
+  }, [user]);
+  
+  const handleCreateChecklist = () => {
+    // Redirect to chat with Olivia to create a new checklist
+    sessionStorage.setItem("autoSendMessage", "Create my relocation document checklist");
+    sessionStorage.setItem("showDefaultChecklist", "true");
+    navigate("/");
+  };
+  
+  const handleCreateDefaultChecklist = async () => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please log in to save your checklist",
+        variant: "destructive"
+      });
+      return;
+    }
+    try {
+      setLoading(true);
+      setIsCreatingChecklist(true);
+
+      // Create default checklist items
+      const defaultItems = [{
+        id: crypto.randomUUID(),
+        description: "Apply for visa/residence permit",
+        category: "Visa",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Get passport photos",
+        category: "Visa",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Purchase health insurance",
+        category: "Health Insurance",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Get vaccination records",
+        category: "Health Insurance",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Purchase international SIM card",
+        category: "SIM Card",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Research local mobile providers",
+        category: "SIM Card",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Acceptance letter",
+        category: "Incoming University Documents",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Course registration confirmation",
+        category: "Incoming University Documents",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Transcript of records",
+        category: "Home University Documents",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Learning agreement",
+        category: "Home University Documents",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Find temporary accommodation",
+        category: "Housing",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Research student housing options",
+        category: "Housing",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Open local bank account",
+        category: "Bank Account",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        id: crypto.randomUUID(),
+        description: "Set up international transfers",
+        category: "Bank Account",
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }];
+
+      // Create the checklist
+      const newChecklist = await createChecklist({
+        items: defaultItems,
+        user_id: user.id
+      });
+      if (newChecklist) {
+        setChecklist(newChecklist);
+        setShowDefaultChecklist(false);
+        toast({
+          title: "Checklist Created",
+          description: "Your relocation checklist has been created successfully"
+        });
+      } else {
+        throw new Error("Failed to create checklist");
+      }
+    } catch (error) {
+      console.error("Error creating default checklist:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create checklist",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setIsCreatingChecklist(false);
+    }
+  };
+  
+  const handleDeletedChecklist = () => {
+    setChecklist(null);
+    loadChecklist();
+  };
+  
+  const navigateToCategory = (category: string) => {
+    // Navigate to the category page even if there might not be items yet
+    // The category page will handle the empty state
+    navigate(`/checklist-category/${encodeURIComponent(category)}`);
+  };
+  
+  const renderCategoryCard = (category: string, itemCount: number = 0, completedCount: number = 0) => {
+    const percentage = itemCount > 0 ? Math.round(completedCount / itemCount * 100) : 0;
+    return <div key={category} className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 aspect-square w-full h-28" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
+        <div className="w-full flex items-center justify-center mb-2">
+          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${completedCount > 0 && completedCount === itemCount ? "bg-primary/10" : "border-2 border-dashed border-primary/40"}`}>
+            {completedCount > 0 && completedCount === itemCount ? <Check className="h-5 w-5 text-primary" /> : <span className="text-xs font-medium text-primary/80">{completedCount}/{itemCount}</span>}
+          </div>
+        </div>
+        <p className="text-sm font-medium truncate w-full">{category}</p>
+        <p className="text-xs text-muted-foreground mt-1 truncate w-full">
+          {itemCount === 0 ? "Required documents" : `${percentage}% complete`}
+        </p>
+      </div>;
+  };
   
   if (loading) {
-    return (
-      <div className="flex flex-col h-64 items-center justify-center">
+    return <div className="flex flex-col h-64 items-center justify-center">
         <Spinner size="lg" className="text-primary" />
-        <p className="mt-4 text-muted-foreground">
-          {isCreatingChecklist ? "Creating your document list..." : "Loading your documents..."}
-        </p>
-      </div>
-    );
+        <p className="mt-4 text-muted-foreground">{isCreatingChecklist ? "Creating your document list..." : "Loading your documents..."}</p>
+      </div>;
   }
 
-  return (
-    <div className="animate-fade-in w-full">
-      <DocumentCard
-        hasChecklist={!!checklist}
-        groupedCategories={groupedCategories}
-        onCreateChecklist={handleCreateChecklist}
-        onCreateDefaultChecklist={handleCreateDefaultChecklist}
-        showDefaultChecklist={showDefaultChecklist}
-        navigateToCategory={navigateToCategory}
-      />
-    </div>
-  );
+  // Consistent UI template for both states - with categories in a grid
+  const renderDocumentCard = () => {
+    // Setup the categories we want to display
+    const topCategories = ["Visa", "Health Insurance", "SIM Card"];
+    const bottomCategories = checklist ? 
+      Object.keys(groupedCategories).filter(cat => !topCategories.includes(cat)).slice(0, 3) :
+      ["Incoming University Documents", "Home University Documents", "Bank Account"];
+    
+    return (
+      <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            {checklist ? 
+              <FileCheck className="h-5 w-5 text-primary" /> : 
+              <FileText className="h-5 w-5 text-primary" />
+            }
+            <CardTitle>
+              {checklist ? "Your Relocation Documents" : "Relocation Documents"}
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">
+            {checklist 
+              ? "Click on a category to view and manage its documents:" 
+              : "Track your essential documents with a structured list:"}
+          </p>
+          
+          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-md`}>
+            {topCategories.map((category, index) => {
+              const counts = groupedCategories[category] || { total: 0, completed: 0 };
+              return (
+                <div key={category} className="opacity-0 animate-fade-in" style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}>
+                  {renderCategoryCard(category, counts.total, counts.completed)}
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className={`grid grid-cols-3 gap-3 mx-auto max-w-md mt-3`}>
+            {bottomCategories.map((category, index) => {
+              const counts = groupedCategories[category] || { total: 0, completed: 0 };
+              return (
+                <div key={category} className="opacity-0 animate-fade-in" style={{
+                  animationDelay: `${(index + 3) * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}>
+                  {renderCategoryCard(category, counts.total, counts.completed)}
+                </div>
+              );
+            })}
+          </div>
+          
+          {checklist ? (
+            <div className="flex justify-between mt-6">
+              <Button variant="outline" size="sm" onClick={() => navigate("/checklist-detail")} className="hover:shadow-sm transition-shadow">
+                View Full Document List
+              </Button>
+            </div>
+          ) : (
+            <Button className="w-full mt-6 hover:shadow-md transition-shadow" 
+              onClick={showDefaultChecklist ? handleCreateDefaultChecklist : handleCreateChecklist}>
+              Create My Document List
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return <div className="animate-fade-in w-full">
+    {renderDocumentCard()}
+  </div>;
 };
 
 export default ChecklistList;
