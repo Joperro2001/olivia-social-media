@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Flag, Globe, University, CalendarClock, MapPin, Search, X, Maximize } from "lucide-react";
+import { Flag, Globe, University, CalendarClock, MapPin, Search, X, Maximize, Calendar } from "lucide-react";
 
 interface UserHeaderProps {
   userAge: number;
@@ -95,6 +95,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({
       {/* Profile Card Preview Dialog - updated to look like the reference image */}
       <Dialog open={showProfileCard} onOpenChange={setShowProfileCard}>
         <DialogContent className="p-0 max-w-md mx-auto w-full rounded-xl overflow-hidden h-[80vh] sm:h-[70vh]">
+          <DialogTitle className="sr-only">Profile Card</DialogTitle>
           <div className="w-full h-full rounded-xl overflow-hidden relative">
             {/* Full screen background image */}
             <div 
@@ -125,7 +126,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({
               <Maximize className="h-5 w-5" />
             </button>
 
-            {/* Bottom info card with gradient overlay */}
+            {/* Bottom info card with gradient overlay - improved and enhanced */}
             <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
               {/* User name and age */}
               <div className="mb-2">
@@ -134,9 +135,35 @@ const UserHeader: React.FC<UserHeaderProps> = ({
               
               {/* Location */}
               {profile?.current_city && (
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-3">
                   <MapPin className="h-4 w-4 text-white" />
                   <p className="text-white/90 text-sm">{profile.current_city}</p>
+                </div>
+              )}
+
+              {/* Moving to information - ADDED */}
+              {profile?.move_in_city && (
+                <div className="mb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="h-4 w-4 text-white" />
+                    <p className="text-white/90 text-sm">
+                      Moving to {profile.move_in_city} in {profile.relocation_timeframe || "Next 3 months"}
+                    </p>
+                  </div>
+                  
+                  {/* Looking for information - ADDED */}
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-white" />
+                    <p className="text-white/90 text-sm">Looking for</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mt-1 mb-4 pl-6">
+                    {profile?.relocation_interests && profile.relocation_interests.map((interest: string, idx: number) => (
+                      <Badge key={idx} variant="secondary" className="bg-white/20 text-white border-none">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
               
@@ -172,8 +199,8 @@ const UserHeader: React.FC<UserHeaderProps> = ({
               </div>
             </div>
             
-            {/* Gradient overlay for better text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
+            {/* Improved gradient overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
           </div>
         </DialogContent>
       </Dialog>
