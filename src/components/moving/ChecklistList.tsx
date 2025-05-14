@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -333,9 +332,7 @@ const ChecklistList = () => {
           
           {checklist ? (
             <div className="flex justify-between mt-6">
-              <Button variant="outline" size="sm" onClick={() => navigate("/checklist-detail")} className="hover:shadow-sm transition-shadow">
-                View Full Document List
-              </Button>
+              {/* Button removed */}
             </div>
           ) : (
             <Button className="w-full mt-6 hover:shadow-md transition-shadow" 
