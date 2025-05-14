@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import ChecklistList from "@/components/moving/ChecklistList";
+import { Spinner } from "@/components/ui/spinner";
+import { Suspense } from "react";
 
 const MyCityPackerPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,7 +30,14 @@ const MyCityPackerPage: React.FC = () => {
       </div>
       
       <div className="px-4 flex-1 overflow-auto pb-28">
-        <ChecklistList />
+        <Suspense fallback={
+          <div className="flex flex-col h-64 items-center justify-center">
+            <Spinner size="lg" className="text-primary" />
+            <p className="mt-4 text-muted-foreground">Loading your documents...</p>
+          </div>
+        }>
+          <ChecklistList />
+        </Suspense>
       </div>
     </div>
   );

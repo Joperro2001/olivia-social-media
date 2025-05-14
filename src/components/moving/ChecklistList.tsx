@@ -7,8 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { UserChecklist } from "@/types/Chat";
 import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklistUtils";
 import { Check, FileText, Plus, FileCheck } from "lucide-react";
-import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import ChecklistDetail from "@/components/moving/ChecklistDetail";
+import { Spinner } from "@/components/ui/spinner";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const ChecklistList = () => {
@@ -253,7 +252,7 @@ const ChecklistList = () => {
     return (
       <div 
         key={category} 
-        className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
+        className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200"
         onClick={() => navigateToCategory(category)}
         role="button"
         aria-label={`View ${category} documents`}
@@ -280,7 +279,12 @@ const ChecklistList = () => {
   };
   
   if (loading) {
-    return <LoadingSpinner message={isCreatingChecklist ? "Creating your checklist..." : "Loading your checklist..."} />;
+    return (
+      <div className="flex flex-col h-64 items-center justify-center">
+        <Spinner size="lg" className="text-primary" />
+        <p className="mt-4 text-muted-foreground">{isCreatingChecklist ? "Creating your checklist..." : "Loading your checklist..."}</p>
+      </div>
+    );
   }
   
   // If we have a checklist, show it with clickable categories
@@ -302,7 +306,7 @@ const ChecklistList = () => {
     }
     
     return (
-      <Card className="border-primary/10 hover:shadow-md transition-shadow">
+      <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
@@ -313,9 +317,18 @@ const ChecklistList = () => {
           <p className="mb-4">Click on a category to view and manage its documents:</p>
           
           <div className="grid grid-cols-2 gap-3">
-            {Object.entries(categories).map(([category, counts]) => 
-              renderCategoryCard(category, counts.total, counts.completed)
-            )}
+            {Object.entries(categories).map(([category, counts], index) => (
+              <div 
+                key={category} 
+                className="opacity-0 animate-fade-in" 
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}
+              >
+                {renderCategoryCard(category, counts.total, counts.completed)}
+              </div>
+            ))}
           </div>
           
           <div className="flex justify-between mt-6">
@@ -323,6 +336,7 @@ const ChecklistList = () => {
               variant="outline" 
               size="sm" 
               onClick={() => navigate("/checklist-detail")}
+              className="hover:shadow-sm transition-shadow"
             >
               View Full Checklist
             </Button>
@@ -336,7 +350,7 @@ const ChecklistList = () => {
   // show the default checklist creation screen without the empty state
   if (showDefaultChecklist) {
     return (
-      <Card className="border-primary/10 hover:shadow-md transition-shadow">
+      <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
@@ -347,24 +361,32 @@ const ChecklistList = () => {
           <p className="mb-4">Create your personalized document checklist:</p>
           
           <div className="grid grid-cols-2 gap-3">
-            {["Visa", "Health Insurance", "SIM Card", "Incoming University Documents", "Home University Documents", "Housing", "Bank Account"].map((category) => (
+            {["Visa", "Health Insurance", "SIM Card", "Incoming University Documents", "Home University Documents", "Housing", "Bank Account"].map((category, index) => (
               <div 
                 key={category} 
-                className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
+                className="opacity-0 animate-fade-in" 
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}
               >
-                <div className="w-full h-16 flex items-center justify-center mb-2">
-                  <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                    <Plus className="h-5 w-5 text-primary/60" />
+                <div 
+                  className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200"
+                >
+                  <div className="w-full h-16 flex items-center justify-center mb-2">
+                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
+                      <Plus className="h-5 w-5 text-primary/60" />
+                    </div>
                   </div>
+                  <p className="text-sm font-medium">{category}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Required documents</p>
                 </div>
-                <p className="text-sm font-medium">{category}</p>
-                <p className="text-xs text-muted-foreground mt-1">Required documents</p>
               </div>
             ))}
           </div>
           
           <Button 
-            className="w-full mt-4" 
+            className="w-full mt-4 hover:shadow-md transition-shadow" 
             onClick={handleCreateDefaultChecklist}
           >
             Create My Checklist
@@ -376,7 +398,7 @@ const ChecklistList = () => {
   
   // Default empty state - show both cards
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
       <Card className="border-primary/10 hover:shadow-md transition-shadow">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
@@ -388,27 +410,35 @@ const ChecklistList = () => {
           <p className="mb-4">Track your essential documents with a structured checklist:</p>
           
           <div className="grid grid-cols-2 gap-3">
-            {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category) => (
+            {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category, index) => (
               <div 
                 key={category} 
-                className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
-                onClick={() => navigateToCategory(category)}
-                role="button"
-                aria-label={`View ${category} documents`}
+                className="opacity-0 animate-fade-in" 
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}
               >
-                <div className="w-full h-16 flex items-center justify-center mb-2">
-                  <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                    <Plus className="h-5 w-5 text-primary/60" />
+                <div 
+                  className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200"
+                  onClick={() => navigateToCategory(category)}
+                  role="button"
+                  aria-label={`View ${category} documents`}
+                >
+                  <div className="w-full h-16 flex items-center justify-center mb-2">
+                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
+                      <Plus className="h-5 w-5 text-primary/60" />
+                    </div>
                   </div>
+                  <p className="text-sm font-medium">{category}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Not started</p>
                 </div>
-                <p className="text-sm font-medium">{category}</p>
-                <p className="text-xs text-muted-foreground mt-1">Not started</p>
               </div>
             ))}
           </div>
           
           <Button 
-            className="w-full mt-4" 
+            className="w-full mt-4 hover:shadow-md transition-shadow" 
             onClick={handleCreateChecklist}
           >
             Create My Checklist

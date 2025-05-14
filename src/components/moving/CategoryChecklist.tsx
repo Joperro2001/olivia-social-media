@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Check } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { fetchChecklist, updateChecklistItem } from "@/utils/checklistUtils";
@@ -97,10 +97,6 @@ const CategoryChecklist = () => {
   const completedItems = items.filter(item => item.is_checked).length;
   const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
   
-  if (loading) {
-    return <LoadingSpinner message={`Loading ${category} documents...`} />;
-  }
-  
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
       <div className="flex items-center justify-between px-4 py-4">
@@ -123,71 +119,85 @@ const CategoryChecklist = () => {
       </div>
       
       <div className="px-4 flex-1 overflow-auto pb-28">
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <CardTitle>Required Documents</CardTitle>
+        {loading ? (
+          <div className="flex flex-col h-64 items-center justify-center">
+            <Spinner size="lg" className="text-primary" />
+            <p className="mt-4 text-muted-foreground">Loading {category} documents...</p>
+          </div>
+        ) : (
+          <Card className="animate-fade-in">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <CardTitle>Required Documents</CardTitle>
+                {totalItems > 0 && (
+                  <div className="text-sm">
+                    {completedItems}/{totalItems} complete
+                  </div>
+                )}
+              </div>
               {totalItems > 0 && (
-                <div className="text-sm">
-                  {completedItems}/{totalItems} complete
+                <div className="h-2 w-full bg-muted rounded-full overflow-hidden mt-2">
+                  <div 
+                    className="h-full bg-primary transition-all duration-300" 
+                    style={{ width: `${completionPercentage}%` }} 
+                  />
                 </div>
               )}
-            </div>
-            {totalItems > 0 && (
-              <div className="h-2 w-full bg-muted rounded-full overflow-hidden mt-2">
-                <div 
-                  className="h-full bg-primary" 
-                  style={{ width: `${completionPercentage}%` }} 
-                />
-              </div>
-            )}
-          </CardHeader>
-          
-          <CardContent>
-            {!checklistExists ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No checklist found. Create a checklist first.</p>
-                <Button 
-                  className="mt-4" 
-                  variant="outline" 
-                  onClick={() => navigate("/my-city-packer")}
-                >
-                  Back to Document Tracker
-                </Button>
-              </div>
-            ) : items.length > 0 ? (
-              <div className="space-y-4">
-                {items.map(item => (
-                  <div key={item.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={item.id}
-                      checked={item.is_checked}
-                      onCheckedChange={() => handleToggleItem(item)}
-                    />
-                    <Label
-                      htmlFor={item.id}
-                      className={`cursor-pointer ${item.is_checked ? "line-through text-muted-foreground" : ""}`}
+            </CardHeader>
+            
+            <CardContent>
+              {!checklistExists ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No checklist found. Create a checklist first.</p>
+                  <Button 
+                    className="mt-4" 
+                    variant="outline" 
+                    onClick={() => navigate("/my-city-packer")}
+                  >
+                    Back to Document Tracker
+                  </Button>
+                </div>
+              ) : items.length > 0 ? (
+                <div className="space-y-4">
+                  {items.map(item => (
+                    <div 
+                      key={item.id} 
+                      className="flex items-center space-x-2 opacity-0 animate-fade-in"
+                      style={{
+                        animationDelay: `${items.indexOf(item) * 50}ms`,
+                        animationFillMode: 'forwards'
+                      }}
                     >
-                      {item.description}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No documents found for {category}.</p>
-                <p className="text-sm text-muted-foreground mt-2">Create your relocation checklist to add documents to this category.</p>
-                <Button 
-                  className="mt-4" 
-                  variant="outline" 
-                  onClick={() => navigate("/my-city-packer")}
-                >
-                  Back to Document Tracker
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      <Checkbox
+                        id={item.id}
+                        checked={item.is_checked}
+                        onCheckedChange={() => handleToggleItem(item)}
+                      />
+                      <Label
+                        htmlFor={item.id}
+                        className={`cursor-pointer transition-all ${item.is_checked ? "line-through text-muted-foreground" : ""}`}
+                      >
+                        {item.description}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No documents found for {category}.</p>
+                  <p className="text-sm text-muted-foreground mt-2">Create your relocation checklist to add documents to this category.</p>
+                  <Button 
+                    className="mt-4" 
+                    variant="outline" 
+                    onClick={() => navigate("/my-city-packer")}
+                  >
+                    Back to Document Tracker
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
