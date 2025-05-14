@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -46,34 +45,21 @@ export const useAIRankProfiles = () => {
         throw new Error("API base URL is not configured");
       }
       
-      console.log("Making request to:", `${baseUrl}/rank`);
+      console.log("Making request to:", `${baseUrl}/rank/`);
       
-      // Simplified request body to match the expected format
+      // Corrected request body to match the expected format by the backend
       const requestBody = {
-        userProfile,
-        profiles: profiles.map(profile => ({
-          id: profile.id,
-          full_name: profile.full_name,
-          age: profile.age,
-          university: profile.university,
-          nationality: profile.nationality,
-          current_city: profile.current_city,
-          move_in_city: profile.move_in_city,
-          about_me: profile.about_me,
-          relocation_status: profile.relocation_status,
-          relocation_timeframe: profile.relocation_timeframe,
-          relocation_interests: profile.relocation_interests
-        }))
+        user_id: user.id // Send only the user_id of the requesting user
       };
       
       console.log("Sending request body:", JSON.stringify(requestBody));
       
       // Make request to AI ranking endpoint
-      const response = await fetch(`${baseUrl}/rank`, {
+      const response = await fetch(`${baseUrl}/rank/`, { // Added trailing slash
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.id}`
+          // 'Authorization': `Bearer ${user?.id}` // Commented out as not used by this endpoint
         },
         body: JSON.stringify(requestBody)
       });
