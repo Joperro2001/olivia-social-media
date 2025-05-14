@@ -61,7 +61,7 @@ export const sendChatMessage = async (
     
     // Set timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // Reduced from 20s to 10s
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // Increased from 10s to 30s
     
     const response = await fetch(apiUrl, {
       method: 'POST',
