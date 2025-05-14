@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Share } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { clearCityMatch } from "@/services/cityMatchService";
 
 interface CityResultProps {
   city: string;
@@ -53,6 +54,11 @@ const CityResult: React.FC<CityResultProps> = ({ city, onReset }) => {
     });
     
     console.log("User would share:", shareText);
+  };
+  
+  const handleResetWithClear = async () => {
+    await clearCityMatch();
+    onReset();
   };
 
   return (
