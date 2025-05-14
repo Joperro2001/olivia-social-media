@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { Profile } from "@/types/Profile";
-import { Loader, Users, UserPlus, RefreshCw } from "lucide-react";
+import { Loader, Users, UserPlus, RefreshCw, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
@@ -111,6 +110,15 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     }
   };
 
+  const handleRefresh = () => {
+    console.log("Refreshing profiles while keeping rejected profiles filtered out...");
+    refetchProfiles();
+    toast({
+      title: "Refreshing profiles",
+      description: "Looking for new Berlin connections...",
+    });
+  };
+
   // Convert database profile to the format expected by ProfileCard
   const mapProfileToCardProps = (profile: Profile) => {
     // Extract move-in city (should be Berlin) or default
@@ -166,14 +174,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
           </Button>
           <Button 
             variant="outline"
-            onClick={() => {
-              console.log("Refreshing profiles...");
-              refetchProfiles();
-              toast({
-                title: "Refreshing profiles",
-                description: "Looking for new Berlin connections...",
-              });
-            }}
+            onClick={handleRefresh}
             className="flex items-center gap-2"
           >
             <RefreshCw className="h-4 w-4" />
@@ -211,13 +212,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
           </Button>
           <Button 
             variant="outline"
-            onClick={() => {
-              refetchProfiles();
-              toast({
-                title: "Refreshing profiles",
-                description: "Looking for new connections...",
-              });
-            }}
+            onClick={handleRefresh}
             className="flex items-center gap-2"
           >
             <RefreshCw className="h-4 w-4" />
