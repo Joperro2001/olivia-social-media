@@ -24,6 +24,7 @@ export function useOliviaChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [sessionId, setSessionId] = useState<string>(uuidv4());
   const autoMessageSent = useRef<boolean>(false);
+  const offlineModeActive = useRef<boolean>(false);
 
   const handleSendMessage = async (content: string): Promise<boolean> => {
     try {
@@ -38,9 +39,16 @@ export function useOliviaChat() {
       setMessages(prev => [...prev, userMessage]);
       setIsTyping(true);
       
-      // Send message to backend API
+      // Try to send message to backend API
       const userId = user?.id || "anonymous";
-      const aiResponse = await sendChatMessage(userId, sessionId, content);
+      
+      // If we're already in offline mode, don't even try to connect
+      let aiResponse: string | null = null;
+      if (!offlineModeActive.current) {
+        aiResponse = await sendChatMessage(userId, sessionId, content);
+        // If we get a null response, we're in offline mode
+        offlineModeActive.current = aiResponse === null;
+      }
       
       setTimeout(() => {
         setIsTyping(false);
@@ -186,55 +194,38 @@ export function useOliviaChat() {
 
   // Function to retry connection
   const retryConnection = async (): Promise<boolean> => {
-    toast({
-      title: "Checking connection",
-      description: "Attempting to reconnect to the AI assistant..."
-    });
-    
     try {
-      // Try with a short timeout for faster feedback
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      setIsTyping(true);
       
+      // Try with a short timeout for faster feedback
       const isConnected = await testApiConnection();
-      clearTimeout(timeoutId);
+      
+      // Short timeout for UI feedback
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsTyping(false);
       
       if (isConnected) {
-        setIsTyping(true);
+        // Reset offline mode flag
+        offlineModeActive.current = false;
         
-        setTimeout(() => {
-          setIsTyping(false);
-          
-          // Add a system message saying connection restored
-          const systemMessage: Message = {
-            id: Date.now().toString(),
-            content: "Connection restored! I'm back online and ready to help with your relocation needs. How can I assist you today?",
-            isUser: false,
-            timestamp: "Just now"
-          };
-          
-          setMessages(prev => [...prev, systemMessage]);
-        }, 1500);
+        // Add a system message saying connection restored
+        const systemMessage: Message = {
+          id: Date.now().toString(),
+          content: "Connection restored! I'm back online and ready to help with your relocation needs. How can I assist you today?",
+          isUser: false,
+          timestamp: "Just now"
+        };
         
+        setMessages(prev => [...prev, systemMessage]);
         return true;
       } else {
-        toast({
-          title: "Connection Failed",
-          description: "Still unable to reach the AI assistant. Please try again later.",
-          variant: "destructive"
-        });
-        
+        // Update offline mode flag
+        offlineModeActive.current = true;
         return false;
       }
     } catch (error) {
       console.error("Error in retry connection:", error);
-      
-      toast({
-        title: "Connection Error",
-        description: "Failed to test connection. Please check your network and try again.",
-        variant: "destructive"
-      });
-      
+      setIsTyping(false);
       return false;
     }
   };

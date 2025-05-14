@@ -38,11 +38,16 @@ export const sendChatMessage = async (
   const baseUrl = getApiBaseUrl();
   
   if (!baseUrl) {
+    console.error('API base URL is not configured');
+    
+    // Show a less disruptive toast instead of a blocking error
     toast({
-      title: "Configuration Error",
-      description: "API base URL is not configured. Please refresh the page or contact support.",
-      variant: "destructive",
+      title: "Offline Mode",
+      description: "Using offline mode as API URL is not configured.",
+      variant: "default",
     });
+    
+    // Return null to trigger fallback handling
     return null;
   }
   
@@ -57,7 +62,7 @@ export const sendChatMessage = async (
     
     // Set timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // Reduced from 20s to 10s
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -77,11 +82,7 @@ export const sendChatMessage = async (
     const data: ChatResponse = await response.json();
     
     if (data.error) {
-      toast({
-        title: "Error",
-        description: data.error,
-        variant: "destructive",
-      });
+      console.warn("API returned error:", data.error);
       return null;
     }
     
@@ -89,32 +90,14 @@ export const sendChatMessage = async (
   } catch (error: any) {
     console.error("Error sending chat message:", error);
     
-    // Provide more specific error messages based on error type
-    if (error.name === 'AbortError') {
-      toast({
-        title: "Request Timeout",
-        description: "The AI assistant took too long to respond. Please try again.",
-        variant: "destructive",
-      });
-    } else if (error.message?.includes('Failed to fetch')) {
-      toast({
-        title: "Connection Error",
-        description: "Failed to reach the AI assistant. Please check your internet connection.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Communication Error",
-        description: "Failed to reach the AI assistant. Please try again later.",
-        variant: "destructive",
-      });
-    }
+    // Don't show error toasts anymore - we'll handle this in the UI
+    // with a more graceful fallback
     
     return null;
   }
 };
 
-// Test API connectivity
+// Test API connectivity with reduced timeout
 export const testApiConnection = async (): Promise<boolean> => {
   const baseUrl = getApiBaseUrl();
   
@@ -123,9 +106,9 @@ export const testApiConnection = async (): Promise<boolean> => {
   }
   
   try {
-    // Use a timeout for the connection test
+    // Use a quick timeout for the connection test - only 5 seconds
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     
     // Just do a HEAD request to test connectivity
     const response = await fetch(`${baseUrl}`, {
@@ -140,7 +123,7 @@ export const testApiConnection = async (): Promise<boolean> => {
     clearTimeout(timeoutId);
     return response.ok;
   } catch (error) {
-    console.error("API connectivity test failed:", error);
+    console.warn("API connectivity test failed:", error);
     return false;
   }
 };

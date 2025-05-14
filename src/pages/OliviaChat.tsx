@@ -26,43 +26,30 @@ const OliviaChat: React.FC = () => {
     retryConnection
   } = useOliviaChat();
 
-  // Test API connectivity on component mount and when connection error state changes
+  // Only test API connectivity once on initial mount, not on every re-render
   useEffect(() => {
     const checkConnection = async () => {
       try {
+        // First try from localStorage or session config
         const isConnected = await testApiConnection();
-        if (!isConnected && retryCount < 3) {
-          // Auto-retry up to 3 times
-          setRetryCount(prev => prev + 1);
-          setErrorMessage("Attempting to reconnect automatically...");
-          
-          // Wait a bit before retrying
-          setTimeout(() => {
-            checkConnection();
-          }, 3000);
-        } else if (!isConnected) {
-          setConnectionError(true);
-          setErrorMessage("We're having trouble connecting to the chat service. This could be due to network issues or server problems.");
+        
+        if (!isConnected) {
+          console.log("Connection test failed, using offline mode");
+          setErrorMessage("We can't connect to the API. You're in offline mode with limited functionality.");
         } else {
-          // Reset if connection is restored
+          // Reset if connection is successful
           setConnectionError(false);
           setRetryCount(0);
           setErrorMessage(undefined);
         }
       } catch (err) {
         console.error("Connection check error:", err);
-        setConnectionError(true);
-        setErrorMessage("We're having trouble connecting to the chat service. This could be due to network issues or server problems.");
+        // Don't set connection error to true so users can still use fallback mode
       }
     };
     
     checkConnection();
-    
-    // Set up a periodic connection check
-    const intervalId = setInterval(checkConnection, 60000); // Check every minute
-    
-    return () => clearInterval(intervalId);
-  }, [retryCount]);
+  }, []); // Empty dependency array so this only runs once
 
   // Handle manual retry
   const handleRetry = async () => {
@@ -71,14 +58,25 @@ const OliviaChat: React.FC = () => {
       description: "Attempting to reconnect to the AI assistant..."
     });
     
+    setRetryCount(prev => prev + 1);
+    
     const success = await retryConnection();
     if (success) {
       setConnectionError(false);
       setRetryCount(0);
       setErrorMessage(undefined);
+      
+      toast({
+        title: "Connected",
+        description: "Successfully connected to the AI assistant."
+      });
     } else {
-      setConnectionError(true);
-      setErrorMessage("Still unable to reach the AI assistant. Please try again later.");
+      // Don't show error screen, just show a toast
+      toast({
+        title: "Offline Mode Active",
+        description: "Still unable to reach the AI assistant. Using offline mode with limited responses.",
+        variant: "default"
+      });
     }
   };
 
@@ -89,8 +87,8 @@ const OliviaChat: React.FC = () => {
     });
   }, [messages, isTyping]);
 
-  // If there's a connection error, show the error component
-  if (connectionError) {
+  // Only show full error screen on critical errors
+  if (connectionError && retryCount > 3) {
     return <ChatError onRetry={handleRetry} message={errorMessage} />;
   }
 
@@ -98,6 +96,17 @@ const OliviaChat: React.FC = () => {
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">Ask Olivia</h1>
+        {errorMessage && (
+          <div className="text-amber-600 text-sm flex items-center">
+            <span className="mr-2">⚠️ Offline Mode</span>
+            <button 
+              onClick={handleRetry} 
+              className="text-xs bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded"
+            >
+              Retry Connection
+            </button>
+          </div>
+        )}
       </div>
       
       <div className="flex-1 overflow-y-auto pb-2 px-4 pt-2">
