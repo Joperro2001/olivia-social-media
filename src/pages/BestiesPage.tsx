@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Diamond, Heart, Sparkles, Users, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ProfileMatching from "@/components/besties/ProfileMatching";
-import BestiesFilter from "@/components/besties/BestiesFilter";
 import { useNavigate } from "react-router-dom";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { useAuth } from "@/context/AuthContext";
@@ -13,7 +12,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [showFilters, setShowFilters] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { refetchProfiles, userMoveInCity } = useOtherProfiles();
   const { user } = useAuth();
@@ -103,23 +101,13 @@ const BestiesPage: React.FC = () => {
       </div>
       
       <div className="px-4 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            <span className="font-medium">
-              {userMoveInCity ? `Moving to ${userMoveInCity}` : "Find people moving to your city"}
-            </span>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </Button>
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="h-4 w-4 text-amber-400" />
+          <span className="font-medium">
+            {userMoveInCity ? `Moving to ${userMoveInCity}` : "Find people moving to your city"}
+          </span>
         </div>
 
-        {showFilters && <BestiesFilter />}
         <ProfileMatching onMatchFound={handleMatchFound} />
       </div>
 
