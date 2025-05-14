@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -254,6 +253,8 @@ const ChecklistList = () => {
         key={category} 
         className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
         onClick={() => navigateToCategory(category)}
+        role="button"
+        aria-label={`View ${category} documents`}
       >
         <div className="w-full h-16 flex items-center justify-center mb-2">
           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
@@ -388,7 +389,10 @@ const ChecklistList = () => {
             {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category) => (
               <div 
                 key={category} 
-                className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors"
+                className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={() => navigate(`/checklist-category/${encodeURIComponent(category)}`)}
+                role="button"
+                aria-label={`View ${category} documents`}
               >
                 <div className="w-full h-16 flex items-center justify-center mb-2">
                   <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
