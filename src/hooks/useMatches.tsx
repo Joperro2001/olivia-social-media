@@ -34,7 +34,14 @@ export const useMatches = ({ userId }: UseMatchesProps): UseMatchesReturn => {
     setIsLoading(true);
     try {
       const { matches, profilesData } = await fetchMatchedProfiles(userId);
-      const formattedProfiles = mapProfilesToMatchProfiles(matches, profilesData);
+      
+      // Ensure profilesData is properly typed before mapping
+      const typedProfilesData = profilesData.map(profile => ({
+        ...profile,
+        relocation_status: profile.relocation_status as Profile["relocation_status"]
+      }));
+      
+      const formattedProfiles = mapProfilesToMatchProfiles(matches, typedProfilesData);
       
       console.log('Formatted profiles:', formattedProfiles);
       setProfiles(formattedProfiles);
