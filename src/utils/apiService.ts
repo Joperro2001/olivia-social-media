@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 
 interface ChatRequest {
@@ -14,7 +15,7 @@ interface ChatResponse {
 }
 
 // Helper to get API base URL from either config or localStorage
-const getApiBaseUrl = (): string => {
+export const getApiBaseUrl = (): string => {
   try {
     const savedConfig = localStorage.getItem('app_config');
     if (savedConfig) {

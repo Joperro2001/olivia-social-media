@@ -138,10 +138,10 @@ const BestiesPage: React.FC = () => {
             size="sm"
             onClick={handleAIRanking}
             disabled={isRanking}
-            className={isAIRankingActive ? "bg-gradient-to-r from-blue-500 to-purple-500" : ""}
+            className={`transition-all ${isAIRankingActive ? "bg-gradient-to-r from-blue-500 to-purple-500" : ""}`}
           >
-            <Brain className="h-4 w-4 mr-1" />
-            AI {isRanking && "Ranking..."}
+            <Brain className={`h-4 w-4 mr-1 ${isRanking ? "animate-pulse" : ""}`} />
+            {isRanking ? "Ranking..." : isAIRankingActive ? "AI Active" : "AI Rank"}
           </Button>
         </div>
 

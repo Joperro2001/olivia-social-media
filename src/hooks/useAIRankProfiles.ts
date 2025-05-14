@@ -5,6 +5,15 @@ import { useAuth } from "@/context/AuthContext";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { useConfig } from "@/hooks/useConfig";
 import { useToast } from "@/hooks/use-toast";
+import { getApiBaseUrl } from "@/utils/apiService";
+
+interface RankResponse {
+  ranking: {
+    user_id: string;
+    full_name: string;
+    summary: string;
+  }[];
+}
 
 export const useAIRankProfiles = () => {
   const [isRanking, setIsRanking] = useState(false);
@@ -31,8 +40,14 @@ export const useAIRankProfiles = () => {
         throw new Error("Couldn't fetch your profile");
       }
       
+      // Get API base URL using the helper function
+      const baseUrl = getApiBaseUrl();
+      if (!baseUrl) {
+        throw new Error("API base URL is not configured");
+      }
+      
       // Make request to AI ranking endpoint
-      const response = await fetch(`${apiBaseUrl}/rank`, {
+      const response = await fetch(`${baseUrl}/rank`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,10 +76,24 @@ export const useAIRankProfiles = () => {
         throw new Error(errorData.message || "Failed to rank profiles");
       }
       
-      const { rankedProfiles } = await response.json();
+      const data = await response.json() as RankResponse;
+      console.log("Received ranked profiles:", data);
       
-      // Set the new ordering of profiles
-      setProfilesOrder(rankedProfiles);
+      // Extract user_ids from the ranking array
+      const rankedProfileIds = data.ranking.map(profile => profile.user_id);
+      console.log("Ranked profile IDs:", rankedProfileIds);
+      
+      // Set the new ordering of profiles based on the ranking
+      setProfilesOrder(rankedProfileIds);
+      
+      // Show summaries in toasts (optional)
+      data.ranking.forEach((rankedProfile) => {
+        toast({
+          title: `Match: ${rankedProfile.full_name}`,
+          description: rankedProfile.summary,
+          className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none",
+        });
+      });
       
     } catch (error: any) {
       console.error("Error ranking profiles:", error);
