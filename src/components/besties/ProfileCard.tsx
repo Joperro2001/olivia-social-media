@@ -43,10 +43,38 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     onSwipeRight(id);
   };
 
-  // Default placeholder image if no image is provided
-  const defaultImage = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop";
-  const displayImage = image || defaultImage;
+  // Generate a random image URL based on the user's ID
+  const getRandomDefaultImage = (userId: string) => {
+    // List of potential placeholder images with different styles
+    const placeholderImages = [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d", // Person 1
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330", // Person 2
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80", // Person 3
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e", // Person 4
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2", // Person 5
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb", // Person 6
+      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6", // Person 7
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9"  // Person 8
+    ];
+    
+    // Create a deterministic but seemingly random selection based on user ID
+    // This ensures the same user always gets the same image
+    const hashCode = (str: string) => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return Math.abs(hash);
+    };
+    
+    const index = hashCode(userId) % placeholderImages.length;
+    return placeholderImages[index];
+  };
 
+  // Use a random default image if no image is provided
+  const displayImage = image || getRandomDefaultImage(id);
+  
   const city = getCity(location);
 
   return (
