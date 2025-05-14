@@ -50,7 +50,7 @@ export const sendChatMessage = async (
     return null;
   }
   
-  const apiUrl = `${baseUrl}/chat`;
+  const apiUrl = `${baseUrl}/chat/`;
   
   try {
     const request: ChatRequest = {
