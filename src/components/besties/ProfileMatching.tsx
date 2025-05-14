@@ -20,6 +20,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { profiles, isLoading, refetchProfiles } = useOtherProfiles();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCreatingProfiles, setIsCreatingProfiles] = useState(false);
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -119,6 +120,49 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     }
   };
 
+  // Create demo profiles function
+  const createDemoProfiles = async () => {
+    try {
+      setIsCreatingProfiles(true);
+      toast({
+        title: "Creating demo profiles",
+        description: "Please wait while we create some profiles for you to match with...",
+      });
+
+      // Call the create-profiles function
+      const { error } = await supabase.functions.invoke('create-profiles');
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Demo profiles created!",
+        description: "We've created some profiles for you to match with. Refresh to see them.",
+        className: "bg-gradient-to-r from-green-500 to-green-700 text-white border-none",
+      });
+      
+      // Refresh the profiles
+      await refetchProfiles();
+    } catch (error: any) {
+      console.error("Error creating demo profiles:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create demo profiles",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingProfiles(false);
+    }
+  };
+
+  // Check if we should create demo profiles on first load when no profiles are available
+  useEffect(() => {
+    if (!isLoading && profiles.length === 0 && !isCreatingProfiles) {
+      createDemoProfiles();
+    }
+  }, [isLoading, profiles.length]);
+
   // Convert database profile to the format expected by ProfileCard
   const mapProfileToCardProps = (profile: Profile) => {
     // Extract move-in city (should be Berlin) or default
@@ -148,10 +192,12 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
       />
       
       <div className="flex-1 flex flex-col items-center justify-center p-4">
-        {isLoading ? (
+        {isLoading || isCreatingProfiles ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <Loader className="h-8 w-8 animate-spin text-gray-400" />
-            <p className="mt-4 text-gray-500">Loading profiles...</p>
+            <p className="mt-4 text-gray-500">
+              {isCreatingProfiles ? "Creating demo profiles..." : "Loading profiles..."}
+            </p>
           </div>
         ) : profiles.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
@@ -165,15 +211,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
                 className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
-                onClick={() => {
-                  toast({
-                    title: "Invite link copied!",
-                    description: "Share this link with friends moving to Berlin to join the platform.",
-                  });
-                }}
+                onClick={createDemoProfiles}
               >
                 <UserPlus className="h-4 w-4" />
-                Invite Berlin Friends
+                Create Demo Profiles
               </Button>
             </div>
           </div>
@@ -192,6 +233,14 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
                 className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
               >
                 Reset Profiles
+              </Button>
+              <Button
+                onClick={createDemoProfiles}
+                className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
+                disabled={isCreatingProfiles}
+              >
+                <UserPlus className="h-4 w-4" />
+                Add More Profiles
               </Button>
             </div>
           </div>
