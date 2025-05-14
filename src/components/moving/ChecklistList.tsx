@@ -244,7 +244,7 @@ const ChecklistList = () => {
   if (loading) {
     return <div className="flex flex-col h-64 items-center justify-center">
         <Spinner size="lg" className="text-primary" />
-        <p className="mt-4 text-muted-foreground">{isCreatingChecklist ? "Creating your checklist..." : "Loading your checklist..."}</p>
+        <p className="mt-4 text-muted-foreground">{isCreatingChecklist ? "Creating your document list..." : "Loading your documents..."}</p>
       </div>;
   }
 
@@ -338,8 +338,8 @@ const ChecklistList = () => {
       </Card>;
   }
 
-  // Default empty state - show both cards
-  return <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in w-full">
+  // Updated empty state to match the styling of the other cards
+  return <div className="animate-fade-in w-full">
       <Card className="border-primary/10 hover:shadow-md transition-shadow w-full">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
@@ -350,7 +350,7 @@ const ChecklistList = () => {
         <CardContent>
           <p className="mb-4">Track your essential documents with a structured list:</p>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
             animationDelay: `${index * 50}ms`,
             animationFillMode: 'forwards'
