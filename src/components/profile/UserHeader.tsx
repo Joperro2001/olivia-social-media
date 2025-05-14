@@ -4,7 +4,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Flag, Globe, University, CalendarClock, MapPin, Search, X, Maximize } from "lucide-react";
 
@@ -79,7 +78,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({
         </div>
       </motion.div>
 
-      {/* Full Screen Image Dialog */}
+      {/* Full Screen Image Dialog - Removed all overlays */}
       <Dialog open={showFullScreenImage} onOpenChange={setShowFullScreenImage}>
         <DialogContent className="p-0 max-w-full w-screen h-screen m-0 rounded-none">
           <div className="relative w-full h-full bg-black flex items-center justify-center">
@@ -111,7 +110,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({
                     : "url(https://api.dicebear.com/7.x/thumbs/svg?seed=user)" 
                 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
+                {/* Removed gradient overlay here - this allows the image to be fully visible */}
                 
                 {/* Add fullscreen button */}
                 <button 
