@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { UserChecklist } from "@/types/Chat";
-import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklistUtils";
-import { FileText, FileCheck, ArrowRight } from "lucide-react";
+import { UserChecklist, ChecklistItemData } from "@/types/Chat";
+import { fetchChecklist, useChecklist, createChecklist, updateChecklist } from "@/utils/checklistUtils";
+import { FileText, FileCheck, ArrowRight, Plus } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ChecklistList = () => {
   const { user } = useAuth();
@@ -18,6 +21,9 @@ const ChecklistList = () => {
   const { syncLocalChecklistToDatabase } = useChecklist();
   const [showDefaultChecklist, setShowDefaultChecklist] = useState(false);
   const [isCreatingChecklist, setIsCreatingChecklist] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newItemDescription, setNewItemDescription] = useState("");
+  const [newItemCategory, setNewItemCategory] = useState("");
   
   // Define standard category headers
   const standardCategories = [
@@ -267,6 +273,67 @@ const ChecklistList = () => {
     }
   };
   
+  const handleAddItem = async () => {
+    if (!user || !newItemCategory || !newItemDescription.trim()) return;
+    
+    try {
+      // Get current checklist
+      const currentChecklist = await fetchChecklist(user.id);
+      if (!currentChecklist) {
+        toast({
+          title: "Error",
+          description: "Checklist not found",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Create new item
+      const newItem: ChecklistItemData = {
+        id: crypto.randomUUID(),
+        description: newItemDescription.trim(),
+        category: newItemCategory,
+        is_checked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      // Add to existing items
+      const existingItems = currentChecklist.checklist_data?.items || [];
+      const updatedItems = [...existingItems, newItem];
+      
+      // Update checklist in database
+      const updated = await updateChecklist(user.id, updatedItems);
+      
+      if (updated) {
+        // Update local state
+        setChecklist({
+          ...currentChecklist,
+          checklist_data: {
+            ...currentChecklist.checklist_data,
+            items: updatedItems
+          }
+        });
+        
+        setNewItemDescription("");
+        setNewItemCategory("");
+        setIsAddDialogOpen(false);
+        
+        toast({
+          title: "Success",
+          description: "Item added successfully"
+        });
+      }
+    } catch (error) {
+      console.error("Error adding checklist item:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add item",
+        variant: "destructive"
+      });
+    }
+  };
+  
   const navigateToCategory = (category: string) => {
     navigate(`/checklist-category/${encodeURIComponent(category)}`);
   };
@@ -279,6 +346,19 @@ const ChecklistList = () => {
   // Combine standard categories with any additional categories from existing checklist
   const allCategories = Array.from(new Set([...standardCategories, ...existingCategories]));
   
+  // Calculate completion statistics for each category
+  const getCategoryStats = (category: string) => {
+    if (!checklist?.checklist_data?.items) return { total: 0, completed: 0 };
+    
+    const categoryItems = checklist.checklist_data.items.filter(item => item.category === category);
+    const completed = categoryItems.filter(item => item.is_checked).length;
+    
+    return {
+      total: categoryItems.length,
+      completed: completed
+    };
+  };
+  
   if (loading) {
     return <div className="flex flex-col h-64 items-center justify-center">
       <Spinner size="lg" className="text-primary" />
@@ -289,14 +369,26 @@ const ChecklistList = () => {
   return <div className="animate-fade-in w-full">
     <Card className="border-primary/10 hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          {checklist ? 
-            <FileCheck className="h-5 w-5 text-primary" /> : 
-            <FileText className="h-5 w-5 text-primary" />
-          }
-          <CardTitle>
-            {checklist ? "Your Relocation Documents" : "Relocation Documents"}
-          </CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {checklist ? 
+              <FileCheck className="h-5 w-5 text-primary" /> : 
+              <FileText className="h-5 w-5 text-primary" />
+            }
+            <CardTitle>
+              {checklist ? "Your Relocation Documents" : "Relocation Documents"}
+            </CardTitle>
+          </div>
+          {checklist && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsAddDialogOpen(true)}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" /> Add
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -309,10 +401,7 @@ const ChecklistList = () => {
         {checklist ? (
           <div className="space-y-2">
             {allCategories.map((category, index) => {
-              // For now, always show zero items for all categories
-              // This will be populated by AI in the future
-              const completedItems = 0;
-              const totalItems = 0;
+              const stats = getCategoryStats(category);
               
               return (
                 <div 
@@ -327,12 +416,17 @@ const ChecklistList = () => {
                   <div className="flex items-center">
                     <div className="h-8 w-8 rounded-full flex items-center justify-center mr-3 border-2 border-dashed border-primary/40">
                       <span className="text-xs font-medium text-primary/80">
-                        0
+                        {stats.completed}
                       </span>
                     </div>
                     <span className="font-medium">{category}</span>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center">
+                    <span className="text-xs text-muted-foreground mr-2">
+                      {stats.completed}/{stats.total}
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </div>
               );
             })}
@@ -345,6 +439,47 @@ const ChecklistList = () => {
         )}
       </CardContent>
     </Card>
+    
+    {/* Add Item Dialog */}
+    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add Document</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 py-4">
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">Category</p>
+            <Select value={newItemCategory} onValueChange={setNewItemCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {allCategories.map((category) => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">Document Description</p>
+            <Input
+              placeholder="Document description"
+              value={newItemDescription}
+              onChange={(e) => setNewItemDescription(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleAddItem}
+            disabled={!newItemCategory || !newItemDescription.trim()}
+          >
+            Add Document
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>;
 };
 
