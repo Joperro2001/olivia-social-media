@@ -2,7 +2,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Users } from 'lucide-react';
-import CreateDemoUsersButton from './CreateDemoUsersButton';
 
 interface ProfileMatchingHeaderProps {
   onRefresh: () => void;
@@ -21,7 +20,6 @@ const ProfileMatchingHeader: React.FC<ProfileMatchingHeaderProps> = ({
       </div>
       
       <div className="flex items-center gap-2">
-        <CreateDemoUsersButton onSuccess={onRefresh} />
         <Button 
           onClick={onRefresh} 
           disabled={isRefreshing}
