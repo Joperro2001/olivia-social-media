@@ -57,7 +57,7 @@ export const sendChatMessage = async (
     
     // Set timeout to prevent hanging requests
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -114,7 +114,7 @@ export const sendChatMessage = async (
   }
 };
 
-// New function to test API connectivity
+// Test API connectivity
 export const testApiConnection = async (): Promise<boolean> => {
   const baseUrl = getApiBaseUrl();
   
@@ -123,15 +123,21 @@ export const testApiConnection = async (): Promise<boolean> => {
   }
   
   try {
+    // Use a timeout for the connection test
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
     // Just do a HEAD request to test connectivity
     const response = await fetch(`${baseUrl}`, {
       method: 'HEAD',
       cache: 'no-cache',
       headers: {
         'Cache-Control': 'no-cache'
-      }
+      },
+      signal: controller.signal
     });
     
+    clearTimeout(timeoutId);
     return response.ok;
   } catch (error) {
     console.error("API connectivity test failed:", error);

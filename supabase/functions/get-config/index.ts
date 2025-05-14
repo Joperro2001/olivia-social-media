@@ -46,7 +46,10 @@ serve(async (req) => {
     console.error(`Error in get-config function: ${error.message}`);
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        tip: "Please check that VITE_API_BASE_URL is set correctly in Supabase Edge Function secrets"
+      }),
       { 
         status: 500, 
         headers: { 

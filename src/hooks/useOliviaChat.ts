@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
@@ -186,36 +185,53 @@ export function useOliviaChat() {
   };
 
   // Function to retry connection
-  const retryConnection = async () => {
+  const retryConnection = async (): Promise<boolean> => {
     toast({
       title: "Checking connection",
       description: "Attempting to reconnect to the AI assistant..."
     });
     
-    const isConnected = await testApiConnection();
-    
-    if (isConnected) {
-      setIsTyping(true);
+    try {
+      // Try with a short timeout for faster feedback
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       
-      setTimeout(() => {
-        setIsTyping(false);
-        
-        // Add a system message saying connection restored
-        const systemMessage: Message = {
-          id: Date.now().toString(),
-          content: "Connection restored! I'm back online and ready to help with your relocation needs. How can I assist you today?",
-          isUser: false,
-          timestamp: "Just now"
-        };
-        
-        setMessages(prev => [...prev, systemMessage]);
-      }, 1500);
+      const isConnected = await testApiConnection();
+      clearTimeout(timeoutId);
       
-      return true;
-    } else {
+      if (isConnected) {
+        setIsTyping(true);
+        
+        setTimeout(() => {
+          setIsTyping(false);
+          
+          // Add a system message saying connection restored
+          const systemMessage: Message = {
+            id: Date.now().toString(),
+            content: "Connection restored! I'm back online and ready to help with your relocation needs. How can I assist you today?",
+            isUser: false,
+            timestamp: "Just now"
+          };
+          
+          setMessages(prev => [...prev, systemMessage]);
+        }, 1500);
+        
+        return true;
+      } else {
+        toast({
+          title: "Connection Failed",
+          description: "Still unable to reach the AI assistant. Please try again later.",
+          variant: "destructive"
+        });
+        
+        return false;
+      }
+    } catch (error) {
+      console.error("Error in retry connection:", error);
+      
       toast({
-        title: "Connection Failed",
-        description: "Still unable to reach the AI assistant. Please try again later.",
+        title: "Connection Error",
+        description: "Failed to test connection. Please check your network and try again.",
         variant: "destructive"
       });
       
