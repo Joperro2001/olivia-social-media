@@ -1,7 +1,8 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Flag, Globe, University } from "lucide-react";
+import { Flag, Globe, University, Sparkles } from "lucide-react";
+import { useRanking } from "@/context/RankingContext";
 
 interface ProfileCardProps {
   id: string;
@@ -26,6 +27,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onSwipeLeft,
   onSwipeRight
 }) => {
+  const { isAIRankingActive } = useRanking();
+  
   // Extract city from location
   const getCity = (location: string): string => {
     if (!location) return "Unknown location";
@@ -85,6 +88,17 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
       </div>
+      
+      {isAIRankingActive && (
+        <div className="absolute top-4 right-4 z-10">
+          <Badge 
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none flex items-center gap-1 px-3 py-1.5"
+          >
+            <Sparkles className="h-3 w-3" />
+            <span>AI Ranked</span>
+          </Badge>
+        </div>
+      )}
       
       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
         <div className="flex items-center gap-2 mb-2">

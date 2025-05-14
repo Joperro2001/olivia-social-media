@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -91,13 +92,11 @@ export const useAIRankProfiles = () => {
       // Update the shared ranking context
       setRankedProfiles(rankedProfilesArray);
       
-      // Show summaries in toasts (optional)
-      data.ranking.forEach((rankedProfile) => {
-        toast({
-          title: `Match: ${rankedProfile.full_name}`,
-          description: rankedProfile.summary,
-          className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none",
-        });
+      // Show a single toast notification instead of multiple
+      toast({
+        title: "AI Ranking Complete",
+        description: `Ranked ${rankedProfilesArray.length} profiles based on compatibility`,
+        className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none",
       });
       
     } catch (error: any) {
