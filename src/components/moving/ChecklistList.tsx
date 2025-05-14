@@ -9,6 +9,7 @@ import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklist
 import { Check, FileText, Plus, FileCheck } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+
 const ChecklistList = () => {
   const {
     user
@@ -236,7 +237,7 @@ const ChecklistList = () => {
         </div>
         <p className="text-sm font-medium">{category}</p>
         <p className="text-xs text-muted-foreground mt-1">
-          {itemCount === 0 ? "No items" : `${percentage}% complete`}
+          {itemCount === 0 ? "No documents" : `${percentage}% complete`}
         </p>
       </div>;
   };
@@ -276,7 +277,7 @@ const ChecklistList = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
-            <CardTitle>Your Relocation Checklist</CardTitle>
+            <CardTitle>Your Relocation Documents</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -293,7 +294,7 @@ const ChecklistList = () => {
           
           <div className="flex justify-between mt-6">
             <Button variant="outline" size="sm" onClick={() => navigate("/checklist-detail")} className="hover:shadow-sm transition-shadow">
-              View Full Checklist
+              View Full Document List
             </Button>
           </div>
         </CardContent>
@@ -307,11 +308,11 @@ const ChecklistList = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileCheck className="h-5 w-5 text-primary" />
-            <CardTitle>Your Relocation Checklist</CardTitle>
+            <CardTitle>Your Relocation Documents</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="mb-4">Create your personalized document checklist:</p>
+          <p className="mb-4">Create your personalized document list:</p>
           
           <div className="grid grid-cols-2 gap-3">
             {["Visa", "Health Insurance", "SIM Card", "Incoming University Documents", "Home University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
@@ -331,7 +332,7 @@ const ChecklistList = () => {
           </div>
           
           <Button className="w-full mt-4 hover:shadow-md transition-shadow" onClick={handleCreateDefaultChecklist}>
-            Create My Checklist
+            Create My Document List
           </Button>
         </CardContent>
       </Card>;
@@ -343,11 +344,11 @@ const ChecklistList = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            <CardTitle>Relocation Checklist</CardTitle>
+            <CardTitle>Relocation Documents</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="mb-4">Track your essential documents with a structured checklist:</p>
+          <p className="mb-4">Track your essential documents with a structured list:</p>
           
           <div className="grid grid-cols-2 gap-3">
             {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
@@ -367,7 +368,7 @@ const ChecklistList = () => {
           </div>
           
           <Button className="w-full mt-4 hover:shadow-md transition-shadow" onClick={handleCreateChecklist}>
-            Create My Checklist
+            Create My Document List
           </Button>
         </CardContent>
       </Card>
@@ -375,4 +376,5 @@ const ChecklistList = () => {
       
     </div>;
 };
+
 export default ChecklistList;
