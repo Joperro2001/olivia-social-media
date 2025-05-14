@@ -314,8 +314,8 @@ const ChecklistList = () => {
         <CardContent>
           <p className="mb-4">Create your personalized document list:</p>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {["Visa", "Health Insurance", "SIM Card", "Incoming University Documents", "Home University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
+          <div className="grid grid-cols-3 gap-3 mx-auto max-w-4xl">
+            {["Visa", "Health Insurance", "SIM Card"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
             animationDelay: `${index * 50}ms`,
             animationFillMode: 'forwards'
           }}>
@@ -331,7 +331,24 @@ const ChecklistList = () => {
               </div>)}
           </div>
           
-          <Button className="w-full mt-4 hover:shadow-md transition-shadow" onClick={handleCreateDefaultChecklist}>
+          <div className="grid grid-cols-3 gap-3 mx-auto max-w-4xl mt-3">
+            {["Incoming University Documents", "Home University Documents", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
+            animationDelay: `${(index + 3) * 50}ms`,
+            animationFillMode: 'forwards'
+          }}>
+                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200">
+                  <div className="w-full h-16 flex items-center justify-center mb-2">
+                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
+                      <Plus className="h-5 w-5 text-primary/60" />
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium">{category}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Required documents</p>
+                </div>
+              </div>)}
+          </div>
+          
+          <Button className="w-full mt-6 hover:shadow-md transition-shadow" onClick={handleCreateDefaultChecklist}>
             Create My Document List
           </Button>
         </CardContent>
@@ -350,8 +367,8 @@ const ChecklistList = () => {
         <CardContent>
           <p className="mb-4">Track your essential documents with a structured list:</p>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
+          <div className="grid grid-cols-3 gap-3 mx-auto max-w-4xl">
+            {["Visa", "Health Insurance", "SIM Card"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
             animationDelay: `${index * 50}ms`,
             animationFillMode: 'forwards'
           }}>
@@ -367,7 +384,24 @@ const ChecklistList = () => {
               </div>)}
           </div>
           
-          <Button className="w-full mt-4 hover:shadow-md transition-shadow" onClick={handleCreateChecklist}>
+          <div className="grid grid-cols-3 gap-3 mx-auto max-w-4xl mt-3">
+            {["University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
+            animationDelay: `${(index + 3) * 50}ms`,
+            animationFillMode: 'forwards'
+          }}>
+                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
+                  <div className="w-full h-16 flex items-center justify-center mb-2">
+                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
+                      <Plus className="h-5 w-5 text-primary/60" />
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium">{category}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Not started</p>
+                </div>
+              </div>)}
+          </div>
+          
+          <Button className="w-full mt-6 hover:shadow-md transition-shadow" onClick={handleCreateChecklist}>
             Create My Document List
           </Button>
         </CardContent>
