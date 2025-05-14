@@ -19,6 +19,7 @@ const CategoryChecklist = () => {
   const { user } = useAuth();
   const [items, setItems] = useState<ChecklistItemData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checklistExists, setChecklistExists] = useState(true);
   
   useEffect(() => {
     const loadChecklist = async () => {
@@ -31,13 +32,17 @@ const CategoryChecklist = () => {
         setLoading(true);
         const checklist = await fetchChecklist(user.id);
         
+        // If checklist doesn't exist at all, show empty state but don't redirect
+        if (!checklist) {
+          setChecklistExists(false);
+          setLoading(false);
+          return;
+        }
+        
+        // If no items in the checklist data, show empty state
         if (!checklist?.checklist_data?.items) {
-          toast({
-            title: "Checklist not found",
-            description: "Please create a checklist first",
-            variant: "destructive"
-          });
-          navigate("/my-city-packer");
+          setItems([]);
+          setLoading(false);
           return;
         }
         
@@ -46,22 +51,11 @@ const CategoryChecklist = () => {
           item => item.category === category
         );
         
-        if (categoryItems.length === 0) {
-          toast({
-            title: "No items found",
-            description: `No items found for category: ${category}`,
-            variant: "destructive"
-          });
-        }
-        
         setItems(categoryItems);
       } catch (error) {
         console.error("Error loading checklist items:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load checklist items",
-          variant: "destructive"
-        });
+        // Don't show error toast, just set empty items
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -122,7 +116,7 @@ const CategoryChecklist = () => {
           <div>
             <h1 className="text-2xl font-bold">{category} Documents</h1>
             <p className="text-sm text-muted-foreground">
-              Track your required {category.toLowerCase()} documents
+              Track your required {category?.toLowerCase()} documents
             </p>
           </div>
         </div>
@@ -133,20 +127,35 @@ const CategoryChecklist = () => {
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle>Required Documents</CardTitle>
-              <div className="text-sm">
-                {completedItems}/{totalItems} complete
+              {totalItems > 0 && (
+                <div className="text-sm">
+                  {completedItems}/{totalItems} complete
+                </div>
+              )}
+            </div>
+            {totalItems > 0 && (
+              <div className="h-2 w-full bg-muted rounded-full overflow-hidden mt-2">
+                <div 
+                  className="h-full bg-primary" 
+                  style={{ width: `${completionPercentage}%` }} 
+                />
               </div>
-            </div>
-            <div className="h-2 w-full bg-muted rounded-full overflow-hidden mt-2">
-              <div 
-                className="h-full bg-primary" 
-                style={{ width: `${completionPercentage}%` }} 
-              />
-            </div>
+            )}
           </CardHeader>
           
           <CardContent>
-            {items.length > 0 ? (
+            {!checklistExists ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No checklist found. Create a checklist first.</p>
+                <Button 
+                  className="mt-4" 
+                  variant="outline" 
+                  onClick={() => navigate("/my-city-packer")}
+                >
+                  Back to Document Tracker
+                </Button>
+              </div>
+            ) : items.length > 0 ? (
               <div className="space-y-4">
                 {items.map(item => (
                   <div key={item.id} className="flex items-center space-x-2">
@@ -165,8 +174,16 @@ const CategoryChecklist = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6">
-                <p className="text-muted-foreground">No documents found for this category</p>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No documents found for {category}.</p>
+                <p className="text-sm text-muted-foreground mt-2">Create your relocation checklist to add documents to this category.</p>
+                <Button 
+                  className="mt-4" 
+                  variant="outline" 
+                  onClick={() => navigate("/my-city-packer")}
+                >
+                  Back to Document Tracker
+                </Button>
               </div>
             )}
           </CardContent>

@@ -243,6 +243,8 @@ const ChecklistList = () => {
   };
 
   const navigateToCategory = (category: string) => {
+    // Navigate to the category page even if there might not be items yet
+    // The category page will handle the empty state
     navigate(`/checklist-category/${encodeURIComponent(category)}`);
   };
   
@@ -390,7 +392,7 @@ const ChecklistList = () => {
               <div 
                 key={category} 
                 className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
-                onClick={() => navigate(`/checklist-category/${encodeURIComponent(category)}`)}
+                onClick={() => navigateToCategory(category)}
                 role="button"
                 aria-label={`View ${category} documents`}
               >
