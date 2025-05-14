@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -185,7 +185,9 @@ const CategoryChecklist = () => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-muted-foreground">No documents found for {category}.</p>
-                  <p className="text-sm text-muted-foreground mt-2">Create your relocation checklist to add documents to this category.</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This category is empty. Documents will be added by AI based on your relocation needs.
+                  </p>
                   <Button 
                     className="mt-4" 
                     variant="outline" 
