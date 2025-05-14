@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -254,14 +255,14 @@ const ChecklistList = () => {
   
   const renderCategoryCard = (category: string, itemCount: number = 0, completedCount: number = 0) => {
     const percentage = itemCount > 0 ? Math.round(completedCount / itemCount * 100) : 0;
-    return <div key={category} className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 h-full aspect-square" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
-        <div className="w-full flex items-center justify-center mb-2 flex-1">
+    return <div key={category} className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200 aspect-square w-full h-28" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
+        <div className="w-full flex items-center justify-center mb-2">
           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${completedCount > 0 && completedCount === itemCount ? "bg-primary/10" : "border-2 border-dashed border-primary/40"}`}>
             {completedCount > 0 && completedCount === itemCount ? <Check className="h-5 w-5 text-primary" /> : <span className="text-xs font-medium text-primary/80">{completedCount}/{itemCount}</span>}
           </div>
         </div>
-        <p className="text-sm font-medium">{category}</p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-sm font-medium truncate w-full">{category}</p>
+        <p className="text-xs text-muted-foreground mt-1 truncate w-full">
           {itemCount === 0 ? "Required documents" : `${percentage}% complete`}
         </p>
       </div>;
