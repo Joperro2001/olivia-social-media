@@ -242,14 +242,91 @@ const ChecklistList = () => {
     setChecklist(null);
     loadChecklist();
   };
+
+  const navigateToCategory = (category: string) => {
+    navigate(`/checklist-category/${encodeURIComponent(category)}`);
+  };
+  
+  const renderCategoryCard = (category: string, itemCount: number = 0, completedCount: number = 0) => {
+    const percentage = itemCount > 0 ? Math.round((completedCount / itemCount) * 100) : 0;
+    return (
+      <div 
+        key={category} 
+        className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
+        onClick={() => navigateToCategory(category)}
+      >
+        <div className="w-full h-16 flex items-center justify-center mb-2">
+          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+            completedCount > 0 && completedCount === itemCount 
+              ? "bg-primary/10" 
+              : "border-2 border-dashed border-primary/40"
+          }`}>
+            {completedCount > 0 && completedCount === itemCount ? (
+              <Check className="h-5 w-5 text-primary" />
+            ) : (
+              <span className="text-xs font-medium text-primary/80">{completedCount}/{itemCount}</span>
+            )}
+          </div>
+        </div>
+        <p className="text-sm font-medium">{category}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {itemCount === 0 ? "No items" : `${percentage}% complete`}
+        </p>
+      </div>
+    );
+  };
   
   if (loading) {
     return <LoadingSpinner message={isCreatingChecklist ? "Creating your checklist..." : "Loading your checklist..."} />;
   }
   
-  // If we have a checklist, show it
+  // If we have a checklist, show it with clickable categories
   if (checklist) {
-    return <ChecklistDetail checklist={checklist} onDeleted={handleDeletedChecklist} />;
+    const categories: {[key: string]: {total: number, completed: number}} = {};
+    
+    // Group items by category and count completion
+    if (checklist.checklist_data?.items) {
+      checklist.checklist_data.items.forEach(item => {
+        const category = item.category || "General";
+        if (!categories[category]) {
+          categories[category] = { total: 0, completed: 0 };
+        }
+        categories[category].total += 1;
+        if (item.is_checked) {
+          categories[category].completed += 1;
+        }
+      });
+    }
+    
+    return (
+      <Card className="border-primary/10 hover:shadow-md transition-shadow">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <FileCheck className="h-5 w-5 text-primary" />
+            <CardTitle>Your Relocation Checklist</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">Click on a category to view and manage its documents:</p>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(categories).map(([category, counts]) => 
+              renderCategoryCard(category, counts.total, counts.completed)
+            )}
+          </div>
+          
+          <div className="flex justify-between mt-6">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate("/checklist-detail")}
+            >
+              View Full Checklist
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   } 
   
   // If showDefaultChecklist is true but we don't have a checklist yet, 

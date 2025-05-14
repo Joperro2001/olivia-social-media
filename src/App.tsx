@@ -16,6 +16,7 @@ import MyCityMatchPage from "./pages/MyCityMatchPage";
 import MyCityPackerPage from "./pages/MyCityPackerPage";
 import MyCityExplorerPage from "./pages/MyCityExplorerPage";
 import ChecklistDetailPage from "./pages/ChecklistDetailPage";
+import ChecklistCategoryPage from "./pages/ChecklistCategoryPage";
 import MatchesPage from "./pages/MatchesPage";
 import ChatPage from "./pages/ChatPage";
 import AIChatPage from "./pages/AIChatPage";
@@ -133,6 +134,8 @@ function App() {
                     <AppLayout><MyCityExplorerPage /></AppLayout>
                   </ProtectedRoute>
                 } />
+                <Route path="/checklist-detail" element={<ProtectedRoute><ChecklistDetailPage /></ProtectedRoute>} />
+                <Route path="/checklist-category/:category" element={<ProtectedRoute><ChecklistCategoryPage /></ProtectedRoute>} />
                 <Route path="/matches" element={
                   <ProtectedRoute>
                     <AppLayout><MatchesPage /></AppLayout>
