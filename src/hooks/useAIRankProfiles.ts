@@ -46,6 +46,28 @@ export const useAIRankProfiles = () => {
         throw new Error("API base URL is not configured");
       }
       
+      console.log("Making request to:", `${baseUrl}/rank`);
+      
+      // Simplified request body to match the expected format
+      const requestBody = {
+        userProfile,
+        profiles: profiles.map(profile => ({
+          id: profile.id,
+          full_name: profile.full_name,
+          age: profile.age,
+          university: profile.university,
+          nationality: profile.nationality,
+          current_city: profile.current_city,
+          move_in_city: profile.move_in_city,
+          about_me: profile.about_me,
+          relocation_status: profile.relocation_status,
+          relocation_timeframe: profile.relocation_timeframe,
+          relocation_interests: profile.relocation_interests
+        }))
+      };
+      
+      console.log("Sending request body:", JSON.stringify(requestBody));
+      
       // Make request to AI ranking endpoint
       const response = await fetch(`${baseUrl}/rank`, {
         method: 'POST',
@@ -53,26 +75,14 @@ export const useAIRankProfiles = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${user?.id}`
         },
-        body: JSON.stringify({
-          userProfile,
-          profiles: profiles.map(profile => ({
-            id: profile.id,
-            full_name: profile.full_name,
-            age: profile.age,
-            university: profile.university,
-            nationality: profile.nationality,
-            current_city: profile.current_city,
-            move_in_city: profile.move_in_city,
-            about_me: profile.about_me,
-            relocation_status: profile.relocation_status,
-            relocation_timeframe: profile.relocation_timeframe,
-            relocation_interests: profile.relocation_interests
-          }))
-        })
+        body: JSON.stringify(requestBody)
       });
+      
+      console.log("API response status:", response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("API error response:", errorData);
         throw new Error(errorData.message || "Failed to rank profiles");
       }
       

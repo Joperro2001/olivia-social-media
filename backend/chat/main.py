@@ -31,12 +31,29 @@ async def rank_profiles(request: Request) -> Dict[str, Any]:
         user_profile = data.get("userProfile", {})
         profiles = data.get("profiles", [])
         
-        # In a real app, this would use AI to rank the profiles
-        # For now, we'll just return the IDs in the same order
-        ranked_profiles = [profile["id"] for profile in profiles]
+        print(f"Received request to rank profiles for user: {user_profile.get('full_name', 'Unknown')}")
+        print(f"Number of profiles to rank: {len(profiles)}")
         
-        return {"rankedProfiles": ranked_profiles}
+        # For demonstration, create a mock ranking response
+        # In a real app, this would use AI to analyze compatibility
+        mock_ranking = []
+        
+        for profile in profiles[:3]:  # Limit to first 3 profiles for demo
+            user_id = profile.get("id")
+            full_name = profile.get("full_name", "Unknown")
+            
+            # Create a personalized summary
+            summary = f"{full_name} is interested in {', '.join(profile.get('relocation_interests', ['moving to Berlin']))}."
+            
+            mock_ranking.append({
+                "user_id": user_id,
+                "full_name": full_name,
+                "summary": summary
+            })
+        
+        return {"ranking": mock_ranking}
     except Exception as e:
+        print(f"Error in rank_profiles: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
