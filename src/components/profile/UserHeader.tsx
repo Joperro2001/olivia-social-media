@@ -6,7 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
-import { Flag, Globe, University, CalendarClock, MapPin, Search } from "lucide-react";
+import { Flag, Globe, University, CalendarClock, MapPin, Search, X, Maximize } from "lucide-react";
 
 interface UserHeaderProps {
   userAge: number;
@@ -22,6 +22,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({
   const { profile } = useProfile();
   const userName = profile?.full_name || "User";
   const [showProfileCard, setShowProfileCard] = useState(false);
+  const [showFullScreenImage, setShowFullScreenImage] = useState(false);
   
   const handleAvatarClick = () => {
     if (onImageClick) {
@@ -78,6 +79,25 @@ const UserHeader: React.FC<UserHeaderProps> = ({
         </div>
       </motion.div>
 
+      {/* Full Screen Image Dialog */}
+      <Dialog open={showFullScreenImage} onOpenChange={setShowFullScreenImage}>
+        <DialogContent className="p-0 max-w-full w-screen h-screen m-0 rounded-none">
+          <div className="relative w-full h-full bg-black flex items-center justify-center">
+            <img 
+              src={profile?.avatar_url || "https://api.dicebear.com/7.x/thumbs/svg?seed=user"} 
+              alt={`${userName}'s profile`}
+              className="max-h-full max-w-full object-contain"
+            />
+            <button 
+              onClick={() => setShowFullScreenImage(false)}
+              className="absolute top-4 right-4 bg-black/50 p-2 rounded-full text-white hover:bg-black/70 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Profile Card Preview Dialog */}
       <Dialog open={showProfileCard} onOpenChange={setShowProfileCard}>
         <DialogContent className="p-0 max-w-md mx-auto w-full rounded-lg overflow-hidden h-[80vh] sm:h-[70vh]">
@@ -92,6 +112,17 @@ const UserHeader: React.FC<UserHeaderProps> = ({
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
+                
+                {/* Add fullscreen button */}
+                <button 
+                  onClick={() => {
+                    setShowProfileCard(false);
+                    setShowFullScreenImage(true);
+                  }}
+                  className="absolute top-4 right-4 bg-black/40 p-2 rounded-full text-white hover:bg-black/60 transition-colors"
+                >
+                  <Maximize className="h-5 w-5" />
+                </button>
               </div>
               
               <div className="absolute bottom-4 left-4 right-4 text-white z-10">
@@ -194,23 +225,21 @@ const UserHeader: React.FC<UserHeaderProps> = ({
               </div>
               
               {/* Interests */}
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Interests</h3>
-                <div className="flex flex-wrap gap-2">
-                  {profile?.interests ? (
-                    profile.interests.map((tag, index) => (
+              {profile?.interests ? (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Interests</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.interests.map((tag, index) => (
                       <Badge 
                         key={index} 
                         className="bg-primary/10 text-primary border border-primary/20"
                       >
                         {tag}
                       </Badge>
-                    ))
-                  ) : (
-                    <span className="text-sm text-gray-500">No interests added yet</span>
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
 
             <div className="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold shadow">
