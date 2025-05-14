@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -5,6 +6,7 @@ import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { useConfig } from "@/hooks/useConfig";
 import { useToast } from "@/hooks/use-toast";
 import { getApiBaseUrl } from "@/utils/apiService";
+import { useRanking } from "@/context/RankingContext";
 
 interface RankResponse {
   ranking: {
@@ -16,11 +18,11 @@ interface RankResponse {
 
 export const useAIRankProfiles = () => {
   const [isRanking, setIsRanking] = useState(false);
-  const [isAIRankingActive, setIsAIRankingActive] = useState(false);
   const { user } = useAuth();
   const { profiles, refetchProfiles, setProfilesOrder } = useOtherProfiles();
   const { apiBaseUrl } = useConfig();
   const { toast } = useToast();
+  const { setRankedProfiles, isAIRankingActive, setIsAIRankingActive } = useRanking();
 
   const rankProfiles = useCallback(async () => {
     if (!user) return;
@@ -59,7 +61,6 @@ export const useAIRankProfiles = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${user?.id}` // Commented out as not used by this endpoint
         },
         body: JSON.stringify(requestBody)
       });
@@ -81,6 +82,14 @@ export const useAIRankProfiles = () => {
       
       // Set the new ordering of profiles based on the ranking
       setProfilesOrder(rankedProfileIds);
+      
+      // Store the ordered profiles in the shared context
+      const rankedProfilesArray = rankedProfileIds
+        .map(id => profiles.find(profile => profile.id === id))
+        .filter(profile => profile !== undefined) as Profile[];
+        
+      // Update the shared ranking context
+      setRankedProfiles(rankedProfilesArray);
       
       // Show summaries in toasts (optional)
       data.ranking.forEach((rankedProfile) => {
@@ -104,7 +113,7 @@ export const useAIRankProfiles = () => {
     } finally {
       setIsRanking(false);
     }
-  }, [user, profiles, apiBaseUrl, toast, setProfilesOrder]);
+  }, [user, profiles, apiBaseUrl, toast, setProfilesOrder, setRankedProfiles]);
   
   const toggleAIRanking = useCallback((value: boolean) => {
     setIsAIRankingActive(value);
@@ -112,8 +121,9 @@ export const useAIRankProfiles = () => {
     // Reset profile order if AI ranking is disabled
     if (!value) {
       refetchProfiles();
+      setRankedProfiles([]);
     }
-  }, [refetchProfiles]);
+  }, [refetchProfiles, setIsAIRankingActive, setRankedProfiles]);
 
   return {
     isRanking,

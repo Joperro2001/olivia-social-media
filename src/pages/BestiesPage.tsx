@@ -9,6 +9,7 @@ import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAIRankProfiles } from "@/hooks/useAIRankProfiles";
+import { useRanking } from "@/context/RankingContext";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
@@ -16,7 +17,8 @@ const BestiesPage: React.FC = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { refetchProfiles, userMoveInCity } = useOtherProfiles();
   const { user } = useAuth();
-  const { isRanking, rankProfiles, isAIRankingActive, toggleAIRanking } = useAIRankProfiles();
+  const { isRanking, rankProfiles, toggleAIRanking } = useAIRankProfiles();
+  const { isAIRankingActive } = useRanking();
   
   const handleOpenMatches = () => {
     if (!user) {
