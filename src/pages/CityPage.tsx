@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
+import { ArrowsUpFromLine, Package, Map, Sparkles, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -61,26 +61,29 @@ const CityPage: React.FC = () => {
           </Card>
           
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
-            <CardHeader className="relative">
+            <CardHeader>
               <div className="flex items-center gap-2">
-                
                 <CardTitle>City Packer</CardTitle>
               </div>
               <CardDescription className="text-base italic">
                 "I know where I'm going. Now what do I need?"
               </CardDescription>
-              <Button variant="outline" size={isMobile ? "sm" : "default"} className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-secondary/15 hover:bg-secondary/25 text-secondary-dark border-secondary/30`} onClick={() => navigate("/my-city-packer")}>
-                <Package className="h-4 w-4" />
-                {isMobile ? "View" : "My Checklist"}
-              </Button>
+              {/* Removed the button from here */}
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
                 Olivia will build your personalized moving checklist: visa requirements, SIM cards, health insurance, local apps, housing tips, and exactly what to pack.
               </p>
-              <Button className="w-full" variant="secondary" onClick={() => handleChatRedirect("Create my moving checklist")}>
-                Create My Checklist
-              </Button>
+              {hasChecklist ? (
+                <Button className="w-full" variant="secondary" onClick={() => navigate("/my-city-packer")}>
+                  <Eye className="h-4 w-4 mr-1" />
+                  View My Checklist
+                </Button>
+              ) : (
+                <Button className="w-full" variant="secondary" onClick={() => handleChatRedirect("Create my moving checklist")}>
+                  Create My Checklist
+                </Button>
+              )}
             </CardContent>
           </Card>
           
