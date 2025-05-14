@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { UserChecklist } from "@/types/Chat";
 import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklistUtils";
-import { FileText, FileCheck, Plus, ArrowRight } from "lucide-react";
+import { FileText, FileCheck, ArrowRight } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 
 const ChecklistList = () => {
@@ -310,9 +309,10 @@ const ChecklistList = () => {
         {checklist ? (
           <div className="space-y-2">
             {allCategories.map((category, index) => {
-              const itemsInCategory = checklist?.checklist_data?.items?.filter(item => item.category === category) || [];
-              const completedItems = itemsInCategory.filter(item => item.is_checked).length;
-              const totalItems = itemsInCategory.length;
+              // For now, always show zero items for all categories
+              // This will be populated by AI in the future
+              const completedItems = 0;
+              const totalItems = 0;
               
               return (
                 <div 
@@ -325,17 +325,10 @@ const ChecklistList = () => {
                   }}
                 >
                   <div className="flex items-center">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center mr-3 ${
-                      totalItems > 0 && completedItems === totalItems 
-                        ? "bg-primary/10" 
-                        : "border-2 border-dashed border-primary/40"
-                    }`}>
-                      {totalItems > 0 && completedItems === totalItems ? 
-                        <FileCheck className="h-4 w-4 text-primary" /> : 
-                        <span className="text-xs font-medium text-primary/80">
-                          {totalItems > 0 ? `${completedItems}/${totalItems}` : "0"}
-                        </span>
-                      }
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center mr-3 border-2 border-dashed border-primary/40">
+                      <span className="text-xs font-medium text-primary/80">
+                        0
+                      </span>
                     </div>
                     <span className="font-medium">{category}</span>
                   </div>

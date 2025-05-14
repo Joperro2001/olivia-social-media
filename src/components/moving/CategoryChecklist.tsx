@@ -39,19 +39,10 @@ const CategoryChecklist = () => {
           return;
         }
         
-        // If no items in the checklist data, show empty state
-        if (!checklist?.checklist_data?.items) {
-          setItems([]);
-          setLoading(false);
-          return;
-        }
+        // For now, always show empty state regardless of whether items exist
+        // This will be populated by AI in the future
+        setItems([]);
         
-        // Filter items by category
-        const categoryItems = checklist.checklist_data.items.filter(
-          item => item.category === category
-        );
-        
-        setItems(categoryItems);
       } catch (error) {
         console.error("Error loading checklist items:", error);
         // Don't show error toast, just set empty items
@@ -92,10 +83,10 @@ const CategoryChecklist = () => {
     }
   };
   
-  // Calculate completion status
-  const totalItems = items.length;
-  const completedItems = items.filter(item => item.is_checked).length;
-  const completionPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+  // Calculate completion status - always 0 for now since items are empty
+  const totalItems = 0;
+  const completedItems = 0;
+  const completionPercentage = 0;
   
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
@@ -129,20 +120,16 @@ const CategoryChecklist = () => {
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle>Required Documents</CardTitle>
-                {totalItems > 0 && (
-                  <div className="text-sm">
-                    {completedItems}/{totalItems} complete
-                  </div>
-                )}
-              </div>
-              {totalItems > 0 && (
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden mt-2">
-                  <div 
-                    className="h-full bg-primary transition-all duration-300" 
-                    style={{ width: `${completionPercentage}%` }} 
-                  />
+                <div className="text-sm">
+                  0/0 complete
                 </div>
-              )}
+              </div>
+              <div className="h-2 w-full bg-muted rounded-full overflow-hidden mt-2">
+                <div 
+                  className="h-full bg-primary transition-all duration-300" 
+                  style={{ width: `0%` }} 
+                />
+              </div>
             </CardHeader>
             
             <CardContent>
@@ -156,31 +143,6 @@ const CategoryChecklist = () => {
                   >
                     Back to Document Tracker
                   </Button>
-                </div>
-              ) : items.length > 0 ? (
-                <div className="space-y-4">
-                  {items.map(item => (
-                    <div 
-                      key={item.id} 
-                      className="flex items-center space-x-2 opacity-0 animate-fade-in"
-                      style={{
-                        animationDelay: `${items.indexOf(item) * 50}ms`,
-                        animationFillMode: 'forwards'
-                      }}
-                    >
-                      <Checkbox
-                        id={item.id}
-                        checked={item.is_checked}
-                        onCheckedChange={() => handleToggleItem(item)}
-                      />
-                      <Label
-                        htmlFor={item.id}
-                        className={`cursor-pointer transition-all ${item.is_checked ? "line-through text-muted-foreground" : ""}`}
-                      >
-                        {item.description}
-                      </Label>
-                    </div>
-                  ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
