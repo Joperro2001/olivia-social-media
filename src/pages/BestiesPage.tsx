@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Diamond, Heart, Sparkles, Users, RefreshCw } from "lucide-react";
+import { Diamond, Heart, Sparkles, Users, RefreshCw, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ProfileMatching from "@/components/besties/ProfileMatching";
 import { useNavigate } from "react-router-dom";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAIRankProfiles } from "@/hooks/useAIRankProfiles";
 
 const BestiesPage: React.FC = () => {
   const { toast } = useToast();
@@ -15,6 +16,7 @@ const BestiesPage: React.FC = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { refetchProfiles, userMoveInCity } = useOtherProfiles();
   const { user } = useAuth();
+  const { isRanking, rankProfiles, isAIRankingActive, toggleAIRanking } = useAIRankProfiles();
   
   const handleOpenMatches = () => {
     if (!user) {
@@ -53,6 +55,29 @@ const BestiesPage: React.FC = () => {
   const handleLogin = () => {
     setShowLoginDialog(false);
     navigate("/signin");
+  };
+
+  const handleAIRanking = () => {
+    if (!user) {
+      setShowLoginDialog(true);
+      return;
+    }
+    
+    if (isAIRankingActive) {
+      toggleAIRanking(false);
+      toast({
+        title: "AI ranking disabled",
+        description: "Showing profiles in default order",
+      });
+    } else {
+      toggleAIRanking(true);
+      rankProfiles();
+      toast({
+        title: "AI ranking activated",
+        description: "Ranking profiles based on compatibility",
+        className: "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none",
+      });
+    }
   };
 
   useEffect(() => {
@@ -101,11 +126,23 @@ const BestiesPage: React.FC = () => {
       </div>
       
       <div className="px-4 mb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-4 w-4 text-amber-400" />
-          <span className="font-medium">
-            {userMoveInCity ? `Moving to ${userMoveInCity}` : "Find people moving to your city"}
-          </span>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            <span className="font-medium">
+              {userMoveInCity ? `Moving to ${userMoveInCity}` : "Find people moving to your city"}
+            </span>
+          </div>
+          <Button
+            variant={isAIRankingActive ? "default" : "outline"}
+            size="sm"
+            onClick={handleAIRanking}
+            disabled={isRanking}
+            className={isAIRankingActive ? "bg-gradient-to-r from-blue-500 to-purple-500" : ""}
+          >
+            <Brain className="h-4 w-4 mr-1" />
+            AI {isRanking && "Ranking..."}
+          </Button>
         </div>
 
         <ProfileMatching onMatchFound={handleMatchFound} />
