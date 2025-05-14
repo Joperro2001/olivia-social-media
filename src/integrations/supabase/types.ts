@@ -126,6 +126,33 @@ export type Database = {
           },
         ]
       }
+      city_matches: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          match_data: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          id?: string
+          match_data?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          match_data?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_attendees: {
         Row: {
           event_id: string

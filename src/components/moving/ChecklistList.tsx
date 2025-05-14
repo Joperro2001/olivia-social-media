@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,25 +7,30 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { UserChecklist } from "@/types/Chat";
 import { fetchChecklist, useChecklist, createChecklist } from "@/utils/checklistUtils";
-import { Check, FileText, Plus, FileCheck } from "lucide-react";
+import { FileText, FileCheck, Plus, ArrowRight } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const ChecklistList = () => {
-  const {
-    user
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [checklist, setChecklist] = useState<UserChecklist | null>(null);
   const [loading, setLoading] = useState(true);
-  const {
-    syncLocalChecklistToDatabase
-  } = useChecklist();
+  const { syncLocalChecklistToDatabase } = useChecklist();
   const [showDefaultChecklist, setShowDefaultChecklist] = useState(false);
   const [isCreatingChecklist, setIsCreatingChecklist] = useState(false);
+  
+  // Define standard category headers
+  const standardCategories = [
+    "Visa",
+    "Health Insurance",
+    "SIM Card",
+    "Incoming University Documents",
+    "Home University Documents",
+    "Housing",
+    "Bank Account"
+  ];
+  
   const loadChecklist = async () => {
     if (!user) {
       setLoading(false);
@@ -71,12 +77,14 @@ const ChecklistList = () => {
       syncAndLoad();
     }
   }, [user]);
+  
   const handleCreateChecklist = () => {
     // Redirect to chat with Olivia to create a new checklist
     sessionStorage.setItem("autoSendMessage", "Create my relocation document checklist");
     sessionStorage.setItem("showDefaultChecklist", "true");
     navigate("/");
   };
+  
   const handleCreateDefaultChecklist = async () => {
     if (!user) {
       toast({
@@ -91,111 +99,152 @@ const ChecklistList = () => {
       setIsCreatingChecklist(true);
 
       // Create default checklist items
-      const defaultItems = [{
-        id: crypto.randomUUID(),
-        description: "Apply for visa/residence permit",
-        category: "Visa",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Get passport photos",
-        category: "Visa",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Purchase health insurance",
-        category: "Health Insurance",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Get vaccination records",
-        category: "Health Insurance",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Purchase international SIM card",
-        category: "SIM Card",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Research local mobile providers",
-        category: "SIM Card",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Acceptance letter",
-        category: "Incoming University Documents",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Course registration confirmation",
-        category: "Incoming University Documents",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Transcript of records",
-        category: "Home University Documents",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Learning agreement",
-        category: "Home University Documents",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Find temporary accommodation",
-        category: "Housing",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Research student housing options",
-        category: "Housing",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Open local bank account",
-        category: "Bank Account",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, {
-        id: crypto.randomUUID(),
-        description: "Set up international transfers",
-        category: "Bank Account",
-        is_checked: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }];
+      const defaultItems = standardCategories.flatMap(category => {
+        switch(category) {
+          case "Visa":
+            return [
+              {
+                id: crypto.randomUUID(),
+                description: "Apply for visa/residence permit",
+                category: "Visa",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              {
+                id: crypto.randomUUID(),
+                description: "Get passport photos",
+                category: "Visa",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ];
+          case "Health Insurance":
+            return [
+              {
+                id: crypto.randomUUID(),
+                description: "Purchase health insurance",
+                category: "Health Insurance",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              {
+                id: crypto.randomUUID(),
+                description: "Get vaccination records",
+                category: "Health Insurance",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ];
+          case "SIM Card":
+            return [
+              {
+                id: crypto.randomUUID(),
+                description: "Purchase international SIM card",
+                category: "SIM Card",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              {
+                id: crypto.randomUUID(),
+                description: "Research local mobile providers",
+                category: "SIM Card",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ];
+          case "Incoming University Documents":
+            return [
+              {
+                id: crypto.randomUUID(),
+                description: "Acceptance letter",
+                category: "Incoming University Documents",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              {
+                id: crypto.randomUUID(),
+                description: "Course registration confirmation",
+                category: "Incoming University Documents",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ];
+          case "Home University Documents":
+            return [
+              {
+                id: crypto.randomUUID(),
+                description: "Transcript of records",
+                category: "Home University Documents",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              {
+                id: crypto.randomUUID(),
+                description: "Learning agreement",
+                category: "Home University Documents",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ];
+          case "Housing":
+            return [
+              {
+                id: crypto.randomUUID(),
+                description: "Find temporary accommodation",
+                category: "Housing",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              {
+                id: crypto.randomUUID(),
+                description: "Research student housing options",
+                category: "Housing",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ];
+          case "Bank Account":
+            return [
+              {
+                id: crypto.randomUUID(),
+                description: "Open local bank account",
+                category: "Bank Account",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              },
+              {
+                id: crypto.randomUUID(),
+                description: "Set up international transfers",
+                category: "Bank Account",
+                is_checked: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              }
+            ];
+          default:
+            return [];
+        }
+      });
 
       // Create the checklist
       const newChecklist = await createChecklist({
         items: defaultItems,
         user_id: user.id
       });
+      
       if (newChecklist) {
         setChecklist(newChecklist);
         setShowDefaultChecklist(false);
@@ -218,161 +267,92 @@ const ChecklistList = () => {
       setIsCreatingChecklist(false);
     }
   };
-  const handleDeletedChecklist = () => {
-    setChecklist(null);
-    loadChecklist();
-  };
+  
   const navigateToCategory = (category: string) => {
-    // Navigate to the category page even if there might not be items yet
-    // The category page will handle the empty state
     navigate(`/checklist-category/${encodeURIComponent(category)}`);
   };
-  const renderCategoryCard = (category: string, itemCount: number = 0, completedCount: number = 0) => {
-    const percentage = itemCount > 0 ? Math.round(completedCount / itemCount * 100) : 0;
-    return <div key={category} className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
-        <div className="w-full h-16 flex items-center justify-center mb-2">
-          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${completedCount > 0 && completedCount === itemCount ? "bg-primary/10" : "border-2 border-dashed border-primary/40"}`}>
-            {completedCount > 0 && completedCount === itemCount ? <Check className="h-5 w-5 text-primary" /> : <span className="text-xs font-medium text-primary/80">{completedCount}/{itemCount}</span>}
-          </div>
-        </div>
-        <p className="text-sm font-medium">{category}</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {itemCount === 0 ? "No documents" : `${percentage}% complete`}
-        </p>
-      </div>;
-  };
+  
+  // Get existing categories from checklist
+  const existingCategories = checklist?.checklist_data?.items
+    ? Array.from(new Set(checklist.checklist_data.items.map(item => item.category)))
+    : [];
+  
+  // Combine standard categories with any additional categories from existing checklist
+  const allCategories = Array.from(new Set([...standardCategories, ...existingCategories]));
+  
   if (loading) {
     return <div className="flex flex-col h-64 items-center justify-center">
-        <Spinner size="lg" className="text-primary" />
-        <p className="mt-4 text-muted-foreground">{isCreatingChecklist ? "Creating your document list..." : "Loading your documents..."}</p>
-      </div>;
-  }
-
-  // If we have a checklist, show it with clickable categories
-  if (checklist) {
-    const categories: {
-      [key: string]: {
-        total: number;
-        completed: number;
-      };
-    } = {};
-
-    // Group items by category and count completion
-    if (checklist.checklist_data?.items) {
-      checklist.checklist_data.items.forEach(item => {
-        const category = item.category || "General";
-        if (!categories[category]) {
-          categories[category] = {
-            total: 0,
-            completed: 0
-          };
-        }
-        categories[category].total += 1;
-        if (item.is_checked) {
-          categories[category].completed += 1;
-        }
-      });
-    }
-    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <FileCheck className="h-5 w-5 text-primary" />
-            <CardTitle>Your Relocation Documents</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Click on a category to view and manage its documents:</p>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {Object.entries(categories).map(([category, counts], index) => <div key={category} className="opacity-0 animate-fade-in" style={{
-            animationDelay: `${index * 50}ms`,
-            animationFillMode: 'forwards'
-          }}>
-                {renderCategoryCard(category, counts.total, counts.completed)}
-              </div>)}
-          </div>
-          
-          <div className="flex justify-between mt-6">
-            <Button variant="outline" size="sm" onClick={() => navigate("/checklist-detail")} className="hover:shadow-sm transition-shadow">
-              View Full Document List
-            </Button>
-          </div>
-        </CardContent>
-      </Card>;
-  }
-
-  // If showDefaultChecklist is true but we don't have a checklist yet, 
-  // show the default checklist creation screen without the empty state
-  if (showDefaultChecklist) {
-    return <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <FileCheck className="h-5 w-5 text-primary" />
-            <CardTitle>Your Relocation Documents</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Create your personalized document list:</p>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {["Visa", "Health Insurance", "SIM Card", "Incoming University Documents", "Home University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
-            animationDelay: `${index * 50}ms`,
-            animationFillMode: 'forwards'
-          }}>
-                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200">
-                  <div className="w-full h-16 flex items-center justify-center mb-2">
-                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary/60" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium">{category}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Required documents</p>
-                </div>
-              </div>)}
-          </div>
-          
-          <Button className="w-full mt-4 hover:shadow-md transition-shadow" onClick={handleCreateDefaultChecklist}>
-            Create My Document List
-          </Button>
-        </CardContent>
-      </Card>;
-  }
-
-  // Updated empty state to match the styling of the other cards
-  return <div className="animate-fade-in w-full">
-      <Card className="border-primary/10 hover:shadow-md transition-shadow w-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            <CardTitle>Relocation Documents</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Track your essential documents with a structured list:</p>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category, index) => <div key={category} className="opacity-0 animate-fade-in" style={{
-            animationDelay: `${index * 50}ms`,
-            animationFillMode: 'forwards'
-          }}>
-                <div className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer transform hover:scale-[1.02] transition-transform duration-200" onClick={() => navigateToCategory(category)} role="button" aria-label={`View ${category} documents`}>
-                  <div className="w-full h-16 flex items-center justify-center mb-2">
-                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary/60" />
-                    </div>
-                  </div>
-                  <p className="text-sm font-medium">{category}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Not started</p>
-                </div>
-              </div>)}
-          </div>
-          
-          <Button className="w-full mt-4 hover:shadow-md transition-shadow" onClick={handleCreateChecklist}>
-            Create My Document List
-          </Button>
-        </CardContent>
-      </Card>
+      <Spinner size="lg" className="text-primary" />
+      <p className="mt-4 text-muted-foreground">{isCreatingChecklist ? "Creating your document list..." : "Loading your documents..."}</p>
     </div>;
+  }
+
+  return <div className="animate-fade-in w-full">
+    <Card className="border-primary/10 hover:shadow-md transition-shadow">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          {checklist ? 
+            <FileCheck className="h-5 w-5 text-primary" /> : 
+            <FileText className="h-5 w-5 text-primary" />
+          }
+          <CardTitle>
+            {checklist ? "Your Relocation Documents" : "Relocation Documents"}
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="mb-4">
+          {checklist 
+            ? "Click on a category to view and manage its documents:" 
+            : "Track your essential documents with a structured list:"}
+        </p>
+        
+        {checklist ? (
+          <div className="space-y-2">
+            {allCategories.map((category, index) => {
+              const itemsInCategory = checklist?.checklist_data?.items?.filter(item => item.category === category) || [];
+              const completedItems = itemsInCategory.filter(item => item.is_checked).length;
+              const totalItems = itemsInCategory.length;
+              
+              return (
+                <div 
+                  key={category} 
+                  onClick={() => navigateToCategory(category)}
+                  className="flex items-center justify-between p-3 bg-white hover:bg-primary/5 rounded-md border cursor-pointer opacity-0 animate-fade-in"
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animationFillMode: 'forwards'
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center mr-3 ${
+                      totalItems > 0 && completedItems === totalItems 
+                        ? "bg-primary/10" 
+                        : "border-2 border-dashed border-primary/40"
+                    }`}>
+                      {totalItems > 0 && completedItems === totalItems ? 
+                        <FileCheck className="h-4 w-4 text-primary" /> : 
+                        <span className="text-xs font-medium text-primary/80">
+                          {totalItems > 0 ? `${completedItems}/${totalItems}` : "0"}
+                        </span>
+                      }
+                    </div>
+                    <span className="font-medium">{category}</span>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <Button className="w-full mt-4 hover:shadow-md transition-shadow" 
+            onClick={showDefaultChecklist ? handleCreateDefaultChecklist : handleCreateChecklist}>
+            Create My Document List
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  </div>;
 };
 
 export default ChecklistList;

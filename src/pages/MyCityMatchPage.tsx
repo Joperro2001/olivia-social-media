@@ -3,19 +3,46 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import CityResult from "@/components/moving/CityResult";
+import { getUserCityMatch, clearCityMatch } from "@/services/cityMatchService";
+import { useToast } from "@/hooks/use-toast";
 
 const MyCityMatchPage: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [matchedCity, setMatchedCity] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Check if user has already taken the city match quiz
-    const savedCity = localStorage.getItem("matchedCity");
-    if (savedCity) {
-      setMatchedCity(savedCity);
-    }
+    const fetchCityMatch = async () => {
+      setLoading(true);
+      try {
+        // Try to get city match from Supabase first
+        const cityMatchData = await getUserCityMatch();
+        
+        if (cityMatchData?.city) {
+          setMatchedCity(cityMatchData.city);
+        } else {
+          // Fallback to localStorage
+          const savedCity = localStorage.getItem("matchedCity");
+          if (savedCity) {
+            setMatchedCity(savedCity);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching city match:", error);
+        // Try fallback from localStorage
+        const savedCity = localStorage.getItem("matchedCity");
+        if (savedCity) {
+          setMatchedCity(savedCity);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCityMatch();
   }, []);
   
   const handleChatRedirect = () => {
@@ -25,10 +52,26 @@ const MyCityMatchPage: React.FC = () => {
     navigate("/");
   };
   
-  const handleReset = () => {
-    // Clear the saved result and reset the state
-    localStorage.removeItem("matchedCity");
-    setMatchedCity(null);
+  const handleReset = async () => {
+    setLoading(true);
+    try {
+      // Clear the saved result from Supabase and localStorage
+      await clearCityMatch();
+      setMatchedCity(null);
+      toast({
+        title: "Reset successful",
+        description: "Your city match has been reset.",
+      });
+    } catch (error) {
+      console.error("Error resetting city match:", error);
+      toast({
+        variant: "destructive",
+        title: "Reset failed",
+        description: "Could not reset your city match. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,7 +94,12 @@ const MyCityMatchPage: React.FC = () => {
       </div>
       
       <div className="px-4 flex-1 overflow-auto pb-28">
-        {matchedCity ? (
+        {loading ? (
+          <Card className="border-primary/10 hover:shadow-md transition-shadow flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="mt-4 text-center text-muted-foreground">Loading your city match...</p>
+          </Card>
+        ) : matchedCity ? (
           // If the user has already taken the quiz, show their match
           <Card className="border-primary/10 hover:shadow-md transition-shadow">
             <CardHeader>
@@ -62,6 +110,11 @@ const MyCityMatchPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <CityResult city={matchedCity} onReset={handleReset} />
+              <div className="flex justify-center mt-6">
+                <Button variant="outline" onClick={handleReset}>
+                  Find a Different Match
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : (

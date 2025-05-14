@@ -5,28 +5,41 @@ import { Progress } from "@/components/ui/progress";
 import { Sparkles } from "lucide-react";
 import CityMatchQuestionnaire from "./CityMatchQuestionnaire";
 import CityResult from "./CityResult";
+
 const CityMatchSection: React.FC = () => {
   const [started, setStarted] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [matchedCity, setMatchedCity] = useState<string | null>(null);
+  
   const handleStartQuiz = () => {
     setStarted(true);
   };
+  
   const handleQuizProgress = (percent: number) => {
     setProgress(percent);
   };
+  
   const handleQuizComplete = (city: string) => {
     setMatchedCity(city);
     setCompleted(true);
+    
+    // Store in localStorage as a fallback
+    localStorage.setItem("matchedCity", city);
   };
+  
   const handleReset = () => {
     setStarted(false);
     setCompleted(false);
     setProgress(0);
     setMatchedCity(null);
+    
+    // Note: We don't remove from localStorage here to keep history
+    // The actual reset happens in CityResult component
   };
-  return <Card className="w-full">
+  
+  return (
+    <Card className="w-full">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
@@ -38,8 +51,13 @@ const CityMatchSection: React.FC = () => {
       </CardHeader>
       
       <CardContent className="py-0">
-        {!started && !completed && <div className="flex flex-col items-center text-center py-8">
-            <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&h=400&q=80" alt="City skyline" className="rounded-lg mb-6 w-full max-w-md object-cover h-48" />
+        {!started && !completed && (
+          <div className="flex flex-col items-center text-center py-8">
+            <img 
+              src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&h=400&q=80" 
+              alt="City skyline" 
+              className="rounded-lg mb-6 w-full max-w-md object-cover h-48" 
+            />
             <p className="mb-6 text-muted-foreground">
               Take our fun questionnaire to discover which city would be your perfect match based on your personality, lifestyle preferences, and goals!
             </p>
@@ -47,21 +65,33 @@ const CityMatchSection: React.FC = () => {
               <Sparkles className="h-4 w-4" />
               Find Your Perfect City
             </Button>
-          </div>}
+          </div>
+        )}
         
-        {started && !completed && <>
+        {started && !completed && (
+          <>
             <Progress value={progress} className="mb-6" />
-            <CityMatchQuestionnaire onProgress={handleQuizProgress} onComplete={handleQuizComplete} />
-          </>}
+            <CityMatchQuestionnaire 
+              onProgress={handleQuizProgress} 
+              onComplete={handleQuizComplete} 
+            />
+          </>
+        )}
         
-        {completed && matchedCity && <CityResult city={matchedCity} onReset={handleReset} />}
+        {completed && matchedCity && (
+          <CityResult city={matchedCity} onReset={handleReset} />
+        )}
       </CardContent>
       
-      {(started || completed) && <CardFooter className="flex justify-center border-t pt-4">
+      {(started || completed) && (
+        <CardFooter className="flex justify-center border-t pt-4">
           <Button variant="outline" onClick={handleReset}>
             Start Over
           </Button>
-        </CardFooter>}
-    </Card>;
+        </CardFooter>
+      )}
+    </Card>
+  );
 };
+
 export default CityMatchSection;
