@@ -122,7 +122,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({
               </div>
             </div>
 
-            <div className="absolute top-4 right-4 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold shadow">
+            <div className="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold shadow">
               <span>Preview mode</span>
             </div>
           </div>
