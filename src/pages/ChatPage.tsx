@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -128,14 +129,9 @@ const ChatPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[100vh] bg-[#FDF5EF]">
+    <div className="flex flex-col h-[100vh] bg-[#FDF5EF] chat-page">
       {/* Header with profile info */}
       <ChatHeader profile={profile} onRefresh={retry} />
-      
-      {/* Message input area - at top */}
-      <div className="p-4 bg-white border-b shadow-sm">
-        <ChatInput onSendMessage={handleSendMessage} />
-      </div>
       
       {/* Chat background with messages */}
       <div 
@@ -149,6 +145,11 @@ const ChatPage: React.FC = () => {
           userId={user.id}
           formatTime={formatTime}
         />
+      </div>
+      
+      {/* Message input area - now at bottom */}
+      <div className="p-4 sticky bottom-0 bg-white border-t shadow-sm">
+        <ChatInput onSendMessage={handleSendMessage} />
       </div>
     </div>
   );
