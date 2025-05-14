@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Diamond, Heart, Sparkles, Users, RefreshCw, Brain } from "lucide-react";
+import { Diamond, Heart, Sparkles, Users, RefreshCw, Brain, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ProfileMatching from "@/components/besties/ProfileMatching";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const { refetchProfiles, userMoveInCity, profiles } = useOtherProfiles();
+  const { refetchProfiles, userMoveInCity, profiles, clearRejectedProfiles } = useOtherProfiles();
   const { user } = useAuth();
   const { isRanking, rankProfiles, isAIRankingActive, toggleAIRanking } = useAIRankProfiles();
   
@@ -80,6 +80,14 @@ const BestiesPage: React.FC = () => {
     }
   };
 
+  const handleResetRejectedProfiles = () => {
+    clearRejectedProfiles();
+    toast({
+      title: "Rejected profiles reset",
+      description: "You'll now see previously rejected profiles again",
+    });
+  };
+
   useEffect(() => {
     // Force a refresh of profiles when the page loads
     refetchProfiles();
@@ -90,6 +98,15 @@ const BestiesPage: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">Social</h1>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleResetRejectedProfiles}
+            aria-label="Show Rejected Profiles"
+            title="Show Rejected Profiles"
+          >
+            <History className="h-5 w-5" />
+          </Button>
           <Button 
             variant="ghost" 
             size="icon"

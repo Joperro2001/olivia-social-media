@@ -43,6 +43,16 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     onSwipeRight(id);
   };
 
+  const handleSwipeLeft = () => {
+    // Save the rejected profile to localStorage
+    const rejectedProfiles = JSON.parse(localStorage.getItem("rejectedProfiles") || "[]");
+    if (!rejectedProfiles.includes(id)) {
+      rejectedProfiles.push(id);
+      localStorage.setItem("rejectedProfiles", JSON.stringify(rejectedProfiles));
+    }
+    onSwipeLeft(id);
+  };
+
   // Default placeholder image if no image is provided
   const defaultImage = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop";
   const displayImage = image || defaultImage;
@@ -89,7 +99,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
 
       <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-8">
         <button 
-          onClick={() => onSwipeLeft(id)} 
+          onClick={handleSwipeLeft} 
           className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
