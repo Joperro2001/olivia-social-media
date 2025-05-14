@@ -8,6 +8,7 @@ import { Profile } from "@/types/Profile";
 import { Loader, Users, UserPlus, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import ProfileMatchingHeader from "./ProfileMatchingHeader";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -18,10 +19,17 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { profiles, isLoading, refetchProfiles } = useOtherProfiles();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     setCurrentIndex(0);
   }, [profiles.length]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetchProfiles();
+    setIsRefreshing(false);
+  };
 
   const handleSwipeLeft = (id: string) => {
     console.log(`Swiped left on ${id}`);
@@ -132,87 +140,63 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     };
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center">
-        <Loader className="h-8 w-8 animate-spin text-gray-400" />
-        <p className="mt-4 text-gray-500">Loading profiles...</p>
-      </div>
-    );
-  }
-
-  if (profiles.length === 0) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-        <div className="p-4 rounded-full bg-gray-100 mb-4">
-          <Users className="h-8 w-8 text-gray-400" />
-        </div>
-        <h3 className="text-xl font-semibold mb-2">No Berlin matches available</h3>
-        <p className="text-gray-500 mb-6 max-w-xs">
-          There are no other users moving to Berlin on the platform yet. Make sure your profile is set up with Berlin as your destination and try refreshing.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button 
-            className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
-            onClick={() => {
-              toast({
-                title: "Invite link copied!",
-                description: "Share this link with friends moving to Berlin to join the platform.",
-              });
-            }}
-          >
-            <UserPlus className="h-4 w-4" />
-            Invite Berlin Friends
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => {
-              console.log("Refreshing profiles...");
-              refetchProfiles();
-              toast({
-                title: "Refreshing profiles",
-                description: "Looking for new Berlin connections...",
-              });
-            }}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4">
-      {currentIndex < profiles.length ? (
-        <ProfileCard
-          key={profiles[currentIndex].id}
-          {...mapProfileToCardProps(profiles[currentIndex])}
-        />
-      ) : (
-        <div className="text-center px-4 py-10">
-          <h3 className="text-xl font-semibold mb-2">You've seen all Berlin profiles</h3>
-          <p className="text-gray-500 mb-6">Check back later for new Berlin connections</p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              onClick={() => setCurrentIndex(0)}
-              className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
-            >
-              Reset Profiles
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={refetchProfiles}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
+    <div className="flex flex-col h-full">
+      <ProfileMatchingHeader 
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
+      />
+      
+      <div className="flex-1 flex flex-col items-center justify-center p-4">
+        {isLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <Loader className="h-8 w-8 animate-spin text-gray-400" />
+            <p className="mt-4 text-gray-500">Loading profiles...</p>
           </div>
-        </div>
-      )}
+        ) : profiles.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div className="p-4 rounded-full bg-gray-100 mb-4">
+              <Users className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Berlin matches available</h3>
+            <p className="text-gray-500 mb-6 max-w-xs">
+              There are no other users moving to Berlin on the platform yet. Make sure your profile is set up with Berlin as your destination and try refreshing.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
+                onClick={() => {
+                  toast({
+                    title: "Invite link copied!",
+                    description: "Share this link with friends moving to Berlin to join the platform.",
+                  });
+                }}
+              >
+                <UserPlus className="h-4 w-4" />
+                Invite Berlin Friends
+              </Button>
+            </div>
+          </div>
+        ) : currentIndex < profiles.length ? (
+          <ProfileCard
+            key={profiles[currentIndex].id}
+            {...mapProfileToCardProps(profiles[currentIndex])}
+          />
+        ) : (
+          <div className="text-center px-4 py-10">
+            <h3 className="text-xl font-semibold mb-2">You've seen all Berlin profiles</h3>
+            <p className="text-gray-500 mb-6">Check back later for new Berlin connections</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                onClick={() => setCurrentIndex(0)}
+                className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
+              >
+                Reset Profiles
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
