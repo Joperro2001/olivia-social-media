@@ -7,17 +7,17 @@ import { Label } from "@/components/ui/label";
 
 const BestiesFilter: React.FC = () => {
   const [filters, setFilters] = useState({
-    countries: ["Germany", "Spain", "UK", "USA"],
-    cities: ["Berlin", "Barcelona", "London", "New York"],
-    interests: ["Tech", "Art", "Music", "Food", "Travel", "Sports", "LGBTQ+"],
-    moveInMonths: ["May", "June", "July", "August"],
+    neighborhoods: ["Mitte", "Kreuzberg", "Neukölln", "Friedrichshain", "Prenzlauer Berg", "Wedding"],
+    moveInMonths: ["May", "June", "July", "August", "September", "October"],
+    interests: ["Tech", "Art", "Music", "Food", "Travel", "Sports", "LGBTQ+", "Startups"],
+    languages: ["English", "German", "Spanish", "French"],
     isGroupMode: false
   });
   
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
 
   const toggleInterest = (interest: string) => {
     if (selectedInterests.includes(interest)) {
@@ -30,29 +30,32 @@ const BestiesFilter: React.FC = () => {
   return (
     <div className="bg-white p-4 rounded-xl shadow-md border border-gray-100 mb-4 animate-fade-in">
       <div className="mb-4">
-        <h3 className="text-sm font-semibold mb-2">Location</h3>
+        <h3 className="text-sm font-semibold mb-2">Berlin Neighborhoods</h3>
         <div className="flex flex-wrap gap-2 mb-2">
-          {filters.countries.map(country => (
+          {filters.neighborhoods.map(neighborhood => (
             <Badge
-              key={country}
-              variant={selectedCountry === country ? "default" : "outline"}
+              key={neighborhood}
+              variant={selectedNeighborhood === neighborhood ? "default" : "outline"}
               className="cursor-pointer hover:bg-gray-100 transition-colors"
-              onClick={() => setSelectedCountry(selectedCountry === country ? null : country)}
+              onClick={() => setSelectedNeighborhood(selectedNeighborhood === neighborhood ? null : neighborhood)}
             >
-              {country}
+              {neighborhood}
             </Badge>
           ))}
         </div>
-        
+      </div>
+
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold mb-2">Moving to Berlin in</h3>
         <div className="flex flex-wrap gap-2">
-          {filters.cities.map(city => (
+          {filters.moveInMonths.map(month => (
             <Badge
-              key={city}
-              variant={selectedCity === city ? "default" : "outline"}
+              key={month}
+              variant={selectedMonth === month ? "default" : "outline"}
               className="cursor-pointer hover:bg-gray-100 transition-colors"
-              onClick={() => setSelectedCity(selectedCity === city ? null : city)}
+              onClick={() => setSelectedMonth(selectedMonth === month ? null : month)}
             >
-              {city}
+              {month}
             </Badge>
           ))}
         </div>
@@ -75,16 +78,16 @@ const BestiesFilter: React.FC = () => {
       </div>
 
       <div className="mb-4">
-        <h3 className="text-sm font-semibold mb-2">Move-in Month</h3>
+        <h3 className="text-sm font-semibold mb-2">Languages</h3>
         <div className="flex flex-wrap gap-2">
-          {filters.moveInMonths.map(month => (
+          {filters.languages.map(language => (
             <Badge
-              key={month}
-              variant={selectedMonth === month ? "default" : "outline"}
+              key={language}
+              variant={selectedLanguage === language ? "default" : "outline"}
               className="cursor-pointer hover:bg-gray-100 transition-colors"
-              onClick={() => setSelectedMonth(selectedMonth === month ? null : month)}
+              onClick={() => setSelectedLanguage(selectedLanguage === language ? null : language)}
             >
-              {month}
+              {language}
             </Badge>
           ))}
         </div>
@@ -96,15 +99,15 @@ const BestiesFilter: React.FC = () => {
           checked={filters.isGroupMode}
           onCheckedChange={(checked) => setFilters({...filters, isGroupMode: checked})}
         />
-        <Label htmlFor="group-mode">Group Discovery Mode</Label>
+        <Label htmlFor="group-mode">Berlin Group Discovery Mode</Label>
       </div>
       
       <div className="flex justify-between">
         <Button variant="outline" size="sm" onClick={() => {
-          setSelectedCountry(null);
-          setSelectedCity(null);
+          setSelectedNeighborhood(null);
           setSelectedInterests([]);
           setSelectedMonth(null);
+          setSelectedLanguage(null);
           setFilters({...filters, isGroupMode: false});
         }}>
           Reset

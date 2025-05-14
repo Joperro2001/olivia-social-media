@@ -21,7 +21,7 @@ export const useOtherProfiles = () => {
       setIsLoading(true);
       
       console.log("Current user ID:", user.id);
-      console.log("Fetching profiles with filter to exclude current user");
+      console.log("Fetching profiles moving to Berlin and excluding current user");
       
       // First, get the IDs of users the current user has already matched with or sent requests to
       const { data: matchesAsUser1, error: matchError1 } = await supabase
@@ -48,10 +48,12 @@ export const useOtherProfiles = () => {
       console.log("Excluding already matched users:", matchedUserIds);
       
       // Get all profiles excluding the current user and already matched users
+      // Also filter for users who are moving to Berlin
       let query = supabase
         .from("profiles")
         .select("*")
-        .neq("id", user.id);
+        .neq("id", user.id)
+        .eq("move_in_city", "Berlin");
       
       // Only add the "not in" filter if there are matched users to exclude
       if (matchedUserIds.length > 0) {
@@ -65,13 +67,13 @@ export const useOtherProfiles = () => {
         throw error;
       }
       
-      console.log("Profiles fetched:", data ? data.length : 0);
+      console.log("Berlin profiles fetched:", data ? data.length : 0);
       
       if (data && data.length > 0) {
         console.log("Profiles found:", data);
         setProfiles(data);
       } else {
-        console.log("No other profiles found or all users are already matched");
+        console.log("No other profiles found moving to Berlin or all users are already matched");
         setProfiles([]);
       }
     } catch (error: any) {

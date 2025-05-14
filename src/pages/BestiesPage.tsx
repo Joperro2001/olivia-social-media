@@ -65,7 +65,7 @@ const BestiesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl font-bold">Social</h1>
+        <h1 className="text-2xl font-bold">Berlin Besties</h1>
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
@@ -90,7 +90,7 @@ const BestiesPage: React.FC = () => {
               refetchProfiles();
               toast({
                 title: "Refreshing profiles",
-                description: "Looking for new matches...",
+                description: "Looking for new Berlin relocators...",
               });
             }}
             aria-label="Refresh Profiles"
@@ -104,8 +104,15 @@ const BestiesPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-amber-400" />
-            <span className="font-medium">Suggested Connections</span>
+            <span className="font-medium">Moving to Berlin</span>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </Button>
         </div>
 
         {showFilters && <BestiesFilter />}

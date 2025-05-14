@@ -113,14 +113,20 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
 
   // Convert database profile to the format expected by ProfileCard
   const mapProfileToCardProps = (profile: Profile) => {
+    // Extract move-in city (should be Berlin) or default
+    const moveInCity = profile.move_in_city || "Berlin";
+    
+    // Determine if they have a relocation date/timeframe (could be enhanced in the future)
+    const isRelocating = Boolean(profile.move_in_city);
+    
     return {
       id: profile.id,
       name: profile.full_name || "Anonymous",
       age: profile.age || 0,
-      location: profile.current_city || "",
+      location: isRelocating ? `Moving to ${moveInCity}` : (profile.current_city || ""),
       bio: profile.about_me || "",
       image: profile.avatar_url || "",
-      tags: profile.university ? [profile.university] : [],
+      tags: profile.university ? [profile.university, "Moving to Berlin"] : ["Moving to Berlin"],
       onSwipeLeft: handleSwipeLeft,
       onSwipeRight: handleSwipeRight
     };
@@ -141,9 +147,9 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         <div className="p-4 rounded-full bg-gray-100 mb-4">
           <Users className="h-8 w-8 text-gray-400" />
         </div>
-        <h3 className="text-xl font-semibold mb-2">No other profiles available</h3>
+        <h3 className="text-xl font-semibold mb-2">No Berlin matches available</h3>
         <p className="text-gray-500 mb-6 max-w-xs">
-          There are no other users on the platform yet. Make sure your profile is set up and try refreshing.
+          There are no other users moving to Berlin on the platform yet. Make sure your profile is set up with Berlin as your destination and try refreshing.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button 
@@ -151,12 +157,12 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
             onClick={() => {
               toast({
                 title: "Invite link copied!",
-                description: "Share this link with your friends to join the platform.",
+                description: "Share this link with friends moving to Berlin to join the platform.",
               });
             }}
           >
             <UserPlus className="h-4 w-4" />
-            Invite Friends
+            Invite Berlin Friends
           </Button>
           <Button 
             variant="outline"
@@ -165,7 +171,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
               refetchProfiles();
               toast({
                 title: "Refreshing profiles",
-                description: "Looking for new matches...",
+                description: "Looking for new Berlin connections...",
               });
             }}
             className="flex items-center gap-2"
@@ -187,8 +193,8 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         />
       ) : (
         <div className="text-center px-4 py-10">
-          <h3 className="text-xl font-semibold mb-2">You've seen all profiles</h3>
-          <p className="text-gray-500 mb-6">Check back later for new connections</p>
+          <h3 className="text-xl font-semibold mb-2">You've seen all Berlin profiles</h3>
+          <p className="text-gray-500 mb-6">Check back later for new Berlin connections</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               onClick={() => setCurrentIndex(0)}
