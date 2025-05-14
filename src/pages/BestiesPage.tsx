@@ -14,7 +14,7 @@ const BestiesPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const { refetchProfiles, userMoveInCity } = useOtherProfiles();
+  const { refetchProfiles, userMoveInCity, profiles } = useOtherProfiles();
   const { user } = useAuth();
   const { isRanking, rankProfiles, isAIRankingActive, toggleAIRanking } = useAIRankProfiles();
   

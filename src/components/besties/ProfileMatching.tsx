@@ -184,35 +184,56 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     );
   }
 
+  // Show "All profiles viewed" message when currentIndex has reached the end of the profiles array
+  if (currentIndex >= profiles.length) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <div className="p-4 rounded-full bg-gray-100 mb-4">
+          <Users className="h-8 w-8 text-gray-400" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">You've swiped on all profiles</h3>
+        <p className="text-gray-500 mb-6 max-w-xs">
+          You've viewed all available profiles. Check back later for new connections or refresh to see if any new profiles are available.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button 
+            className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity flex items-center gap-2"
+            onClick={() => {
+              setCurrentIndex(0);
+              toast({
+                title: "Starting over",
+                description: "Showing profiles from the beginning",
+              });
+            }}
+          >
+            <RefreshCw className="h-4 w-4 mr-1" />
+            View Profiles Again
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => {
+              refetchProfiles();
+              toast({
+                title: "Refreshing profiles",
+                description: "Looking for new connections...",
+              });
+            }}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4">
-      {currentIndex < profiles.length ? (
-        <ProfileCard
-          key={profiles[currentIndex].id}
-          {...mapProfileToCardProps(profiles[currentIndex])}
-        />
-      ) : (
-        <div className="text-center px-4 py-10">
-          <h3 className="text-xl font-semibold mb-2">You've seen all Berlin profiles</h3>
-          <p className="text-gray-500 mb-6">Check back later for new Berlin connections</p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              onClick={() => setCurrentIndex(0)}
-              className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
-            >
-              Reset Profiles
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={refetchProfiles}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
-        </div>
-      )}
+      <ProfileCard
+        key={profiles[currentIndex].id}
+        {...mapProfileToCardProps(profiles[currentIndex])}
+      />
     </div>
   );
 };
