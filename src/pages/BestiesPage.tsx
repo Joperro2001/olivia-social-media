@@ -15,7 +15,7 @@ const BestiesPage: React.FC = () => {
   const navigate = useNavigate();
   const [showFilters, setShowFilters] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const { refetchProfiles } = useOtherProfiles();
+  const { refetchProfiles, userMoveInCity } = useOtherProfiles();
   const { user } = useAuth();
   
   const handleOpenMatches = () => {
@@ -65,7 +65,7 @@ const BestiesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-[100vh] bg-[#FDF5EF] pb-16">
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl font-bold">Berlin Besties</h1>
+        <h1 className="text-2xl font-bold">{userMoveInCity ? `${userMoveInCity} Besties` : "Find Besties"}</h1>
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
@@ -90,7 +90,9 @@ const BestiesPage: React.FC = () => {
               refetchProfiles();
               toast({
                 title: "Refreshing profiles",
-                description: "Looking for new Berlin relocators...",
+                description: userMoveInCity 
+                  ? `Looking for new ${userMoveInCity} relocators...` 
+                  : "Looking for new connections...",
               });
             }}
             aria-label="Refresh Profiles"
@@ -104,7 +106,9 @@ const BestiesPage: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-amber-400" />
-            <span className="font-medium">Moving to Berlin</span>
+            <span className="font-medium">
+              {userMoveInCity ? `Moving to ${userMoveInCity}` : "Find people moving to your city"}
+            </span>
           </div>
           <Button 
             variant="outline" 

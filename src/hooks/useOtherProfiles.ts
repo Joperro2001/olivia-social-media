@@ -10,6 +10,24 @@ export const useOtherProfiles = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const [userMoveInCity, setUserMoveInCity] = useState<string | null>(null);
+
+  const fetchCurrentUserProfile = async () => {
+    if (!user) return null;
+    
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("move_in_city")
+      .eq("id", user.id)
+      .single();
+      
+    if (error) {
+      console.error("Error fetching user profile:", error);
+      return null;
+    }
+    
+    return data?.move_in_city || null;
+  };
 
   const fetchOtherProfiles = async () => {
     try {
@@ -20,10 +38,21 @@ export const useOtherProfiles = () => {
       
       setIsLoading(true);
       
-      console.log("Current user ID:", user.id);
-      console.log("Fetching profiles moving to Berlin and excluding current user");
+      // First, get the current user's move_in_city
+      const moveInCity = await fetchCurrentUserProfile();
+      setUserMoveInCity(moveInCity);
       
-      // First, get the IDs of users the current user has already matched with or sent requests to
+      if (!moveInCity) {
+        console.log("User has no move_in_city set, showing no profiles");
+        setProfiles([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log("Current user ID:", user.id);
+      console.log(`Fetching profiles moving to ${moveInCity} and excluding current user`);
+      
+      // Get the IDs of users the current user has already matched with or sent requests to
       const { data: matchesAsUser1, error: matchError1 } = await supabase
         .from('profile_matches')
         .select('user_id_2')
@@ -47,13 +76,12 @@ export const useOtherProfiles = () => {
       
       console.log("Excluding already matched users:", matchedUserIds);
       
-      // Get all profiles excluding the current user and already matched users
-      // Also filter for users who are moving to Berlin
+      // Get all profiles moving to the same city as the user, excluding the current user and already matched users
       let query = supabase
         .from("profiles")
         .select("*")
         .neq("id", user.id)
-        .eq("move_in_city", "Berlin");
+        .eq("move_in_city", moveInCity);
       
       // Only add the "not in" filter if there are matched users to exclude
       if (matchedUserIds.length > 0) {
@@ -67,13 +95,13 @@ export const useOtherProfiles = () => {
         throw error;
       }
       
-      console.log("Berlin profiles fetched:", data ? data.length : 0);
+      console.log(`${moveInCity} profiles fetched:`, data ? data.length : 0);
       
       if (data && data.length > 0) {
         console.log("Profiles found:", data);
         setProfiles(data);
       } else {
-        console.log("No other profiles found moving to Berlin or all users are already matched");
+        console.log(`No other profiles found moving to ${moveInCity} or all users are already matched`);
         setProfiles([]);
       }
     } catch (error: any) {
@@ -103,6 +131,7 @@ export const useOtherProfiles = () => {
   return {
     profiles,
     isLoading,
+    userMoveInCity,
     refetchProfiles: fetchOtherProfiles,
   };
 };
