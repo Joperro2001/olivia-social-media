@@ -29,7 +29,6 @@ file_size_limit = "50MiB"
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-# List of URLs that can request the API
 additional_redirect_urls = ["https://localhost:3000"]
 jwt_expiry = 3600
 enable_signup = true
@@ -45,3 +44,6 @@ enabled = true
 [[publications]]
 publication = "supabase_realtime"
 tables = ["chats", "chat_participants", "messages"]
+
+[functions.get-config]
+verify_jwt = false
