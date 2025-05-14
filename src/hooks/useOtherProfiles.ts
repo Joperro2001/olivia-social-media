@@ -76,25 +76,18 @@ export const useOtherProfiles = () => {
         ...(matchesAsUser2 ? matchesAsUser2.map(match => match.user_id_1) : [])
       ];
       
-      // Get rejected profiles from localStorage
-      const rejectedProfiles = JSON.parse(localStorage.getItem("rejectedProfiles") || "[]");
-      
       console.log("Excluding already matched users:", matchedUserIds);
-      console.log("Excluding rejected profiles:", rejectedProfiles);
       
-      // Combine both lists of excluded user IDs
-      const excludedUserIds = [...new Set([...matchedUserIds, ...rejectedProfiles])];
-      
-      // Get all profiles moving to the same city as the user, excluding the current user and already matched/rejected users
+      // Get all profiles moving to the same city as the user, excluding the current user and already matched users
       let query = supabase
         .from("profiles")
         .select("*")
         .neq("id", user.id)
         .eq("move_in_city", moveInCity);
       
-      // Only add the "not in" filter if there are matched/rejected users to exclude
-      if (excludedUserIds.length > 0) {
-        query = query.not('id', 'in', `(${excludedUserIds.join(',')})`);
+      // Only add the "not in" filter if there are matched users to exclude
+      if (matchedUserIds.length > 0) {
+        query = query.not('id', 'in', `(${matchedUserIds.join(',')})`);
       }
       
       const { data, error } = await query;
@@ -116,7 +109,7 @@ export const useOtherProfiles = () => {
         setProfiles(typedProfiles);
         setOriginalProfiles(typedProfiles); // Store the original profiles
       } else {
-        console.log(`No other profiles found moving to ${moveInCity} or all users are already matched/rejected`);
+        console.log(`No other profiles found moving to ${moveInCity} or all users are already matched`);
         setProfiles([]);
         setOriginalProfiles([]);
       }
@@ -132,12 +125,6 @@ export const useOtherProfiles = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Function to clear rejected profiles
-  const clearRejectedProfiles = () => {
-    localStorage.removeItem("rejectedProfiles");
-    fetchOtherProfiles();
   };
 
   // Function to set custom profile ordering
@@ -184,7 +171,6 @@ export const useOtherProfiles = () => {
     isLoading,
     userMoveInCity,
     refetchProfiles: fetchOtherProfiles,
-    clearRejectedProfiles,
     setProfilesOrder,
     resetOrder,
   };
