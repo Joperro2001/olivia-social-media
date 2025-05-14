@@ -20,6 +20,7 @@ const ChecklistList = () => {
   const [loading, setLoading] = useState(true);
   const { syncLocalChecklistToDatabase } = useChecklist();
   const [showDefaultChecklist, setShowDefaultChecklist] = useState(false);
+  const [isCreatingChecklist, setIsCreatingChecklist] = useState(false);
   
   const loadChecklist = async () => {
     if (!user) {
@@ -90,6 +91,7 @@ const ChecklistList = () => {
     
     try {
       setLoading(true);
+      setIsCreatingChecklist(true);
       
       // Create default checklist items
       const defaultItems = [
@@ -128,7 +130,7 @@ const ChecklistList = () => {
         { 
           id: crypto.randomUUID(),
           description: "Purchase international SIM card",
-          category: "SIM card",
+          category: "SIM Card",
           is_checked: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -136,7 +138,7 @@ const ChecklistList = () => {
         { 
           id: crypto.randomUUID(),
           description: "Research local mobile providers",
-          category: "SIM card",
+          category: "SIM Card",
           is_checked: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -215,6 +217,7 @@ const ChecklistList = () => {
       
       if (newChecklist) {
         setChecklist(newChecklist);
+        setShowDefaultChecklist(false);
         toast({
           title: "Checklist Created",
           description: "Your relocation checklist has been created successfully"
@@ -231,6 +234,7 @@ const ChecklistList = () => {
       });
     } finally {
       setLoading(false);
+      setIsCreatingChecklist(false);
     }
   };
   
@@ -240,82 +244,57 @@ const ChecklistList = () => {
   };
   
   if (loading) {
-    return <LoadingSpinner message="Loading your checklist..." />;
+    return <LoadingSpinner message={isCreatingChecklist ? "Creating your checklist..." : "Loading your checklist..."} />;
   }
   
-  // If we have a checklist or should show the default one
+  // If we have a checklist, show it
   if (checklist) {
     return <ChecklistDetail checklist={checklist} onDeleted={handleDeletedChecklist} />;
-  } else if (showDefaultChecklist) {
+  } 
+  
+  // If showDefaultChecklist is true but we don't have a checklist yet, 
+  // show the default checklist creation screen without the empty state
+  if (showDefaultChecklist) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-primary/10 hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <FileCheck className="h-5 w-5 text-primary" />
-              <CardTitle>Your Relocation Checklist</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">Create your personalized document checklist:</p>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {["Visa", "Health Insurance", "SIM Card", "University Documents", "Housing", "Bank Account"].map((category) => (
-                <div 
-                  key={category} 
-                  className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
-                >
-                  <div className="w-full h-16 flex items-center justify-center mb-2">
-                    <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                      <Plus className="h-5 w-5 text-primary/60" />
-                    </div>
+      <Card className="border-primary/10 hover:shadow-md transition-shadow">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <FileCheck className="h-5 w-5 text-primary" />
+            <CardTitle>Your Relocation Checklist</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">Create your personalized document checklist:</p>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {["Visa", "Health Insurance", "SIM Card", "Incoming University Documents", "Home University Documents", "Housing", "Bank Account"].map((category) => (
+              <div 
+                key={category} 
+                className="border rounded-lg p-3 bg-white flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer"
+              >
+                <div className="w-full h-16 flex items-center justify-center mb-2">
+                  <div className="h-10 w-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
+                    <Plus className="h-5 w-5 text-primary/60" />
                   </div>
-                  <p className="text-sm font-medium">{category}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Required documents</p>
                 </div>
-              ))}
-            </div>
-            
-            <Button 
-              className="w-full mt-4" 
-              onClick={handleCreateDefaultChecklist}
-            >
-              Create My Checklist
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-primary/10 hover:shadow-md transition-shadow">
-          <AspectRatio ratio={16/9} className="bg-muted">
-            <img 
-              src="https://images.unsplash.com/photo-1579953891587-4dbae8ec814f?auto=format&fit=crop&w=600&h=400&q=80" 
-              alt="Passport and documents" 
-              className="rounded-t-lg object-cover w-full h-full"
-            />
-          </AspectRatio>
-          <CardContent className="pt-4">
-            <h3 className="font-semibold text-lg mb-2">Why a Document Checklist?</h3>
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
-                <span className="text-sm">Keep track of essential documents</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
-                <span className="text-sm">Never miss application deadlines</span>
-              </li>
-              <li className="flex items-start">
-                <Check className="h-4 w-4 text-primary mr-2 mt-0.5" />
-                <span className="text-sm">Ensure a smooth transition to your new city</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+                <p className="text-sm font-medium">{category}</p>
+                <p className="text-xs text-muted-foreground mt-1">Required documents</p>
+              </div>
+            ))}
+          </div>
+          
+          <Button 
+            className="w-full mt-4" 
+            onClick={handleCreateDefaultChecklist}
+          >
+            Create My Checklist
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
   
-  // Default empty state - Updated with grid layout
+  // Default empty state - show both cards
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card className="border-primary/10 hover:shadow-md transition-shadow">
