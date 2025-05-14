@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { ArrowsUpFromLine, Package, Map, Sparkles, Eye } from "lucide-react";
+import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -75,7 +75,6 @@ const CityPage: React.FC = () => {
                 Olivia will build your personalized moving checklist: visa requirements, SIM cards, health insurance, local apps, housing tips, and exactly what to pack.
               </p>
               <Button className="w-full" variant="secondary" onClick={() => navigate("/my-city-packer")}>
-                <Eye className="h-4 w-4 mr-1" />
                 My Checklist
               </Button>
             </CardContent>
