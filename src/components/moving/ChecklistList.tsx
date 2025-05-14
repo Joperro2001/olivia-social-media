@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,30 @@ const ChecklistList = () => {
   const [showDefaultChecklist, setShowDefaultChecklist] = useState(false);
   const [isCreatingChecklist, setIsCreatingChecklist] = useState(false);
   const isMobile = useIsMobile();
+  
+  // Group items by category and count completion (if we have a checklist)
+  const groupedCategories: {
+    [key: string]: {
+      total: number;
+      completed: number;
+    };
+  } = {};
+  
+  if (checklist?.checklist_data?.items) {
+    checklist.checklist_data.items.forEach(item => {
+      const category = item.category || "General";
+      if (!groupedCategories[category]) {
+        groupedCategories[category] = {
+          total: 0,
+          completed: 0
+        };
+      }
+      groupedCategories[category].total += 1;
+      if (item.is_checked) {
+        groupedCategories[category].completed += 1;
+      }
+    });
+  }
   
   const loadChecklist = async () => {
     if (!user) {
@@ -258,30 +281,6 @@ const ChecklistList = () => {
     const bottomCategories = checklist ? 
       Object.keys(groupedCategories).filter(cat => !topCategories.includes(cat)).slice(0, 3) :
       ["Incoming University Documents", "Home University Documents", "Bank Account"];
-    
-    // Group items by category and count completion (if we have a checklist)
-    const groupedCategories: {
-      [key: string]: {
-        total: number;
-        completed: number;
-      };
-    } = {};
-    
-    if (checklist?.checklist_data?.items) {
-      checklist.checklist_data.items.forEach(item => {
-        const category = item.category || "General";
-        if (!groupedCategories[category]) {
-          groupedCategories[category] = {
-            total: 0,
-            completed: 0
-          };
-        }
-        groupedCategories[category].total += 1;
-        if (item.is_checked) {
-          groupedCategories[category].completed += 1;
-        }
-      });
-    }
     
     return (
       <Card className="border-primary/10 hover:shadow-md transition-shadow animate-fade-in w-full">
