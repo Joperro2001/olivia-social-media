@@ -4,7 +4,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Flag, Globe, University, CalendarClock, MapPin, Search, X, Maximize } from "lucide-react";
 
@@ -32,11 +31,6 @@ const UserHeader: React.FC<UserHeaderProps> = ({
     }
   };
 
-  const interests = profile?.university ? [profile.university] : [];
-  if (profile?.nationality) {
-    interests.push(profile.nationality);
-  }
-  
   return (
     <div className="flex flex-col items-center mt-2">
       <motion.div
@@ -98,153 +92,88 @@ const UserHeader: React.FC<UserHeaderProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Profile Card Preview Dialog */}
+      {/* Profile Card Preview Dialog - updated to look like the reference image */}
       <Dialog open={showProfileCard} onOpenChange={setShowProfileCard}>
-        <DialogContent className="p-0 max-w-md mx-auto w-full rounded-lg overflow-hidden h-[80vh] sm:h-[70vh]">
-          <div className="w-full h-full rounded-lg overflow-hidden relative shadow-xl flex flex-col">
-            <div className="h-1/3 relative">
-              <div 
-                className="absolute inset-0 bg-cover bg-center" 
-                style={{ 
-                  backgroundImage: profile?.avatar_url 
-                    ? `url(${profile.avatar_url})` 
-                    : "url(https://api.dicebear.com/7.x/thumbs/svg?seed=user)" 
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
-                
-                {/* Add fullscreen button */}
-                <button 
-                  onClick={() => {
-                    setShowProfileCard(false);
-                    setShowFullScreenImage(true);
-                  }}
-                  className="absolute top-4 right-4 bg-black/40 p-2 rounded-full text-white hover:bg-black/60 transition-colors"
-                >
-                  <Maximize className="h-5 w-5" />
+        <DialogContent className="p-0 max-w-md mx-auto w-full rounded-xl overflow-hidden h-[80vh] sm:h-[70vh]">
+          <div className="w-full h-full rounded-xl overflow-hidden relative">
+            {/* Full screen background image */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center h-full w-full"
+              style={{ 
+                backgroundImage: profile?.avatar_url 
+                  ? `url(${profile.avatar_url})` 
+                  : "url(https://api.dicebear.com/7.x/thumbs/svg?seed=user)" 
+              }}
+            />
+            
+            {/* Close button */}
+            <button 
+              onClick={() => setShowProfileCard(false)}
+              className="absolute top-4 right-4 z-30 bg-white/20 backdrop-blur-sm p-2 rounded-full text-white hover:bg-white/30 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            {/* Fullscreen button */}
+            <button 
+              onClick={() => {
+                setShowProfileCard(false);
+                setShowFullScreenImage(true);
+              }}
+              className="absolute top-4 left-4 z-30 bg-white/20 backdrop-blur-sm p-2 rounded-full text-white hover:bg-white/30 transition-colors"
+            >
+              <Maximize className="h-5 w-5" />
+            </button>
+
+            {/* Bottom info card with gradient overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
+              {/* User name and age */}
+              <div className="mb-2">
+                <h2 className="text-3xl font-bold text-white">{userName} <span className="text-2xl">{userAge}</span></h2>
+              </div>
+              
+              {/* Location */}
+              {profile?.current_city && (
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin className="h-4 w-4 text-white" />
+                  <p className="text-white/90 text-sm">{profile.current_city}</p>
+                </div>
+              )}
+              
+              {/* Badges/Tags/Interests */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {profile?.nationality && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-none">
+                    {profile.nationality}
+                  </Badge>
+                )}
+                {profile?.university && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-none">
+                    {profile.university}
+                  </Badge>
+                )}
+                {profile?.interests && profile.interests.map((interest, idx) => (
+                  <Badge key={idx} variant="secondary" className="bg-white/20 text-white border-none">
+                    {interest}
+                  </Badge>
+                ))}
+              </div>
+              
+              {/* Action buttons */}
+              <div className="flex justify-center gap-4 mt-6">
+                <button className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <X className="h-6 w-6 text-red-500" />
+                </button>
+                <button className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="#FF5757" stroke="#FF5757" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
               </div>
-              
-              <div className="absolute bottom-4 left-4 right-4 text-white z-10">
-                <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold">{userName || "Anonymous"}</h2>
-                  <span className="text-xl">{userAge || "?"}</span>
-                </div>
-              </div>
             </div>
-
-            <div className="flex-grow overflow-y-auto p-5 bg-white">
-              {/* Bio section */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Bio</h3>
-                <p className="text-gray-700">{profile?.about_me || "No bio available"}</p>
-              </div>
-              
-              {/* Location & University */}
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <MapPin className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Current city</p>
-                    <p className="font-medium">{profile?.current_city || "Not specified"}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Globe className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Nationality</p>
-                    <p className="font-medium">{profile?.nationality || "Not specified"}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <University className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">University</p>
-                    <p className="font-medium">{profile?.university || "Not specified"}</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Relocation info */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Relocation</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Flag className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Moving to</p>
-                      <p className="font-medium">{profile?.move_in_city || "Not specified"}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <CalendarClock className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">When</p>
-                      <p className="font-medium">{profile?.relocation_timeframe || "Not specified"}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Search className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Looking for</p>
-                      <div className="flex gap-2 mt-1 flex-wrap">
-                        {profile?.relocation_interests && profile.relocation_interests.length > 0 ? (
-                          profile.relocation_interests.map((interest, index) => (
-                            <Badge 
-                              key={index}
-                              variant="secondary" 
-                              className="bg-lavender-light text-primary-dark"
-                            >
-                              {interest}
-                            </Badge>
-                          ))
-                        ) : (
-                          <span className="text-sm text-gray-500">Not specified</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Interests */}
-              {profile?.interests ? (
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Interests</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.interests.map((tag, index) => (
-                      <Badge 
-                        key={index} 
-                        className="bg-primary/10 text-primary border border-primary/20"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1 text-xs font-semibold shadow">
-              <span>Preview mode</span>
-            </div>
+            
+            {/* Gradient overlay for better text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10" />
           </div>
         </DialogContent>
       </Dialog>
