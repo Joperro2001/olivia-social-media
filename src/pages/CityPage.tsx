@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+
 const CityPage: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -17,13 +17,16 @@ const CityPage: React.FC = () => {
     const savedChecklist = localStorage.getItem("cityPackerData");
     setHasChecklist(!!savedChecklist);
   }, []);
+
   const handleChatRedirect = (message: string) => {
     // Store the message in session storage so it can be picked up by the chat page
     sessionStorage.setItem("autoSendMessage", message);
-    // Navigate to the chat page
-    navigate("/");
+    // Navigate directly to the city match page instead of chat
+    navigate("/my-city-match");
   };
-  return <div className="flex flex-col h-screen bg-[#FDF5EF]">
+
+  return (
+    <div className="flex flex-col h-screen bg-[#FDF5EF]">
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl font-bold">City</h1>
         <div className="flex items-center gap-2">
@@ -100,6 +103,8 @@ const CityPage: React.FC = () => {
           </Card>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default CityPage;
