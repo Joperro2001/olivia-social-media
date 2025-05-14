@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { ArrowsUpFromLine, Package, Map, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -87,10 +86,7 @@ const CityPage: React.FC = () => {
               <CardDescription className="text-base italic">
                 "I've just arrived. Help me settle in!"
               </CardDescription>
-              <Button variant="outline" size={isMobile ? "sm" : "default"} className={`flex items-center gap-1 absolute ${isMobile ? 'top-2 right-3' : 'top-3 right-4'} bg-accent/10 hover:bg-accent/20 text-accent-dark border-accent/30`} onClick={() => navigate("/my-city-explorer")}>
-                <Map className="h-4 w-4" />
-                {isMobile ? "View" : "My Guide"}
-              </Button>
+              
             </CardHeader>
             <CardContent className="space-y-4">
               <p>
