@@ -94,7 +94,7 @@ const CityPage: React.FC = () => {
                 Get Olivia's curated local guides, event suggestions, friend-finder features, must-know tips, and city-specific hacks to feel at home fast.
               </p>
               <Button className="w-full" variant="accent" onClick={() => navigate("/my-city-explorer")}>
-                Explore My City
+                My City
               </Button>
             </CardContent>
           </Card>
