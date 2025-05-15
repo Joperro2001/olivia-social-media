@@ -2,13 +2,21 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 import ChecklistList from "@/components/moving/ChecklistList";
 import { Spinner } from "@/components/ui/spinner";
 import { Suspense } from "react";
 
 const MyCityPackerPage: React.FC = () => {
   const navigate = useNavigate();
+  
+  const handleChatRedirect = () => {
+    // Store the message in session storage so it can be picked up by the chat page
+    sessionStorage.setItem("autoSendMessage", "Create my relocation document checklist");
+    sessionStorage.setItem("showDefaultChecklist", "true");
+    // Navigate to the chat page
+    navigate("/");
+  };
   
   return (
     <div className="flex flex-col h-screen bg-[#FDF5EF]">
@@ -38,6 +46,19 @@ const MyCityPackerPage: React.FC = () => {
         }>
           <ChecklistList />
         </Suspense>
+      </div>
+
+      {/* Floating Chat with Olivia Button */}
+      <div className="fixed bottom-6 right-6 z-10">
+        <Button
+          onClick={handleChatRedirect}
+          size="lg"
+          className="rounded-full shadow-lg flex items-center gap-2 bg-[#9b87f5] hover:bg-[#7E69AB]"
+          aria-label="Chat with Olivia about creating a checklist"
+        >
+          <MessageCircle className="h-5 w-5" />
+          <span>Chat with Olivia</span>
+        </Button>
       </div>
     </div>
   );
