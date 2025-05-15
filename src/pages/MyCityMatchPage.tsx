@@ -20,7 +20,7 @@ const MyCityMatchPage: React.FC = () => {
       setLoading(true);
       try {
         // Try to get city match from Supabase first
-        const cityMatchData = await getUserCityMatch();
+        const cityMatchData = await getUserCityMatch('anonymous');
         
         if (cityMatchData?.city) {
           setMatchedCity(cityMatchData.city);
@@ -75,7 +75,7 @@ const MyCityMatchPage: React.FC = () => {
     setLoading(true);
     try {
       // Clear the saved result from Supabase and localStorage
-      await clearCityMatch();
+      await clearCityMatch('anonymous');
       setMatchedCity(null);
       setMatchReason(null);
       toast({

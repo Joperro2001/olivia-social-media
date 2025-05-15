@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
@@ -6,7 +5,7 @@ import { sendChatMessage, testApiConnection } from "@/utils/apiService";
 import { saveChecklistToLocalStorage } from "@/utils/checklistUtils";
 import { toast } from "@/hooks/use-toast";
 import { getFallbackResponse, createFallbackMessage } from "@/utils/fallbackMessages";
-import { saveCityMatch } from "@/services/cityMatchService";
+import { saveCityMatch, SaveCityMatchParams } from "@/services/cityMatchService";
 
 interface Message {
   id: string;
@@ -208,11 +207,13 @@ export function useOliviaChat() {
       if (cityMatchData) {
         console.log("City match found:", cityMatchData);
         // Save the city match to localStorage and Supabase
-        saveCityMatch({
+        const matchParams: SaveCityMatchParams = {
           city: cityMatchData.city,
           reason: cityMatchData.reason,
           matchData: { reason: cityMatchData.reason }
-        });
+        };
+        
+        saveCityMatch(matchParams);
         
         // Reset the flow
         inCityMatchFlow.current = false;

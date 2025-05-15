@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { saveCityMatch } from "@/services/cityMatchService";
+import { saveCityMatch, SaveCityMatchParams } from "@/services/cityMatchService";
 
 interface CityMatchQuestionnaireProps {
   onProgress: (percent: number) => void;
@@ -120,11 +120,13 @@ const CityMatchQuestionnaire: React.FC<CityMatchQuestionnaireProps> = ({ onProgr
       }
       
       try {
-        // Save to Supabase
-        await saveCityMatch({ 
-          city: matchedCity, 
-          matchData: newAnswers 
-        });
+        // Save to Supabase with updated function signature
+        const matchParams: SaveCityMatchParams = {
+          city: matchedCity,
+          matchData: newAnswers
+        };
+        
+        await saveCityMatch(matchParams);
         
         // Notify parent component
         onComplete(matchedCity);

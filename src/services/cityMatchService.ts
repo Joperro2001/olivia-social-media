@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +26,14 @@ export interface CityMatchReturn {
   user_id?: string;
 }
 
+// Define parameter interface for saving city matches
+export interface SaveCityMatchParams {
+  userId?: string;
+  city: string;
+  reason?: string;
+  matchData?: CityMatchData;
+}
+
 const saveCityMatchToLocalStorage = (match: CityMatchReturn) => {
   localStorage.setItem('city_match', JSON.stringify(match));
 };
@@ -44,7 +53,7 @@ const parseCityMatch = (data: CityMatchResponse): CityMatchReturn => {
   
   return {
     city: data.city,
-    matchData: matchData as CityMatchData,
+    matchData: matchData,
     created_at: data.created_at,
     id: data.id,
     updated_at: data.updated_at,
@@ -53,19 +62,41 @@ const parseCityMatch = (data: CityMatchResponse): CityMatchReturn => {
 };
 
 export const saveCityMatch = async (
-  userId: string,
-  city: string,
-  matchReason: string
+  userIdOrParams: string | SaveCityMatchParams,
+  city?: string,
+  matchReason?: string
 ): Promise<CityMatchReturn | null> => {
   try {
+    let userId: string;
+    let cityValue: string;
+    let matchData: CityMatchData;
+
+    // Handle both function signatures
+    if (typeof userIdOrParams === 'string') {
+      // Original signature: userId, city, matchReason
+      userId = userIdOrParams;
+      cityValue = city || '';
+      matchData = { reason: matchReason || '' };
+    } else {
+      // New signature: { userId, city, reason, matchData }
+      const params = userIdOrParams;
+      userId = params.userId || 'anonymous';
+      cityValue = params.city;
+      
+      // Use either the provided matchData or create one from reason
+      if (params.matchData) {
+        matchData = params.matchData;
+      } else {
+        matchData = { reason: params.reason || '' };
+      }
+    }
+
     // Check if a match already exists for this user
     const { data: existingMatch, error: fetchError } = await supabase
       .from('city_matches')
       .select('*')
       .eq('user_id', userId)
       .maybeSingle();
-
-    const matchData = { reason: matchReason };
 
     if (fetchError) {
       console.error('Error fetching city match:', fetchError);
@@ -79,7 +110,7 @@ export const saveCityMatch = async (
       const { data, error } = await supabase
         .from('city_matches')
         .update({
-          city,
+          city: cityValue,
           match_data: matchData
         })
         .eq('id', existingMatch.id)
@@ -98,7 +129,7 @@ export const saveCityMatch = async (
         .from('city_matches')
         .insert({
           user_id: userId,
-          city,
+          city: cityValue,
           match_data: matchData
         })
         .select()
@@ -155,5 +186,34 @@ export const getCityMatch = async (userId: string): Promise<CityMatchReturn | nu
   } catch (error) {
     console.error('Error getting city match:', error);
     return null;
+  }
+};
+
+// Function alias for better naming in components
+export const getUserCityMatch = getCityMatch;
+
+// Clear city match from both localStorage and database
+export const clearCityMatch = async (userId?: string): Promise<boolean> => {
+  try {
+    // Clear from localStorage
+    localStorage.removeItem('city_match');
+    
+    // If userId is provided, also remove from database
+    if (userId) {
+      const { error } = await supabase
+        .from('city_matches')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Error deleting city match from database:', error);
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error clearing city match:', error);
+    return false;
   }
 };
