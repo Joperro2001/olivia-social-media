@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,13 +15,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { saveCityMatch } from "@/services/cityMatchService";
-import Confetti from 'react-confetti'
-import { useWindowSize } from 'react-use'
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
 
 const CityMatchQuestionnaire = () => {
   const [open, setOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState("");
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState<boolean>(false);  // Changed to boolean for CheckedState
   const [reasonBehindMove, setReasonBehindMove] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +29,7 @@ const CityMatchQuestionnaire = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showConfetti, setShowConfetti] = useState(false);
-  const { width, height } = useWindowSize()
+  const { width, height } = useWindowSize();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +39,7 @@ const CityMatchQuestionnaire = () => {
       const result = await saveCityMatch({
         userId: user?.id,
         city: selectedCity,
-        reason: reason || reasonBehindMove
+        reason: reason ? "I agree to the terms" : reasonBehindMove // Convert boolean to string
       });
       
       if (result) {
@@ -114,9 +115,7 @@ const CityMatchQuestionnaire = () => {
               <Checkbox
                 id="terms"
                 checked={reason}
-                onCheckedChange={(checked) =>
-                  setReason(checked ? "I agree to the terms" : "")
-                }
+                onCheckedChange={(checked) => setReason(!!checked)} // Convert to boolean
               />
             </Label>
             <div className="col-span-3">

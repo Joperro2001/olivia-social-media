@@ -6,7 +6,7 @@ import TypingIndicator from "@/components/olivia/TypingIndicator";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_AVATAR } from "@/constants/chatConstants";
 import OliviaSuggestions from "@/components/olivia/OliviaSuggestions";
-import { useOliviaChat } from "@/hooks/useOliviaChat";
+import useOliviaChat from "@/hooks/useOliviaChat"; // Fixed this import
 import ChatError from "@/components/chat/ChatError";
 import { testApiConnection } from "@/utils/apiService";
 import { toast } from "@/hooks/use-toast";
