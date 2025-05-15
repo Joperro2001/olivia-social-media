@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
@@ -7,21 +6,24 @@ import { saveCityMatch } from "@/services/cityMatchService";
 
 interface ChatMessage {
   id: string;
-  text: string;
+  content: string; // Changed from text to content to match OliviaChat.tsx
   isUser: boolean;
+  timestamp: Date; // Added timestamp to match OliviaChat.tsx
 }
 
 const useOliviaChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false); // Added isTyping state
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const addMessage = (text: string, isUser: boolean) => {
+  const addMessage = (content: string, isUser: boolean) => {
     const newMessage = {
       id: uuidv4(),
-      text: text,
-      isUser: isUser,
+      content, // Changed from text to content
+      isUser,
+      timestamp: new Date(), // Added timestamp
     };
     setMessages(prevMessages => [...prevMessages, newMessage]);
   };
@@ -29,6 +31,7 @@ const useOliviaChat = () => {
   const sendMessage = async (messageText: string) => {
     addMessage(messageText, true);
     setIsLoading(true);
+    setIsTyping(true); // Set typing indicator
 
     try {
       // Simulate an API call to get Olivia's response
@@ -67,7 +70,29 @@ const useOliviaChat = () => {
       addMessage("I'm having trouble connecting. Please try again later.", false);
     } finally {
       setIsLoading(false);
+      setIsTyping(false); // Reset typing indicator
     }
+  };
+
+  // Add aliases for the OliviaChat component
+  const handleSendMessage = sendMessage;
+  const handleCardAction = (action: string) => sendMessage(action);
+  
+  const retryConnection = async (): Promise<boolean> => {
+    // Simulate retrying connection
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return true;
+  };
+  
+  const clearChatHistory = () => {
+    // Keep the initial welcome message
+    const welcomeMessage = messages.length > 0 ? messages[0] : {
+      id: uuidv4(),
+      content: "Hi, I'm Olivia! How can I help you with your relocation journey today?",
+      isUser: false,
+      timestamp: new Date(),
+    };
+    setMessages([welcomeMessage]);
   };
 
   const getOliviaResponse = async (message: string): Promise<string> => {
@@ -105,7 +130,12 @@ const useOliviaChat = () => {
   return {
     messages,
     isLoading,
+    isTyping,
     sendMessage,
+    handleSendMessage,
+    handleCardAction,
+    retryConnection,
+    clearChatHistory
   };
 };
 
