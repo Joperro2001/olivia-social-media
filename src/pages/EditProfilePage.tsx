@@ -83,7 +83,9 @@ const EditProfilePage: React.FC = () => {
     }
     
     // Set initially selected interests
-    if (interests && interests.length > 0) {
+    if (profile?.interests && profile.interests.length > 0) {
+      setSelectedInterests(profile.interests);
+    } else if (interests && interests.length > 0) {
       setSelectedInterests(interests.map(interest => interest.interest));
     }
   }, [profile, interests, form]);
@@ -303,8 +305,9 @@ const EditProfilePage: React.FC = () => {
                         <FormControl>
                           <Input 
                             type="number"
+                            placeholder="Your age"
                             {...field}
-                            onChange={(e) => {
+                            onChange={e => {
                               const value = e.target.value;
                               field.onChange(value === "" ? "" : Number(value));
                             }}

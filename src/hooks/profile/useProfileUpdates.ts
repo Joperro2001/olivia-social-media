@@ -26,12 +26,14 @@ export const useProfileUpdates = (
       console.log("Updating profile with data:", profileData);
 
       // Process data before sending to database
-      // Ensure age is sent as a number
       const processedData = {
         ...profileData,
-        age: profileData.age ? Number(profileData.age) : profile?.age,
+        // Always ensure age is a number
+        age: profileData.age !== undefined ? Number(profileData.age) : profile?.age,
         updated_at: new Date().toISOString(),
       };
+
+      console.log("Processed data to send to Supabase:", processedData);
 
       const { error, data } = await supabase
         .from("profiles")
@@ -47,7 +49,18 @@ export const useProfileUpdates = (
       console.log("Profile updated successfully:", data);
       
       // Update local state with the updated profile
-      setProfile((prev: Profile | null) => prev ? { ...prev, ...processedData } : null);
+      setProfile((prev: Profile | null) => {
+        if (!prev) return null;
+        
+        const updatedProfile = { ...prev, ...processedData };
+        console.log("Updated local profile state:", updatedProfile);
+        return updatedProfile;
+      });
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
       
       return true;
     } catch (error: any) {
