@@ -12,6 +12,13 @@ export const useOtherProfiles = () => {
   const { toast } = useToast();
   const [userMoveInCity, setUserMoveInCity] = useState<string | null>(null);
   const [originalProfiles, setOriginalProfiles] = useState<Profile[]>([]);
+  const [filterByCity, setFilterByCity] = useState<boolean>(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 10,
+    hasMore: true
+  });
+  const [viewedProfiles, setViewedProfiles] = useState<Set<string>>(new Set());
 
   const fetchCurrentUserProfile = async () => {
     if (!user) return null;
@@ -30,9 +37,18 @@ export const useOtherProfiles = () => {
     return data?.move_in_city || null;
   };
 
-  const fetchOtherProfiles = async () => {
+  const fetchOtherProfiles = async (resetPage = true) => {
     try {
       setIsLoading(true);
+      
+      // If resetting page, reset pagination state
+      if (resetPage) {
+        setPagination({
+          page: 1,
+          pageSize: 10,
+          hasMore: true
+        });
+      }
       
       // First, get the current user's move_in_city or set a default city
       let moveInCity = "Berlin"; // Default to Berlin
@@ -45,10 +61,10 @@ export const useOtherProfiles = () => {
       }
       
       setUserMoveInCity(moveInCity);
-      console.log(`Using city: ${moveInCity} for profile matching`);
+      console.log(`User's city: ${moveInCity}`);
+      console.log(`Filter by city enabled: ${filterByCity}`);
       
-      // Get all profiles moving to the specified city
-      // For logged-out users, don't exclude based on matches
+      // Get all profiles - no city filtering initially
       let query = supabase
         .from("profiles")
         .select("*");
@@ -85,12 +101,18 @@ export const useOtherProfiles = () => {
         }
       }
       
-      // Only filter by move_in_city if specified
-      if (moveInCity) {
+      // Only filter by move_in_city if filterByCity is enabled
+      if (filterByCity && moveInCity) {
+        console.log(`Filtering by move_in_city: ${moveInCity}`);
         query = query.eq("move_in_city", moveInCity);
       }
       
-      const { data, error } = await query;
+      // Apply pagination with range
+      const from = (pagination.page - 1) * pagination.pageSize;
+      const to = from + pagination.pageSize - 1;
+      query = query.range(from, to);
+      
+      const { data, error, count } = await query;
       
       if (error) {
         console.error("Supabase error:", error);
@@ -108,36 +130,59 @@ export const useOtherProfiles = () => {
           relocation_status: profile.relocation_status as Profile["relocation_status"]
         }));
         
-        setProfiles(typedProfiles);
-        setOriginalProfiles(typedProfiles); // Store the original profiles
-      } else {
-        // If no profiles found, use mockData as fallback
-        console.log(`No profiles found moving to ${moveInCity}, using mock data instead`);
+        // Check if we're loading more pages or resetting
+        if (resetPage) {
+          setProfiles(typedProfiles);
+          setOriginalProfiles(typedProfiles);
+        } else {
+          // Append to existing profiles, avoiding duplicates
+          const existingIds = new Set(profiles.map(p => p.id));
+          const newProfiles = [...profiles, ...typedProfiles.filter(p => !existingIds.has(p.id))];
+          setProfiles(newProfiles);
+          setOriginalProfiles(newProfiles);
+        }
         
-        // Import mock data from bestiesMockData
-        import("@/data/bestiesMockData").then(({ profiles: mockProfiles }) => {
-          console.log("Using mock profiles:", mockProfiles);
-          
-          // Convert mock data to Profile type
-          const convertedProfiles: Profile[] = mockProfiles.map((mock, index) => ({
-            id: mock.id,
-            full_name: mock.name,
-            age: mock.age,
-            current_city: mock.location.split(",")[1]?.trim() || "",
-            move_in_city: "Berlin", // Assume all mock profiles are moving to Berlin
-            about_me: mock.bio,
-            avatar_url: mock.image,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            nationality: "",
-            university: "",
-            relocation_status: "planning",
-            relocation_interests: mock.tags
-          }));
-          
-          setProfiles(convertedProfiles);
-          setOriginalProfiles(convertedProfiles);
-        });
+        // Update hasMore flag - if we got fewer than pageSize, there are no more
+        setPagination(prev => ({
+          ...prev,
+          hasMore: data.length >= pagination.pageSize
+        }));
+      } else {
+        // If no profiles found or we've loaded all profiles, use mockData as fallback
+        console.log(`No${filterByCity ? ` more ${moveInCity}` : ''} profiles found${resetPage ? ', using mock data instead' : ''}`);
+        
+        if (resetPage) {
+          // Import mock data from bestiesMockData
+          import("@/data/bestiesMockData").then(({ profiles: mockProfiles }) => {
+            console.log("Using mock profiles:", mockProfiles);
+            
+            // Convert mock data to Profile type
+            const convertedProfiles: Profile[] = mockProfiles.map((mock, index) => ({
+              id: mock.id,
+              full_name: mock.name,
+              age: mock.age,
+              current_city: mock.location.split(",")[1]?.trim() || "",
+              move_in_city: "Berlin", // Assume all mock profiles are moving to Berlin
+              about_me: mock.bio,
+              avatar_url: mock.image,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              nationality: "",
+              university: "",
+              relocation_status: "planning",
+              relocation_interests: mock.tags
+            }));
+            
+            setProfiles(convertedProfiles);
+            setOriginalProfiles(convertedProfiles);
+          });
+        }
+        
+        // No more pages
+        setPagination(prev => ({
+          ...prev,
+          hasMore: false
+        }));
       }
     } catch (error: any) {
       console.error("Error fetching profiles:", error);
@@ -176,6 +221,18 @@ export const useOtherProfiles = () => {
     }
   };
 
+  // Function to load more profiles
+  const loadMoreProfiles = () => {
+    if (!pagination.hasMore || isLoading) return;
+    
+    setPagination(prev => ({
+      ...prev,
+      page: prev.page + 1
+    }));
+    
+    fetchOtherProfiles(false);
+  };
+
   // Function to set custom profile ordering
   const setProfilesOrder = (orderedProfileIds: string[]) => {
     if (!orderedProfileIds || orderedProfileIds.length === 0) return;
@@ -211,6 +268,29 @@ export const useOtherProfiles = () => {
     setProfiles([...originalProfiles]);
   };
 
+  // Toggle city filtering
+  const toggleCityFiltering = (enabled: boolean) => {
+    console.log(`Toggling city filtering: ${enabled}`);
+    setFilterByCity(enabled);
+    // Re-fetch profiles with new filter setting
+    fetchOtherProfiles();
+  };
+  
+  // Mark profile as viewed
+  const markProfileViewed = (profileId: string) => {
+    setViewedProfiles(prev => new Set(prev).add(profileId));
+  };
+  
+  // Get unviewed profiles count
+  const getUnviewedCount = () => {
+    return profiles.filter(p => !viewedProfiles.has(p.id)).length;
+  };
+  
+  // Reset viewed profiles
+  const resetViewedProfiles = () => {
+    setViewedProfiles(new Set());
+  };
+
   useEffect(() => {
     console.log("useOtherProfiles: initializing profile fetch");
     fetchOtherProfiles();
@@ -225,5 +305,13 @@ export const useOtherProfiles = () => {
     refetchProfiles: fetchOtherProfiles,
     setProfilesOrder,
     resetOrder,
+    toggleCityFiltering,
+    filterByCity,
+    loadMoreProfiles,
+    hasMoreProfiles: pagination.hasMore,
+    markProfileViewed,
+    getUnviewedCount,
+    resetViewedProfiles,
+    viewedProfiles
   };
 };

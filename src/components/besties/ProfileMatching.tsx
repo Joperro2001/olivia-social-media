@@ -5,10 +5,18 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useOtherProfiles } from "@/hooks/useOtherProfiles";
 import { Profile } from "@/types/Profile";
-import { Loader, Users, UserPlus, RefreshCw } from "lucide-react";
+import { Loader, Users, UserPlus, RefreshCw, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useRanking } from "@/context/RankingContext";
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from "@/components/ui/pagination";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -18,7 +26,15 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { profiles, isLoading, refetchProfiles } = useOtherProfiles();
+  const { 
+    profiles, 
+    isLoading, 
+    refetchProfiles,
+    loadMoreProfiles,
+    hasMoreProfiles,
+    markProfileViewed,
+    viewedProfiles
+  } = useOtherProfiles();
   const { rankedProfiles, isAIRankingActive } = useRanking();
   
   // Use ranked profiles if AI ranking is active, otherwise use regular profiles
@@ -31,15 +47,33 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     console.log("ProfileMatching component rendered");
     console.log("Current index:", currentIndex);
     console.log("Display profiles count:", displayProfiles.length);
-    console.log("All profiles:", displayProfiles);
-  }, [currentIndex, displayProfiles]);
+    console.log("All profiles:", displayProfiles.map(p => `${p.full_name} (${p.id})`).join(", "));
+    console.log("Viewed profiles:", Array.from(viewedProfiles));
+  }, [currentIndex, displayProfiles, viewedProfiles]);
 
   // Reset current index when profiles change
   useEffect(() => {
-    console.log("Profiles changed, resetting current index");
-    console.log("New profile count:", displayProfiles.length);
-    setCurrentIndex(0);
-  }, [displayProfiles.length, profiles.length, rankedProfiles.length]);
+    if (displayProfiles.length > 0 && currentIndex >= displayProfiles.length) {
+      console.log("Resetting current index because it's out of bounds");
+      setCurrentIndex(0);
+    }
+  }, [displayProfiles.length]);
+
+  // Mark current profile as viewed
+  useEffect(() => {
+    if (displayProfiles.length > 0 && currentIndex < displayProfiles.length) {
+      const currentProfileId = displayProfiles[currentIndex].id;
+      markProfileViewed(currentProfileId);
+    }
+  }, [currentIndex, displayProfiles]);
+
+  // Try to load more profiles if we're approaching the end
+  useEffect(() => {
+    if (hasMoreProfiles && displayProfiles.length - currentIndex < 3) {
+      console.log("Approaching end of profiles list, loading more...");
+      loadMoreProfiles();
+    }
+  }, [currentIndex, displayProfiles.length, hasMoreProfiles]);
 
   const handleSwipeLeft = (id: string) => {
     console.log(`Swiped left on ${id}`);
@@ -47,8 +81,12 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     
     if (currentIndex < displayProfiles.length - 1) {
       setCurrentIndex(prevIndex => prevIndex + 1);
+    } else if (hasMoreProfiles) {
+      // Try to load more profiles
+      loadMoreProfiles();
+      // Stay on the same index, the effect will move forward when profiles load
     } else {
-      // If we're at the last profile, display the "no more profiles" message
+      // If we're at the last profile, show the "no more profiles" message
       console.log("Reached the end of profiles");
     }
   };
@@ -133,6 +171,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     // Move to the next profile
     if (currentIndex < displayProfiles.length - 1) {
       setCurrentIndex(prevIndex => prevIndex + 1);
+    } else if (hasMoreProfiles) {
+      // Try to load more profiles
+      loadMoreProfiles();
+      // Stay on the same index, the effect will move forward when profiles load
     } else {
       // If we're at the last profile, display the "no more profiles" message
       console.log("Reached the end of profiles");
@@ -184,6 +226,12 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
       onSwipeLeft: handleSwipeLeft,
       onSwipeRight: handleSwipeRight
     };
+  };
+
+  const handleJumpToProfile = (index: number) => {
+    if (index >= 0 && index < displayProfiles.length) {
+      setCurrentIndex(index);
+    }
   };
 
   if (isLoading) {
@@ -244,10 +292,100 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4">
       {currentIndex < displayProfiles.length ? (
-        <ProfileCard
-          key={displayProfiles[currentIndex].id}
-          {...mapProfileToCardProps(displayProfiles[currentIndex])}
-        />
+        <>
+          <ProfileCard
+            key={displayProfiles[currentIndex].id}
+            {...mapProfileToCardProps(displayProfiles[currentIndex])}
+          />
+          
+          {displayProfiles.length > 1 && (
+            <div className="mt-4">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => {
+                        if (currentIndex > 0) {
+                          setCurrentIndex(currentIndex - 1);
+                        }
+                      }}
+                      className={currentIndex === 0 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                  
+                  {displayProfiles.length <= 5 ? (
+                    // Show all page numbers if 5 or fewer
+                    displayProfiles.map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink 
+                          onClick={() => handleJumpToProfile(index)}
+                          isActive={currentIndex === index}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))
+                  ) : (
+                    // Show limited page numbers with ellipsis for larger sets
+                    <>
+                      <PaginationItem>
+                        <PaginationLink
+                          onClick={() => handleJumpToProfile(0)}
+                          isActive={currentIndex === 0}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                      
+                      {currentIndex > 2 && (
+                        <PaginationItem>
+                          <PaginationLink>...</PaginationLink>
+                        </PaginationItem>
+                      )}
+                      
+                      {currentIndex > 1 && currentIndex < displayProfiles.length - 2 && (
+                        <PaginationItem>
+                          <PaginationLink
+                            onClick={() => handleJumpToProfile(currentIndex)}
+                            isActive
+                          >
+                            {currentIndex + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )}
+                      
+                      {currentIndex < displayProfiles.length - 3 && (
+                        <PaginationItem>
+                          <PaginationLink>...</PaginationLink>
+                        </PaginationItem>
+                      )}
+                      
+                      <PaginationItem>
+                        <PaginationLink
+                          onClick={() => handleJumpToProfile(displayProfiles.length - 1)}
+                          isActive={currentIndex === displayProfiles.length - 1}
+                        >
+                          {displayProfiles.length}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </>
+                  )}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => {
+                        if (currentIndex < displayProfiles.length - 1) {
+                          setCurrentIndex(currentIndex + 1);
+                        }
+                      }}
+                      className={currentIndex === displayProfiles.length - 1 ? "pointer-events-none opacity-50" : ""}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
       ) : (
         <div className="text-center px-4 py-10">
           <h3 className="text-xl font-semibold mb-2">You've seen all profiles</h3>
