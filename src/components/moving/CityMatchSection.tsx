@@ -71,7 +71,10 @@ const CityMatchSection: React.FC = () => {
         {started && !completed && (
           <>
             <Progress value={progress} className="mb-6" />
-            <CityMatchQuestionnaire />
+            <CityMatchQuestionnaire 
+              onProgress={handleQuizProgress} 
+              onComplete={handleQuizComplete} 
+            />
           </>
         )}
         

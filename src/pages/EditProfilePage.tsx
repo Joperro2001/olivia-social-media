@@ -36,7 +36,7 @@ const EditProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { profile, interests, updateProfile, uploadAvatar, addInterest, removeInterest, isLoading, fetchProfile } = useProfile();
+  const { profile, interests, updateProfile, uploadAvatar, addInterest, removeInterest, isLoading } = useProfile();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -56,20 +56,11 @@ const EditProfilePage: React.FC = () => {
       move_in_city: "",
       about_me: "",
     },
-    mode: "onChange", // This will make validations run on change
   });
-  
-  // Refresh profile data when component mounts
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user, fetchProfile]);
   
   // Load profile data when available
   useEffect(() => {
     if (profile) {
-      console.log("Setting form values with profile data:", profile);
       form.reset({
         full_name: profile.full_name || "",
         age: profile.age || 25,
@@ -145,17 +136,8 @@ const EditProfilePage: React.FC = () => {
     try {
       await uploadAvatar(file);
       setIsImageDialogOpen(false);
-      toast({
-        title: "Profile picture updated",
-        description: "Your profile picture has been successfully updated.",
-      });
     } catch (error) {
       console.error("Error uploading image:", error);
-      toast({
-        title: "Upload failed",
-        description: "There was a problem uploading your image. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsUploading(false);
       // Clear the input so the same file can be selected again
@@ -189,7 +171,6 @@ const EditProfilePage: React.FC = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
-    console.log("Form submitted with data:", data);
     setIsSaving(true);
     try {
       // First update profile
@@ -199,21 +180,11 @@ const EditProfilePage: React.FC = () => {
       const interestsUpdated = await syncInterests();
       
       if (profileUpdated && interestsUpdated) {
-        toast({
-          title: "Profile updated",
-          description: "Your profile has been successfully saved.",
-        });
-        
         // Navigate back to profile page
         navigate("/profile");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving profile:", error);
-      toast({
-        title: "Error updating profile",
-        description: error.message || "There was a problem saving your profile. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSaving(false);
     }
@@ -300,7 +271,7 @@ const EditProfilePage: React.FC = () => {
                       <FormItem>
                         <FormLabel>Age</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || field.value)} />
+                          <Input type="number" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

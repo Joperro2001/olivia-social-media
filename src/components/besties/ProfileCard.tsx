@@ -80,13 +80,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   
   const city = getCity(location);
 
-  // Debug log profile info to help diagnose issues
-  console.log(`Rendering profile card for ${name} (${id}), age: ${age}, location: ${location}`);
-
   return (
     <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center" 
         style={{ backgroundImage: `url(${displayImage})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
@@ -136,7 +133,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         <button 
           onClick={() => onSwipeLeft(id)} 
           className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
-          aria-label="Dislike"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 6L6 18" stroke="#FF4A4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -146,7 +142,6 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         <button 
           onClick={handleSwipeRight} 
           className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110"
-          aria-label="Like"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="url(#heart-gradient)" stroke="url(#heart-gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

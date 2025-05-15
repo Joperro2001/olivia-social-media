@@ -1,224 +1,168 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
-// Define proper interfaces for consistent typing
-export interface CityMatchData {
-  reason?: string;
-  [key: string]: any;
-}
-
-interface CityMatchResponse {
-  city: string;
-  match_data: CityMatchData | null;
-  created_at: string;
-  id: string;
-  updated_at: string;
-  user_id: string;
-}
-
-export interface CityMatchReturn {
-  city: string;
-  matchData: CityMatchData;
-  created_at?: string;
-  id?: string;
-  updated_at?: string;
-  user_id?: string;
-}
-
-// Define parameter interface for saving city matches
-export interface SaveCityMatchParams {
-  userId?: string;
+interface CityMatchData {
   city: string;
   reason?: string;
-  matchData?: CityMatchData;
+  matchData?: Record<string, any>;
 }
 
-const saveCityMatchToLocalStorage = (match: CityMatchReturn) => {
-  localStorage.setItem('city_match', JSON.stringify(match));
-};
-
-const getCityMatchFromLocalStorage = (): CityMatchReturn | null => {
-  const match = localStorage.getItem('city_match');
-  if (match) {
-    return JSON.parse(match);
-  }
-  return null;
-};
-
-// This function parses the database response into the format expected by the UI
-const parseCityMatch = (data: CityMatchResponse): CityMatchReturn => {
-  // If match_data is null, initialize it as an empty object
-  const matchData = data.match_data || {};
-  
-  return {
-    city: data.city,
-    matchData: matchData as CityMatchData, // Explicitly cast to CityMatchData
-    created_at: data.created_at,
-    id: data.id,
-    updated_at: data.updated_at,
-    user_id: data.user_id
-  };
-};
-
-export const saveCityMatch = async (
-  params: SaveCityMatchParams
-): Promise<CityMatchReturn | null> => {
+export async function saveCityMatch(cityMatch: CityMatchData) {
   try {
-    const userId = params.userId || 'anonymous';
-    const cityValue = params.city;
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
     
-    // Use either the provided matchData or create one from reason
-    const matchData: CityMatchData = params.matchData || { reason: params.reason || '' };
-
-    // Check if a match already exists for this user
-    const { data: existingMatch, error: fetchError } = await supabase
-      .from('city_matches')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (fetchError) {
-      console.error('Error fetching city match:', fetchError);
-      return null;
+    if (!user) {
+      throw new Error("User not authenticated");
     }
-
-    let result;
-
-    // If a match exists, update it
-    if (existingMatch) {
-      const { data, error } = await supabase
-        .from('city_matches')
-        .update({
-          city: cityValue,
-          match_data: matchData
-        })
-        .eq('id', existingMatch.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating city match:', error);
-        return null;
-      }
-
-      result = data;
-    } else {
-      // Otherwise, create a new match
-      const { data, error } = await supabase
-        .from('city_matches')
-        .insert({
-          user_id: userId,
-          city: cityValue,
-          match_data: matchData
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating city match:', error);
-        return null;
-      }
-
-      result = data;
-    }
-
-    // Ensure that result.match_data is properly typed as CityMatchData
-    const typedResult: CityMatchResponse = {
-      ...result,
-      match_data: result.match_data as CityMatchData
+    
+    // Prepare match data object, ensuring reason is included if provided
+    const matchData = {
+      ...(cityMatch.matchData || {}),
+      reason: cityMatch.reason || null
     };
-
-    // Parse the result and save to localStorage
-    const parsedMatch = parseCityMatch(typedResult);
-    saveCityMatchToLocalStorage(parsedMatch);
-    return parsedMatch;
+    
+    const { data, error } = await supabase
+      .from('city_matches')
+      .insert({
+        city: cityMatch.city,
+        match_data: matchData,
+        user_id: user.id
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    // Also save to localStorage as a fallback
+    localStorage.setItem("matchedCity", cityMatch.city);
+    if (cityMatch.reason) {
+      localStorage.setItem("matchedCityReason", cityMatch.reason);
+    }
+    
+    return data;
   } catch (error) {
-    console.error('Error saving city match:', error);
+    console.error("Error saving city match:", error);
+    toast({
+      title: "Error",
+      description: "Could not save your city match. Please try again.",
+      variant: "destructive"
+    });
     return null;
   }
-};
+}
 
-// Legacy function signature for backward compatibility
-export const saveCityMatchLegacy = async (
-  userIdOrParams: string,
-  city: string,
-  matchReason?: string
-): Promise<CityMatchReturn | null> => {
-  return saveCityMatch({
-    userId: userIdOrParams,
-    city: city, 
-    reason: matchReason
-  });
-};
+// Define a proper return type for getUserCityMatch
+interface CityMatchReturn {
+  city: string;
+  matchData?: Record<string, any>;
+  // Include database fields if needed
+  id?: string;
+  user_id?: string;
+  match_data?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+}
 
-// Function to get a city match for a user
-export const getCityMatch = async (userId: string): Promise<CityMatchReturn | null> => {
+export async function getUserCityMatch(): Promise<CityMatchReturn | null> {
   try {
-    // Try to get from localStorage first
-    const localMatch = getCityMatchFromLocalStorage();
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
     
-    // If we have a match in localStorage and it matches the current user, use it
-    if (localMatch && localMatch.user_id === userId) {
-      return localMatch;
+    if (!user) {
+      // Return data from localStorage if user is not authenticated
+      const matchedCity = localStorage.getItem("matchedCity");
+      const matchedReason = localStorage.getItem("matchedCityReason");
+      return matchedCity ? { 
+        city: matchedCity,
+        matchData: matchedReason ? { reason: matchedReason } : {} 
+      } : null;
     }
     
-    // Otherwise, fetch from the database
     const { data, error } = await supabase
       .from('city_matches')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
-
-    if (error) {
-      console.error('Error fetching city match:', error);
-      return null;
-    }
-
-    // If we found a match, parse it and save to localStorage
+    
+    if (error) throw error;
+    
+    // Transform the database response to match our expected format
     if (data) {
-      // Ensure data.match_data is properly typed as CityMatchData
-      const typedData: CityMatchResponse = {
+      // Create a standardized return with proper type handling
+      const transformedData: CityMatchReturn = {
         ...data,
-        match_data: data.match_data as CityMatchData
+        // Add matchData for consistent interface
+        matchData: {}
       };
       
-      const parsedMatch = parseCityMatch(typedData);
-      saveCityMatchToLocalStorage(parsedMatch);
-      return parsedMatch;
+      // If match_data exists and is an object, handle reason properly
+      if (data.match_data && typeof data.match_data === 'object') {
+        // Check if reason exists in match_data
+        if ('reason' in data.match_data && data.match_data.reason) {
+          // Add to matchData for consistent access
+          transformedData.matchData = {
+            reason: String(data.match_data.reason)
+          };
+          
+          // Also store in localStorage as backup
+          localStorage.setItem("matchedCity", data.city);
+          localStorage.setItem("matchedCityReason", String(data.match_data.reason));
+        }
+      }
+      
+      return transformedData;
     }
-
+    
     return null;
   } catch (error) {
-    console.error('Error getting city match:', error);
-    return null;
+    console.error("Error fetching city match:", error);
+    // Fallback to localStorage
+    const matchedCity = localStorage.getItem("matchedCity");
+    const matchedReason = localStorage.getItem("matchedCityReason");
+    return matchedCity ? { 
+      city: matchedCity,
+      matchData: matchedReason ? { reason: matchedReason } : {} 
+    } : null;
   }
-};
+}
 
-// Function alias for better naming in components
-export const getUserCityMatch = getCityMatch;
-
-// Clear city match from both localStorage and database
-export const clearCityMatch = async (userId?: string): Promise<boolean> => {
+export async function clearCityMatch() {
   try {
-    // Clear from localStorage
-    localStorage.removeItem('city_match');
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
     
-    // If userId is provided, also remove from database
-    if (userId) {
-      const { error } = await supabase
-        .from('city_matches')
-        .delete()
-        .eq('user_id', userId);
-      
-      if (error) {
-        console.error('Error deleting city match from database:', error);
-        return false;
-      }
+    if (!user) {
+      // Just clear localStorage if user is not authenticated
+      localStorage.removeItem("matchedCity");
+      localStorage.removeItem("matchedCityReason");
+      return true;
     }
+    
+    const { error } = await supabase
+      .from('city_matches')
+      .delete()
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    
+    if (error) throw error;
+    
+    // Clear localStorage too
+    localStorage.removeItem("matchedCity");
+    localStorage.removeItem("matchedCityReason");
     
     return true;
   } catch (error) {
-    console.error('Error clearing city match:', error);
+    console.error("Error clearing city match:", error);
+    toast({
+      title: "Error",
+      description: "Could not clear your city match. Please try again.",
+      variant: "destructive"
+    });
     return false;
   }
-};
+}

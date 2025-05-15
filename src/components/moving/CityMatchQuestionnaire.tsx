@@ -1,160 +1,171 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 import { saveCityMatch } from "@/services/cityMatchService";
-import Confetti from 'react-confetti';
-import { useWindowSize } from 'react-use';
 
-const CityMatchQuestionnaire = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("");
-  const [reason, setReason] = useState<boolean>(false);  // Changed to boolean for CheckedState
-  const [reasonBehindMove, setReasonBehindMove] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [showConfetti, setShowConfetti] = useState(false);
-  const { width, height } = useWindowSize();
+interface CityMatchQuestionnaireProps {
+  onProgress: (percent: number) => void;
+  onComplete: (city: string) => void;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+const questions = [
+  {
+    id: "climate",
+    question: "What type of climate do you prefer?",
+    options: ["Warm and sunny", "Four distinct seasons", "Cool and rainy", "Mild all year"]
+  },
+  {
+    id: "pace",
+    question: "What pace of life are you looking for?",
+    options: ["Fast-paced metropolis", "Medium-sized city", "Laid-back small city", "Quiet town"]
+  },
+  {
+    id: "activities",
+    question: "What activities are most important to you?",
+    options: ["Arts & Culture", "Outdoor adventures", "Nightlife & Entertainment", "Food & Dining"]
+  },
+  {
+    id: "cost",
+    question: "What's your budget preference?",
+    options: ["Affordable living", "Moderate cost", "Willing to pay premium for quality of life", "Money is no object"]
+  },
+  {
+    id: "language",
+    question: "What language preference do you have?",
+    options: ["English only", "Spanish speaking", "French speaking", "Open to learning any language"]
+  }
+];
+
+// This is a simplified matching algorithm
+// In a real app, this would be more sophisticated
+const cityMapping = {
+  "Warm and sunny": {
+    "Fast-paced metropolis": {
+      "Arts & Culture": {
+        "Willing to pay premium for quality of life": {
+          "English only": "New York",
+          "Spanish speaking": "Barcelona",
+          "French speaking": "Paris", 
+          "Open to learning any language": "Tokyo"
+        },
+        "Money is no object": "London",
+        "Moderate cost": "Berlin",
+        "Affordable living": "Bangkok"
+      },
+      "Outdoor adventures": "Sydney",
+      "Nightlife & Entertainment": "Miami",
+      "Food & Dining": "Singapore"
+    },
+    "Medium-sized city": "Austin",
+    "Laid-back small city": "Lisbon",
+    "Quiet town": "Valencia"
+  },
+  "Four distinct seasons": "Berlin",
+  "Cool and rainy": "London",
+  "Mild all year": "Barcelona"
+};
+
+const CityMatchQuestionnaire: React.FC<CityMatchQuestionnaireProps> = ({ onProgress, onComplete }) => {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAnswer = async (answer: string) => {
+    const question = questions[currentQuestionIndex];
     
-    try {
-      const result = await saveCityMatch({
-        userId: user?.id,
-        city: selectedCity,
-        reason: reason ? "I agree to the terms" : reasonBehindMove // Convert boolean to string
-      });
+    const newAnswers = {
+      ...answers,
+      [question.id]: answer
+    };
+    setAnswers(newAnswers);
+    
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      onProgress(((currentQuestionIndex + 1) / questions.length) * 100);
+    } else {
+      setIsSubmitting(true);
+      onProgress(100);
       
-      if (result) {
-        setSubmitted(true);
-        setShowConfetti(true);
-        toast({
-          title: "City match saved!",
-          description: `You're all set to move to ${selectedCity}!`,
+      // Simple logic to determine city match
+      // In a real application, this would be more sophisticated
+      let matchedCity = "";
+      
+      // Simplified algorithm to pick a city based on first question primarily
+      const climate = newAnswers.climate;
+      const pace = newAnswers.pace;
+      const activities = newAnswers.activities;
+      const cost = newAnswers.cost;
+      const language = newAnswers.language;
+      
+      try {
+        if (typeof cityMapping[climate] === "string") {
+          matchedCity = cityMapping[climate];
+        } else if (typeof cityMapping[climate][pace] === "string") {
+          matchedCity = cityMapping[climate][pace];
+        } else if (typeof cityMapping[climate][pace][activities] === "string") {
+          matchedCity = cityMapping[climate][pace][activities];
+        } else if (typeof cityMapping[climate][pace][activities][cost] === "string") {
+          matchedCity = cityMapping[climate][pace][activities][cost];
+        } else if (cityMapping[climate][pace][activities][cost][language]) {
+          matchedCity = cityMapping[climate][pace][activities][cost][language];
+        } else {
+          // Default cities if path doesn't match fully
+          const defaultCities = ["Berlin", "Barcelona", "London", "New York", "Tokyo"];
+          matchedCity = defaultCities[Math.floor(Math.random() * defaultCities.length)];
+        }
+      } catch (error) {
+        // Fallback option
+        matchedCity = "Barcelona";
+      }
+      
+      try {
+        // Save to Supabase
+        await saveCityMatch({ 
+          city: matchedCity, 
+          matchData: newAnswers 
         });
-        setTimeout(() => {
-          setShowConfetti(false);
-          navigate("/besties");
-        }, 3000);
-      } else {
+        
+        // Notify parent component
+        onComplete(matchedCity);
+      } catch (error) {
+        console.error("Error saving city match:", error);
         toast({
           title: "Error",
-          description: "Failed to save city match. Please try again.",
-          variant: "destructive",
+          description: "There was an error saving your city match. Your result might not be saved.",
         });
+        // Still notify parent component even if saving failed
+        onComplete(matchedCity);
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error("Error saving city match:", error);
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
-
+  
+  const currentQuestion = questions[currentQuestionIndex];
+  
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        Where are you moving?
-      </Button>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Moving Plans</DialogTitle>
-          <DialogDescription>
-            Let us know where you're moving so we can find you the right
-            connections.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="city" className="text-right">
-              City
-            </Label>
-            <Input
-              type="text"
-              id="city"
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="reason" className="text-right">
-              Reason
-            </Label>
-            <Input
-              type="text"
-              id="reason"
-              value={reasonBehindMove}
-              onChange={(e) => setReasonBehindMove(e.target.value)}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="terms" className="text-right">
-              <Checkbox
-                id="terms"
-                checked={reason}
-                onCheckedChange={(checked) => setReason(!!checked)} // Convert to boolean
-              />
-            </Label>
-            <div className="col-span-3">
-              <p className="text-sm text-muted-foreground">
-                By submitting this form, you agree to our{" "}
-                <a
-                  href="#"
-                  className="underline underline-offset-2"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  terms of service
-                </a>{" "}
-                and{" "}
-                <a
-                  href="#"
-                  className="underline underline-offset-2"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  privacy policy
-                </a>.
-              </p>
-            </div>
-          </div>
-        </div>
-        <Button onClick={handleSubmit} disabled={isLoading}>
-          {isLoading ? "Submitting..." : "Submit"}
-        </Button>
-        {showConfetti && (
-          <Confetti
-            width={width}
-            height={height}
-            recycle={false}
-            numberOfPieces={600}
-            gravity={0.9}
-            initialVelocityY={30}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+    <div className="space-y-8">
+      <h2 className="text-xl font-semibold mb-4">{currentQuestion.question}</h2>
+      
+      <div className="space-y-3">
+        {currentQuestion.options.map((option) => (
+          <Button
+            key={option}
+            variant="outline"
+            className="w-full justify-start text-left h-auto py-4 px-4"
+            disabled={isSubmitting}
+            onClick={() => handleAnswer(option)}
+          >
+            {option}
+          </Button>
+        ))}
+      </div>
+      
+      <div className="text-center text-sm text-muted-foreground">
+        Question {currentQuestionIndex + 1} of {questions.length}
+      </div>
+    </div>
   );
 };
 

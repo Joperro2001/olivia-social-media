@@ -1,145 +1,411 @@
 
-import { useState, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { v4 as uuidv4 } from "uuid";
+import { sendChatMessage, testApiConnection } from "@/utils/apiService";
+import { saveChecklistToLocalStorage } from "@/utils/checklistUtils";
+import { toast } from "@/hooks/use-toast";
+import { getFallbackResponse, createFallbackMessage } from "@/utils/fallbackMessages";
 import { saveCityMatch } from "@/services/cityMatchService";
 
-interface ChatMessage {
+interface Message {
   id: string;
-  content: string; // Changed from text to content to match OliviaChat.tsx
+  content: string;
   isUser: boolean;
-  timestamp: string; // Changed from Date to string to match ChatBubble component
+  timestamp: string;
 }
 
-const useOliviaChat = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isTyping, setIsTyping] = useState(false); // Added isTyping state
-  const { toast } = useToast();
+export function useOliviaChat() {
   const { user } = useAuth();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState<string>("");
+  const autoMessageSent = useRef<boolean>(false);
+  const offlineModeActive = useRef<boolean>(false);
+  const inCityMatchFlow = useRef<boolean>(false);
+  
+  // Initialize chat on component mount
+  useEffect(() => {
+    // Generate a persistent sessionId for this user
+    const userId = user?.id || "anonymous";
+    const storedSessionId = localStorage.getItem(`olivia_session_${userId}`);
+    const newSessionId = storedSessionId || uuidv4();
+    
+    if (!storedSessionId) {
+      localStorage.setItem(`olivia_session_${userId}`, newSessionId);
+    }
+    
+    setSessionId(newSessionId);
+    
+    // Load saved messages from localStorage
+    const savedMessages = localStorage.getItem(`olivia_messages_${userId}`);
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages) as Message[];
+        setMessages(parsedMessages);
+      } catch (error) {
+        console.error("Error parsing saved messages:", error);
+        // If there's an error parsing, set the default welcome message
+        setMessages([{
+          id: "1",
+          content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
+          isUser: false,
+          timestamp: "Just now"
+        }]);
+      }
+    } else {
+      // Set default welcome message if no saved messages
+      setMessages([{
+        id: "1",
+        content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
+        isUser: false,
+        timestamp: "Just now"
+      }]);
+    }
+  }, [user]);
+  
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      const userId = user?.id || "anonymous";
+      localStorage.setItem(`olivia_messages_${userId}`, JSON.stringify(messages));
+    }
+  }, [messages, user]);
 
-  const addMessage = (content: string, isUser: boolean) => {
-    const newMessage = {
-      id: uuidv4(),
-      content, // Changed from text to content
-      isUser,
-      timestamp: new Date().toISOString(), // Convert Date to ISO string
-    };
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-  };
-
-  const sendMessage = async (messageText: string): Promise<boolean> => {
-    addMessage(messageText, true);
-    setIsLoading(true);
-    setIsTyping(true); // Set typing indicator
-
+  // Extract city match from AI response
+  const extractCityMatch = (content: string): { city: string, reason: string } | null => {
+    // Try to detect if this is a city match response
     try {
-      // Simulate an API call to get Olivia's response
-      const oliviaResponse = await getOliviaResponse(messageText);
-      addMessage(oliviaResponse, false);
-
-      // Extract city from user message and save it
-      const extractedCity = extractCityFromMessage(messageText);
-      if (extractedCity) {
-        const userId = user?.id || 'anonymous';
-        const cityMatchResult = await saveCityMatch({
-          userId,
-          city: extractedCity
-        });
-
-        if (cityMatchResult) {
-          toast({
-            title: "City Match Found!",
-            description: `Olivia detected you're interested in ${extractedCity}!`,
-          });
-        } else {
-          toast({
-            title: "City Match Failed",
-            description: `Failed to save city match for ${extractedCity}.`,
-            variant: "destructive",
-          });
+      // Check if the content has both "you belong in" and a city name
+      const cityMatch = content.match(/you belong in ([A-Za-z\s]+)/i);
+      
+      // Also look for JSON structure in the message for a more structured response
+      const jsonMatch = content.match(/```json\s*({[\s\S]*?})\s*```/);
+      
+      if (jsonMatch) {
+        try {
+          const jsonData = JSON.parse(jsonMatch[1]);
+          if (jsonData.city && jsonData.reason) {
+            return {
+              city: jsonData.city,
+              reason: jsonData.reason
+            };
+          }
+        } catch (e) {
+          console.error("Failed to parse JSON in AI response", e);
         }
       }
-      return true; // Return success
-    } catch (error: any) {
-      console.error("Error getting Olivia's response:", error);
-      toast({
-        title: "Error",
-        description: "Failed to get Olivia's response. Please try again.",
-        variant: "destructive",
-      });
-      addMessage("I'm having trouble connecting. Please try again later.", false);
-      return false; // Return failure
-    } finally {
-      setIsLoading(false);
-      setIsTyping(false); // Reset typing indicator
+      
+      // If JSON parsing fails, try the regex approach
+      if (cityMatch && cityMatch[1]) {
+        const city = cityMatch[1].trim();
+        
+        // Extract a reason - look for sentences after "because" or similar indicators
+        let reason = "";
+        const reasonMatch = content.match(/because\s+([^\.]+)/i);
+        if (reasonMatch && reasonMatch[1]) {
+          reason = reasonMatch[1].trim();
+        } else {
+          // If no "because", try to extract a substantial portion of the response as the reason
+          const lines = content.split('\n').filter(line => 
+            line.length > 30 && 
+            !line.toLowerCase().includes("you belong in") && 
+            !line.toLowerCase().includes("congratulations")
+          );
+          
+          if (lines.length > 0) {
+            reason = lines[0];
+          }
+        }
+        
+        return {
+          city: city,
+          reason: reason || "Based on your preferences and lifestyle"
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error extracting city match:", error);
+      return null;
     }
   };
 
-  // Add aliases for the OliviaChat component
-  const handleSendMessage = sendMessage;
-  const handleCardAction = (action: string) => sendMessage(action);
-  
-  const retryConnection = async (): Promise<boolean> => {
-    // Simulate retrying connection
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return true;
-  };
-  
-  const clearChatHistory = () => {
-    // Keep the initial welcome message
-    const welcomeMessage = messages.length > 0 ? messages[0] : {
-      id: uuidv4(),
-      content: "Hi, I'm Olivia! How can I help you with your relocation journey today?",
-      isUser: false,
-      timestamp: new Date().toISOString(), // Convert Date to ISO string
-    };
-    setMessages([welcomeMessage]);
-  };
-
-  const getOliviaResponse = async (message: string): Promise<string> => {
-    // Simulate a delay to mimic an API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Basic logic to determine Olivia's response
-    if (message.toLowerCase().includes("hello") || message.toLowerCase().includes("hi")) {
-      return "Hi there! How can I help you today?";
-    } else if (message.toLowerCase().includes("relocate") || message.toLowerCase().includes("moving")) {
-      return "I see you're interested in relocating! Have you considered Berlin? It's a vibrant city with lots of opportunities.";
-    } else if (message.toLowerCase().includes("help")) {
-      return "I can help you find information about relocating, job opportunities, and local events.";
-    } else {
-      return "That's interesting! Tell me more.";
+  const handleSendMessage = async (content: string): Promise<boolean> => {
+    try {
+      // Check if the message is related to the city match quiz
+      if (content.toLowerCase().includes("city match quiz") || 
+          content.toLowerCase().includes("find my city match") || 
+          content.toLowerCase().includes("perfect city for me")) {
+        inCityMatchFlow.current = true;
+      }
+      
+      // Add user message to UI immediately for responsiveness
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content,
+        isUser: true,
+        timestamp: "Just now"
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      setIsTyping(true);
+      
+      // Try to send message to backend API
+      const userId = user?.id || "anonymous";
+      
+      // If we're already in offline mode, don't even try to connect
+      let aiResponse: string | null = null;
+      if (!offlineModeActive.current) {
+        aiResponse = await sendChatMessage(userId, sessionId, content);
+        // If we get a null response, we're in offline mode
+        offlineModeActive.current = aiResponse === null;
+      }
+      
+      setTimeout(() => {
+        setIsTyping(false);
+        
+        // If we got a response from the API, add it to the messages
+        if (aiResponse) {
+          const oliviaMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: aiResponse,
+            isUser: false,
+            timestamp: "Just now"
+          };
+          
+          setMessages(prev => [...prev, oliviaMessage]);
+          
+          // Process side effects of AI response if needed
+          processResponseSideEffects(content, aiResponse);
+        } else {
+          // If no response from API, use fallback
+          const fallbackResponse = getFallbackResponse(content);
+          const fallbackMessage = createFallbackMessage(fallbackResponse, false);
+          
+          setMessages(prev => [...prev, fallbackMessage]);
+        }
+      }, 800); // Add a small delay to simulate typing
+      
+      return true;
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setIsTyping(false);
+      
+      // Use fallback response on error
+      const fallbackResponse = getFallbackResponse(content);
+      const fallbackMessage = createFallbackMessage(fallbackResponse, false);
+      
+      setMessages(prev => [...prev, fallbackMessage]);
+      return false;
     }
   };
 
-  const extractCityFromMessage = (message: string): string | null => {
-    const cities = ["Berlin", "Paris", "London", "New York", "Tokyo"];
-    const lowerCaseMessage = message.toLowerCase();
-    for (const city of cities) {
-      if (lowerCaseMessage.includes(city.toLowerCase())) {
-        return city;
+  const processResponseSideEffects = (userMessage: string, aiResponse: string) => {
+    // If we're in the city match flow, check if this response contains a city match
+    if (inCityMatchFlow.current) {
+      const cityMatchData = extractCityMatch(aiResponse);
+      if (cityMatchData) {
+        console.log("City match found:", cityMatchData);
+        // Save the city match to localStorage and Supabase
+        saveCityMatch({
+          city: cityMatchData.city,
+          reason: cityMatchData.reason,
+          matchData: { reason: cityMatchData.reason }
+        });
+        
+        // Reset the flow
+        inCityMatchFlow.current = false;
+        
+        // Show a success message
+        toast({
+          title: "City Match Found!",
+          description: `You belong in ${cityMatchData.city}! Visit the City Match page to see details.`,
+        });
       }
     }
-    return null;
+    
+    // Handle destination from relocation checklist flow
+    if (aiResponse.includes("Which city are you moving to")) {
+      // We're now in the checklist flow
+      console.log("Starting checklist flow");
+    } else if (messages.some(m => m.content.includes("Which city are you moving to"))) {
+      // Save the destination in temporary checklist
+      const checklistData = {
+        title: "Moving to " + userMessage.trim(),
+        destination: userMessage.trim(),
+      };
+      saveChecklistToLocalStorage(checklistData);
+    } else if (messages.some(m => m.content.includes("what's the purpose of your move"))) {
+      const checklistData = JSON.parse(localStorage.getItem("cityPackerData") || "{}");
+      checklistData.purpose = userMessage.trim();
+      saveChecklistToLocalStorage(checklistData);
+    } else if (messages.some(m => m.content.includes("How long are you planning to stay"))) {
+      // Handle duration response and create full checklist
+      const checklistData = JSON.parse(localStorage.getItem("cityPackerData") || "{}");
+      checklistData.duration = userMessage.trim();
+      
+      // Add relocation document checklist items based on destination and duration
+      const longStay = userMessage.toLowerCase().includes("permanent") || 
+                      userMessage.toLowerCase().includes("year") ||
+                      userMessage.includes("long");
+      
+      const isStudent = checklistData.purpose?.toLowerCase().includes("study");
+      const isWork = checklistData.purpose?.toLowerCase().includes("work");
+      
+      const items = [
+        { category: "Visa & Immigration", text: "Valid passport (min. 6 months validity)", checked: false },
+        { category: "Visa & Immigration", text: "Visa application forms", checked: false },
+        { category: "Visa & Immigration", text: "Passport photos", checked: false },
+        { category: "Health & Insurance", text: "International health insurance", checked: false },
+        { category: "Health & Insurance", text: "Vaccination records", checked: false },
+        { category: "Housing", text: "Temporary accommodation booking", checked: false },
+        { category: "Housing", text: "Rental deposit funds", checked: false },
+        { category: "Communication", text: "International SIM card or eSIM", checked: false },
+        { category: "Travel", text: "Flight tickets", checked: false },
+        { category: "Finance", text: "Bank statements (last 3 months)", checked: false },
+        { category: "Finance", text: "Foreign currency or travel card", checked: false },
+      ];
+      
+      // Add specific items based on purpose and duration
+      if (isStudent) {
+        items.push(
+          { category: "Education", text: "University acceptance letter", checked: false },
+          { category: "Education", text: "Scholarship documentation (if applicable)", checked: false },
+          { category: "Education", text: "Academic transcripts", checked: false },
+          { category: "Education", text: "Student visa paperwork", checked: false }
+        );
+      }
+      
+      if (isWork) {
+        items.push(
+          { category: "Employment", text: "Work contract", checked: false },
+          { category: "Employment", text: "Work visa/permit", checked: false },
+          { category: "Employment", text: "Professional certificates", checked: false },
+          { category: "Employment", text: "Reference letters", checked: false }
+        );
+      }
+      
+      if (longStay) {
+        items.push(
+          { category: "Visa & Immigration", text: "Birth certificate", checked: false },
+          { category: "Visa & Immigration", text: "Marriage certificate (if applicable)", checked: false },
+          { category: "Housing", text: "Proof of income for rental applications", checked: false },
+          { category: "Finance", text: "Tax documents from home country", checked: false },
+          { category: "Health & Insurance", text: "Medical history records", checked: false },
+          { category: "Personal", text: "Driver's license or International Driving Permit", checked: false }
+        );
+      }
+      
+      checklistData.items = items;
+      saveChecklistToLocalStorage(checklistData);
+    }
   };
 
+  const handleCardAction = (id: string) => {
+    console.log(`Card ${id} action triggered`);
+    if (id === "card1") {
+      inCityMatchFlow.current = true;
+      handleSendMessage("I'd like to take the City Match Quiz to find the best city for my lifestyle and preferences").catch(error => {
+        console.error("Error handling card action:", error);
+      });
+    } else if (id === "card3") {
+      handleSendMessage("I'm interested in joining group matches").catch(error => {
+        console.error("Error handling card action:", error);
+      });
+    } else if (id === "card2") {
+      handleSendMessage("I need information about local SIM cards").catch(error => {
+        console.error("Error handling card action:", error);
+      });
+    }
+  };
+
+  // Function to retry connection
+  const retryConnection = async (): Promise<boolean> => {
+    try {
+      setIsTyping(true);
+      
+      // Try with a short timeout for faster feedback
+      const isConnected = await testApiConnection();
+      
+      // Short timeout for UI feedback
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsTyping(false);
+      
+      if (isConnected) {
+        // Reset offline mode flag
+        offlineModeActive.current = false;
+        
+        // Add a system message saying connection restored
+        const systemMessage: Message = {
+          id: Date.now().toString(),
+          content: "Connection restored! I'm back online and ready to help with your relocation needs. How can I assist you today?",
+          isUser: false,
+          timestamp: "Just now"
+        };
+        
+        setMessages(prev => [...prev, systemMessage]);
+        return true;
+      } else {
+        // Update offline mode flag
+        offlineModeActive.current = true;
+        return false;
+      }
+    } catch (error) {
+      console.error("Error in retry connection:", error);
+      setIsTyping(false);
+      return false;
+    }
+  };
+
+  // Clear chat history
+  const clearChatHistory = () => {
+    const userId = user?.id || "anonymous";
+    
+    // Remove messages from localStorage
+    localStorage.removeItem(`olivia_messages_${userId}`);
+    
+    // Reset to initial welcome message
+    setMessages([{
+      id: "1",
+      content: "Hi there! I'm Olivia, your relocation concierge. I can help you find housing, connect with like-minded people, or join local groups based on your interests. What brings you here today?",
+      isUser: false,
+      timestamp: "Just now"
+    }]);
+    
+    toast({
+      title: "Chat history cleared",
+      description: "Your conversation has been reset.",
+    });
+  };
+
+  // Check for auto-send message from session storage
   useEffect(() => {
-    // Initial Olivia message when the component mounts
-    addMessage("Hi, I'm Olivia! How can I help you with your relocation journey today?", false);
+    const autoMessage = sessionStorage.getItem("autoSendMessage");
+    
+    if (autoMessage && !autoMessageSent.current) {
+      // If this is a city match request, set the flag
+      if (autoMessage.toLowerCase().includes("city match")) {
+        inCityMatchFlow.current = true;
+      }
+      
+      // Small timeout to ensure the chat is loaded before sending
+      const timer = setTimeout(() => {
+        handleSendMessage(autoMessage).catch(console.error);
+        sessionStorage.removeItem("autoSendMessage");
+        autoMessageSent.current = true;
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return {
     messages,
-    isLoading,
     isTyping,
-    sendMessage,
     handleSendMessage,
     handleCardAction,
     retryConnection,
     clearChatHistory
   };
-};
-
-export default useOliviaChat;
+}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "@/components/chat/ChatBubble";
 import ChatInput from "@/components/chat/ChatInput";
@@ -5,7 +6,7 @@ import TypingIndicator from "@/components/olivia/TypingIndicator";
 import { useAuth } from "@/context/AuthContext";
 import { DEFAULT_AVATAR } from "@/constants/chatConstants";
 import OliviaSuggestions from "@/components/olivia/OliviaSuggestions";
-import useOliviaChat from "@/hooks/useOliviaChat"; // Fixed import
+import { useOliviaChat } from "@/hooks/useOliviaChat";
 import ChatError from "@/components/chat/ChatError";
 import { testApiConnection } from "@/utils/apiService";
 import { toast } from "@/hooks/use-toast";

@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import CityResult from "@/components/moving/CityResult";
-import { getCityMatch as getUserCityMatch, clearCityMatch } from "@/services/cityMatchService";
+import { getUserCityMatch, clearCityMatch } from "@/services/cityMatchService";
 import { useToast } from "@/hooks/use-toast";
 
 const MyCityMatchPage: React.FC = () => {
@@ -19,7 +20,7 @@ const MyCityMatchPage: React.FC = () => {
       setLoading(true);
       try {
         // Try to get city match from Supabase first
-        const cityMatchData = await getUserCityMatch('anonymous');
+        const cityMatchData = await getUserCityMatch();
         
         if (cityMatchData?.city) {
           setMatchedCity(cityMatchData.city);
@@ -74,7 +75,7 @@ const MyCityMatchPage: React.FC = () => {
     setLoading(true);
     try {
       // Clear the saved result from Supabase and localStorage
-      await clearCityMatch('anonymous');
+      await clearCityMatch();
       setMatchedCity(null);
       setMatchReason(null);
       toast({
