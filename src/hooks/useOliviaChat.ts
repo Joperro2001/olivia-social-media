@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
@@ -8,7 +9,7 @@ interface ChatMessage {
   id: string;
   content: string; // Changed from text to content to match OliviaChat.tsx
   isUser: boolean;
-  timestamp: Date; // Added timestamp to match OliviaChat.tsx
+  timestamp: string; // Changed from Date to string to match ChatBubble component
 }
 
 const useOliviaChat = () => {
@@ -23,12 +24,12 @@ const useOliviaChat = () => {
       id: uuidv4(),
       content, // Changed from text to content
       isUser,
-      timestamp: new Date(), // Added timestamp
+      timestamp: new Date().toISOString(), // Convert Date to ISO string
     };
     setMessages(prevMessages => [...prevMessages, newMessage]);
   };
 
-  const sendMessage = async (messageText: string) => {
+  const sendMessage = async (messageText: string): Promise<boolean> => {
     addMessage(messageText, true);
     setIsLoading(true);
     setIsTyping(true); // Set typing indicator
@@ -60,6 +61,7 @@ const useOliviaChat = () => {
           });
         }
       }
+      return true; // Return success
     } catch (error: any) {
       console.error("Error getting Olivia's response:", error);
       toast({
@@ -68,6 +70,7 @@ const useOliviaChat = () => {
         variant: "destructive",
       });
       addMessage("I'm having trouble connecting. Please try again later.", false);
+      return false; // Return failure
     } finally {
       setIsLoading(false);
       setIsTyping(false); // Reset typing indicator
@@ -90,7 +93,7 @@ const useOliviaChat = () => {
       id: uuidv4(),
       content: "Hi, I'm Olivia! How can I help you with your relocation journey today?",
       isUser: false,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(), // Convert Date to ISO string
     };
     setMessages([welcomeMessage]);
   };
