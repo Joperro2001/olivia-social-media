@@ -6,6 +6,7 @@ import { sendChatMessage, testApiConnection } from "@/utils/apiService";
 import { saveChecklistToLocalStorage } from "@/utils/checklistUtils";
 import { toast } from "@/hooks/use-toast";
 import { getFallbackResponse, createFallbackMessage } from "@/utils/fallbackMessages";
+import { saveCityMatch } from "@/services/cityMatchService";
 
 interface Message {
   id: string;
@@ -21,6 +22,7 @@ export function useOliviaChat() {
   const [sessionId, setSessionId] = useState<string>("");
   const autoMessageSent = useRef<boolean>(false);
   const offlineModeActive = useRef<boolean>(false);
+  const inCityMatchFlow = useRef<boolean>(false);
   
   // Initialize chat on component mount
   useEffect(() => {
@@ -70,8 +72,74 @@ export function useOliviaChat() {
     }
   }, [messages, user]);
 
+  // Extract city match from AI response
+  const extractCityMatch = (content: string): { city: string, reason: string } | null => {
+    // Try to detect if this is a city match response
+    try {
+      // Check if the content has both "you belong in" and a city name
+      const cityMatch = content.match(/you belong in ([A-Za-z\s]+)/i);
+      
+      // Also look for JSON structure in the message for a more structured response
+      const jsonMatch = content.match(/```json\s*({[\s\S]*?})\s*```/);
+      
+      if (jsonMatch) {
+        try {
+          const jsonData = JSON.parse(jsonMatch[1]);
+          if (jsonData.city && jsonData.reason) {
+            return {
+              city: jsonData.city,
+              reason: jsonData.reason
+            };
+          }
+        } catch (e) {
+          console.error("Failed to parse JSON in AI response", e);
+        }
+      }
+      
+      // If JSON parsing fails, try the regex approach
+      if (cityMatch && cityMatch[1]) {
+        const city = cityMatch[1].trim();
+        
+        // Extract a reason - look for sentences after "because" or similar indicators
+        let reason = "";
+        const reasonMatch = content.match(/because\s+([^\.]+)/i);
+        if (reasonMatch && reasonMatch[1]) {
+          reason = reasonMatch[1].trim();
+        } else {
+          // If no "because", try to extract a substantial portion of the response as the reason
+          const lines = content.split('\n').filter(line => 
+            line.length > 30 && 
+            !line.toLowerCase().includes("you belong in") && 
+            !line.toLowerCase().includes("congratulations")
+          );
+          
+          if (lines.length > 0) {
+            reason = lines[0];
+          }
+        }
+        
+        return {
+          city: city,
+          reason: reason || "Based on your preferences and lifestyle"
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error extracting city match:", error);
+      return null;
+    }
+  };
+
   const handleSendMessage = async (content: string): Promise<boolean> => {
     try {
+      // Check if the message is related to the city match quiz
+      if (content.toLowerCase().includes("city match quiz") || 
+          content.toLowerCase().includes("find my city match") || 
+          content.toLowerCase().includes("perfect city for me")) {
+        inCityMatchFlow.current = true;
+      }
+      
       // Add user message to UI immediately for responsiveness
       const userMessage: Message = {
         id: Date.now().toString(),
@@ -134,15 +202,30 @@ export function useOliviaChat() {
   };
 
   const processResponseSideEffects = (userMessage: string, aiResponse: string) => {
-    // Handle city recommendations
-    if (userMessage.toLowerCase().includes("you belong in")) {
-      const cityMatch = userMessage.match(/you belong in ([a-z]+)/i);
-      if (cityMatch && cityMatch[1]) {
-        localStorage.setItem("matchedCity", cityMatch[1]);
+    // If we're in the city match flow, check if this response contains a city match
+    if (inCityMatchFlow.current) {
+      const cityMatchData = extractCityMatch(aiResponse);
+      if (cityMatchData) {
+        console.log("City match found:", cityMatchData);
+        // Save the city match to localStorage and Supabase
+        saveCityMatch({
+          city: cityMatchData.city,
+          reason: cityMatchData.reason,
+          matchData: { reason: cityMatchData.reason }
+        });
+        
+        // Reset the flow
+        inCityMatchFlow.current = false;
+        
+        // Show a success message
+        toast({
+          title: "City Match Found!",
+          description: `You belong in ${cityMatchData.city}! Visit the City Match page to see details.`,
+        });
       }
     }
     
-    // Extract destination from relocation checklist flow
+    // Handle destination from relocation checklist flow
     if (aiResponse.includes("Which city are you moving to")) {
       // We're now in the checklist flow
       console.log("Starting checklist flow");
@@ -222,7 +305,8 @@ export function useOliviaChat() {
   const handleCardAction = (id: string) => {
     console.log(`Card ${id} action triggered`);
     if (id === "card1") {
-      handleSendMessage("I'd like to take the City Match Quiz").catch(error => {
+      inCityMatchFlow.current = true;
+      handleSendMessage("I'd like to take the City Match Quiz to find the best city for my lifestyle and preferences").catch(error => {
         console.error("Error handling card action:", error);
       });
     } else if (id === "card3") {
@@ -300,6 +384,11 @@ export function useOliviaChat() {
     const autoMessage = sessionStorage.getItem("autoSendMessage");
     
     if (autoMessage && !autoMessageSent.current) {
+      // If this is a city match request, set the flag
+      if (autoMessage.toLowerCase().includes("city match")) {
+        inCityMatchFlow.current = true;
+      }
+      
       // Small timeout to ensure the chat is loaded before sending
       const timer = setTimeout(() => {
         handleSendMessage(autoMessage).catch(console.error);

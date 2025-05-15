@@ -72,7 +72,11 @@ const MatchesList: React.FC<MatchesListProps> = ({
             <div className="flex items-start">
               <Avatar className="h-12 w-12">
                 {profile.image ? (
-                  <AvatarImage src={profile.image} alt={profile.name} />
+                  <AvatarImage 
+                    src={profile.image} 
+                    alt={profile.name}
+                    className="object-cover"
+                  />
                 ) : (
                   <AvatarFallback>
                     {profile.name.substring(0, 2).toUpperCase()}
@@ -156,7 +160,11 @@ const MatchesList: React.FC<MatchesListProps> = ({
             <div className="relative">
               <Avatar className="h-12 w-12 rounded-full">
                 {profile.image ? (
-                  <AvatarImage src={profile.image} alt={profile.name} />
+                  <AvatarImage 
+                    src={profile.image} 
+                    alt={profile.name}
+                    className="object-cover"
+                  />
                 ) : (
                   <AvatarFallback className="bg-primary/20 text-primary-dark">
                     {profile.name.substring(0, 2).toUpperCase()}

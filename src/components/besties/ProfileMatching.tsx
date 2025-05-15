@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Profile } from "@/types/Profile";
 import { Loader, Users, UserPlus, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useRanking } from "@/context/RankingContext";
 
 interface ProfileMatchingProps {
   onMatchFound?: () => void;
@@ -18,14 +18,20 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { profiles, isLoading, refetchProfiles } = useOtherProfiles();
+  const { rankedProfiles, isAIRankingActive } = useRanking();
+  
+  // Use ranked profiles if AI ranking is active, otherwise use regular profiles
+  const displayProfiles = isAIRankingActive && rankedProfiles.length > 0
+    ? rankedProfiles
+    : profiles;
 
   useEffect(() => {
     setCurrentIndex(0);
-  }, [profiles.length]);
+  }, [displayProfiles.length]);
 
   const handleSwipeLeft = (id: string) => {
     console.log(`Swiped left on ${id}`);
-    if (currentIndex < profiles.length - 1) {
+    if (currentIndex < displayProfiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -88,8 +94,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         } else {
           toast({
             title: "It's a match! 🎉",
-            description: `You've sent a match request to ${profiles[currentIndex].full_name}!`,
-            className: "bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white border-none",
+            description: `You've sent a match request to ${displayProfiles[currentIndex].full_name}!`,
           });
           
           if (onMatchFound) {
@@ -106,7 +111,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
       });
     }
 
-    if (currentIndex < profiles.length - 1) {
+    if (currentIndex < displayProfiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -141,7 +146,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     );
   }
 
-  if (profiles.length === 0) {
+  if (displayProfiles.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <div className="p-4 rounded-full bg-gray-100 mb-4">
@@ -186,10 +191,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4">
-      {currentIndex < profiles.length ? (
+      {currentIndex < displayProfiles.length ? (
         <ProfileCard
-          key={profiles[currentIndex].id}
-          {...mapProfileToCardProps(profiles[currentIndex])}
+          key={displayProfiles[currentIndex].id}
+          {...mapProfileToCardProps(displayProfiles[currentIndex])}
         />
       ) : (
         <div className="text-center px-4 py-10">

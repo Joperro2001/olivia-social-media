@@ -1,7 +1,8 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Flag, Globe, University } from "lucide-react";
+import { Flag, Globe, University, Sparkles } from "lucide-react";
+import { useRanking } from "@/context/RankingContext";
 
 interface ProfileCardProps {
   id: string;
@@ -26,6 +27,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   onSwipeLeft,
   onSwipeRight
 }) => {
+  const { isAIRankingActive } = useRanking();
+  
   // Extract city from location
   const getCity = (location: string): string => {
     if (!location) return "Unknown location";
@@ -43,10 +46,38 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
     onSwipeRight(id);
   };
 
-  // Default placeholder image if no image is provided
-  const defaultImage = "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop";
-  const displayImage = image || defaultImage;
+  // Generate a random image URL based on the user's ID
+  const getRandomDefaultImage = (userId: string) => {
+    // List of potential placeholder images with different styles
+    const placeholderImages = [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d", // Person 1
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330", // Person 2
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80", // Person 3
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e", // Person 4
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2", // Person 5
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb", // Person 6
+      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6", // Person 7
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9"  // Person 8
+    ];
+    
+    // Create a deterministic but seemingly random selection based on user ID
+    // This ensures the same user always gets the same image
+    const hashCode = (str: string) => {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      return Math.abs(hash);
+    };
+    
+    const index = hashCode(userId) % placeholderImages.length;
+    return placeholderImages[index];
+  };
 
+  // Use a random default image if no image is provided
+  const displayImage = image || getRandomDefaultImage(id);
+  
   const city = getCity(location);
 
   return (
@@ -57,6 +88,17 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />
       </div>
+      
+      {isAIRankingActive && (
+        <div className="absolute top-4 right-4 z-10">
+          <Badge 
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none flex items-center gap-1 px-3 py-1.5"
+          >
+            <Sparkles className="h-3 w-3" />
+            <span>AI Ranked</span>
+          </Badge>
+        </div>
+      )}
       
       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
         <div className="flex items-center gap-2 mb-2">

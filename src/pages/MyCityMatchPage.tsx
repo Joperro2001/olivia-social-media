@@ -12,6 +12,7 @@ const MyCityMatchPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [matchedCity, setMatchedCity] = useState<string | null>(null);
+  const [matchReason, setMatchReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -23,19 +24,34 @@ const MyCityMatchPage: React.FC = () => {
         
         if (cityMatchData?.city) {
           setMatchedCity(cityMatchData.city);
+          
+          // First check matchData (our standardized format)
+          if (cityMatchData.matchData && typeof cityMatchData.matchData === 'object') {
+            if ('reason' in cityMatchData.matchData && cityMatchData.matchData.reason) {
+              setMatchReason(String(cityMatchData.matchData.reason));
+            }
+          }
         } else {
           // Fallback to localStorage
           const savedCity = localStorage.getItem("matchedCity");
+          const savedReason = localStorage.getItem("matchedCityReason");
           if (savedCity) {
             setMatchedCity(savedCity);
+            if (savedReason) {
+              setMatchReason(savedReason);
+            }
           }
         }
       } catch (error) {
         console.error("Error fetching city match:", error);
         // Try fallback from localStorage
         const savedCity = localStorage.getItem("matchedCity");
+        const savedReason = localStorage.getItem("matchedCityReason");
         if (savedCity) {
           setMatchedCity(savedCity);
+          if (savedReason) {
+            setMatchReason(savedReason);
+          }
         }
       } finally {
         setLoading(false);
@@ -46,9 +62,12 @@ const MyCityMatchPage: React.FC = () => {
   }, []);
   
   const handleChatRedirect = () => {
-    // Store the message in session storage so it can be picked up by the chat page
-    sessionStorage.setItem("autoSendMessage", "Find my City Match");
-    // Navigate to the chat page
+    // Store a specific instruction in session storage for Olivia
+    sessionStorage.setItem(
+      "autoSendMessage", 
+      "I'd like to take the City Match Quiz to find the perfect city for me based on my preferences and lifestyle"
+    );
+    // Navigate to Olivia's chat page
     navigate("/");
   };
   
@@ -58,6 +77,7 @@ const MyCityMatchPage: React.FC = () => {
       // Clear the saved result from Supabase and localStorage
       await clearCityMatch();
       setMatchedCity(null);
+      setMatchReason(null);
       toast({
         title: "Reset successful",
         description: "Your city match has been reset.",
@@ -109,7 +129,11 @@ const MyCityMatchPage: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <CityResult city={matchedCity} onReset={handleReset} />
+              <CityResult 
+                city={matchedCity} 
+                reason={matchReason}
+                onReset={handleReset} 
+              />
               <div className="flex justify-center mt-6">
                 <Button variant="outline" onClick={handleReset}>
                   Find a Different Match
@@ -127,7 +151,7 @@ const MyCityMatchPage: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p>You haven't taken the City Match quiz yet. Take our fun questionnaire to discover which city would be your perfect match based on your personality, lifestyle preferences, and goals!</p>
+              <p>Chat with Olivia, our relocation assistant, to discover which city would be your perfect match based on your personality, lifestyle preferences, and goals!</p>
               <img 
                 src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&h=400&q=80" 
                 alt="City skyline" 
@@ -137,7 +161,7 @@ const MyCityMatchPage: React.FC = () => {
                 className="w-full"
                 onClick={handleChatRedirect}
               >
-                Find My Match
+                Chat with Olivia to Find My Match
               </Button>
             </CardContent>
           </Card>

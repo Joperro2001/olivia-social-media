@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface CityMatchData {
   city: string;
+  reason?: string;
   matchData?: Record<string, any>;
 }
 
@@ -16,12 +17,18 @@ export async function saveCityMatch(cityMatch: CityMatchData) {
       throw new Error("User not authenticated");
     }
     
+    // Prepare match data object, ensuring reason is included if provided
+    const matchData = {
+      ...(cityMatch.matchData || {}),
+      reason: cityMatch.reason || null
+    };
+    
     const { data, error } = await supabase
       .from('city_matches')
       .insert({
         city: cityMatch.city,
-        match_data: cityMatch.matchData || {},
-        user_id: user.id // Add the user_id field
+        match_data: matchData,
+        user_id: user.id
       })
       .select()
       .single();
@@ -30,6 +37,9 @@ export async function saveCityMatch(cityMatch: CityMatchData) {
     
     // Also save to localStorage as a fallback
     localStorage.setItem("matchedCity", cityMatch.city);
+    if (cityMatch.reason) {
+      localStorage.setItem("matchedCityReason", cityMatch.reason);
+    }
     
     return data;
   } catch (error) {
@@ -43,7 +53,19 @@ export async function saveCityMatch(cityMatch: CityMatchData) {
   }
 }
 
-export async function getUserCityMatch() {
+// Define a proper return type for getUserCityMatch
+interface CityMatchReturn {
+  city: string;
+  matchData?: Record<string, any>;
+  // Include database fields if needed
+  id?: string;
+  user_id?: string;
+  match_data?: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function getUserCityMatch(): Promise<CityMatchReturn | null> {
   try {
     // Get the current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -51,7 +73,11 @@ export async function getUserCityMatch() {
     if (!user) {
       // Return data from localStorage if user is not authenticated
       const matchedCity = localStorage.getItem("matchedCity");
-      return matchedCity ? { city: matchedCity } : null;
+      const matchedReason = localStorage.getItem("matchedCityReason");
+      return matchedCity ? { 
+        city: matchedCity,
+        matchData: matchedReason ? { reason: matchedReason } : {} 
+      } : null;
     }
     
     const { data, error } = await supabase
@@ -64,17 +90,43 @@ export async function getUserCityMatch() {
     
     if (error) throw error;
     
-    // If we have data, store it in localStorage as well
+    // Transform the database response to match our expected format
     if (data) {
-      localStorage.setItem("matchedCity", data.city);
+      // Create a standardized return with proper type handling
+      const transformedData: CityMatchReturn = {
+        ...data,
+        // Add matchData for consistent interface
+        matchData: {}
+      };
+      
+      // If match_data exists and is an object, handle reason properly
+      if (data.match_data && typeof data.match_data === 'object') {
+        // Check if reason exists in match_data
+        if ('reason' in data.match_data && data.match_data.reason) {
+          // Add to matchData for consistent access
+          transformedData.matchData = {
+            reason: String(data.match_data.reason)
+          };
+          
+          // Also store in localStorage as backup
+          localStorage.setItem("matchedCity", data.city);
+          localStorage.setItem("matchedCityReason", String(data.match_data.reason));
+        }
+      }
+      
+      return transformedData;
     }
     
-    return data;
+    return null;
   } catch (error) {
     console.error("Error fetching city match:", error);
     // Fallback to localStorage
     const matchedCity = localStorage.getItem("matchedCity");
-    return matchedCity ? { city: matchedCity } : null;
+    const matchedReason = localStorage.getItem("matchedCityReason");
+    return matchedCity ? { 
+      city: matchedCity,
+      matchData: matchedReason ? { reason: matchedReason } : {} 
+    } : null;
   }
 }
 
@@ -86,6 +138,7 @@ export async function clearCityMatch() {
     if (!user) {
       // Just clear localStorage if user is not authenticated
       localStorage.removeItem("matchedCity");
+      localStorage.removeItem("matchedCityReason");
       return true;
     }
     
@@ -100,6 +153,7 @@ export async function clearCityMatch() {
     
     // Clear localStorage too
     localStorage.removeItem("matchedCity");
+    localStorage.removeItem("matchedCityReason");
     
     return true;
   } catch (error) {

@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import EventCard from "@/components/social/EventCard";
 import CategoryTabs from "@/components/social/CategoryTabs";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Calendar, Plus } from "lucide-react";
+import { Heart, Calendar, Plus, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRanking } from "@/context/RankingContext";
+import { Profile } from "@/types/Profile";
 
 export interface Event {
   id: string;
@@ -22,10 +24,12 @@ const SocialPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("Chill");
+  const { isAIRankingActive, rankedProfiles } = useRanking();
   
   const categories = ["Chill", "Explore", "Party", "Learn"];
   
-  const events = [
+  // Define regular events
+  const regularEvents = [
     {
       id: "event1",
       title: "Expat Mixer @ Café Berlin",
@@ -68,18 +72,52 @@ const SocialPage: React.FC = () => {
     },
   ];
   
-  const filteredEvents = events.filter(
+  // Create AI recommended events based on ranked profiles
+  const aiRecommendedEvents = React.useMemo(() => {
+    if (!isAIRankingActive || rankedProfiles.length === 0) return [];
+    
+    // Convert ranked profiles to events (top 3 profiles)
+    return rankedProfiles.slice(0, 3).map((profile, index) => {
+      const category = categories[index % categories.length]; // Distribute across categories
+      
+      return {
+        id: `ai-event-${profile.id}`,
+        title: `Meet Up with ${profile.full_name.split(' ')[0]}`,
+        date: "Soon",
+        location: profile.current_city || "Berlin",
+        image: profile.avatar_url || "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1000",
+        tags: ["AI Match", profile.university ? "University" : "Networking"],
+        attendees: Math.floor(Math.random() * 10) + 2, // Random small number
+        category: category,
+        profileId: profile.id, // Store profile ID to link to chat
+      };
+    });
+  }, [isAIRankingActive, rankedProfiles, categories]);
+  
+  // Combine regular and AI events, with AI events at the top
+  const allEvents = React.useMemo(() => {
+    return [...aiRecommendedEvents, ...regularEvents];
+  }, [aiRecommendedEvents, regularEvents]);
+  
+  // Filter events by active category
+  const filteredEvents = allEvents.filter(
     (event) => activeCategory === event.category
   );
   
-  const handleViewEventDetails = (id: string) => {
+  const handleViewEventDetails = (id: string, profileId?: string) => {
     console.log(`View details for event ${id}`);
-    navigate(`/event/${id}`);
+    
+    // If it's an AI event with profileId, navigate to chat
+    if (profileId) {
+      navigate(`/chat/${profileId}`);
+    } else {
+      navigate(`/event/${id}`);
+    }
   };
   
   const handleRSVP = (id: string) => {
     console.log(`RSVP for event ${id}`);
-    const event = events.find((e) => e.id === id);
+    const event = allEvents.find((e) => e.id === id);
     if (event) {
       // Save the RSVP'd event to localStorage
       const rsvpEvents = JSON.parse(localStorage.getItem("rsvpEvents") || "[]");
@@ -108,6 +146,10 @@ const SocialPage: React.FC = () => {
   const handleCreateEvent = () => {
     console.log("Creating new event");
     navigate("/create-event");
+  };
+  
+  const handleGoToBesties = () => {
+    navigate("/besties");
   };
   
   return (
@@ -142,6 +184,20 @@ const SocialPage: React.FC = () => {
         </div>
       </div>
       
+      {isAIRankingActive && rankedProfiles.length > 0 && (
+        <div className="px-4 mb-2">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 p-3 rounded-lg flex items-center justify-between">
+            <div className="flex items-center">
+              <Brain className="h-4 w-4 text-blue-500 mr-2" />
+              <span className="text-sm font-medium">AI suggested events based on your matching preferences</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleGoToBesties} className="text-xs">
+              View Matches
+            </Button>
+          </div>
+        </div>
+      )}
+      
       <div className="px-4">
         <CategoryTabs
           categories={categories}
@@ -156,7 +212,7 @@ const SocialPage: React.FC = () => {
             <EventCard
               key={event.id}
               {...event}
-              onViewDetails={handleViewEventDetails}
+              onViewDetails={() => handleViewEventDetails(event.id, (event as any).profileId)}
               onRSVP={handleRSVP}
             />
           ))
