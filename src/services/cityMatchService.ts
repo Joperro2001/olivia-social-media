@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { parseJsonSafely } from "@/lib/utils";
 
 interface CityMatchData {
   city: string;
@@ -94,23 +95,31 @@ export async function getUserCityMatch(): Promise<CityMatchReturn | null> {
     if (data) {
       // Create a standardized return with proper type handling
       const transformedData: CityMatchReturn = {
-        ...data,
+        city: data.city,
+        id: data.id,
+        user_id: data.user_id,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
         // Add matchData for consistent interface
         matchData: {}
       };
       
-      // If match_data exists and is an object, handle reason properly
-      if (data.match_data && typeof data.match_data === 'object') {
+      // If match_data exists, parse it safely to ensure it's a proper object
+      if (data.match_data) {
+        // Convert the match_data to a proper Record<string, any> using our utility function
+        const parsedMatchData = parseJsonSafely<Record<string, any>>(data.match_data);
+        transformedData.match_data = parsedMatchData;
+        
         // Check if reason exists in match_data
-        if ('reason' in data.match_data && data.match_data.reason) {
+        if (parsedMatchData && 'reason' in parsedMatchData && parsedMatchData.reason) {
           // Add to matchData for consistent access
           transformedData.matchData = {
-            reason: String(data.match_data.reason)
+            reason: String(parsedMatchData.reason)
           };
           
           // Also store in localStorage as backup
           localStorage.setItem("matchedCity", data.city);
-          localStorage.setItem("matchedCityReason", String(data.match_data.reason));
+          localStorage.setItem("matchedCityReason", String(parsedMatchData.reason));
         }
       }
       
