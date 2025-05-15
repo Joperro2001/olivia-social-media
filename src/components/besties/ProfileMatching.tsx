@@ -26,16 +26,18 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     ? rankedProfiles
     : profiles;
 
-  // Debug logging to track the current index and profiles count
+  // Debug logging 
   useEffect(() => {
+    console.log("ProfileMatching component rendered");
     console.log("Current index:", currentIndex);
     console.log("Display profiles count:", displayProfiles.length);
-    console.log("Display profiles:", displayProfiles);
+    console.log("All profiles:", displayProfiles);
   }, [currentIndex, displayProfiles]);
 
   // Reset current index when profiles change
   useEffect(() => {
     console.log("Profiles changed, resetting current index");
+    console.log("New profile count:", displayProfiles.length);
     setCurrentIndex(0);
   }, [displayProfiles.length, profiles.length, rankedProfiles.length]);
 
@@ -66,7 +68,6 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
 
     try {
       // Determine which user ID should be user_id_1 and which should be user_id_2
-      // to satisfy the constraint that user_id_1 < user_id_2
       let user_id_1, user_id_2;
       
       // Compare the UUIDs as strings
@@ -140,14 +141,19 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
 
   // Convert database profile to the format expected by ProfileCard
   const mapProfileToCardProps = (profile: Profile) => {
-    // Extract move-in city (should be Berlin) or default
+    // Extract move-in city or default to Berlin
     const moveInCity = profile.move_in_city || "Berlin";
     
-    // Determine if they have a relocation date/timeframe (could be enhanced in the future)
+    // Determine if they have a relocation date/timeframe
     const isRelocating = Boolean(profile.move_in_city);
     
-    // Format tags to include relocation interests if available
-    let tags = profile.university ? [profile.university] : [];
+    // Format tags to include relocation interests and other profile data
+    let tags: string[] = [];
+    
+    // Add university if available
+    if (profile.university) {
+      tags.push(profile.university);
+    }
     
     // Add moving location tag
     if (isRelocating) {
@@ -159,11 +165,19 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
       tags = [...tags, ...profile.relocation_interests];
     }
     
+    // Add fallback tags if none are available
+    if (tags.length === 0) {
+      tags = ["New user", "Looking for connections"];
+    }
+    
+    // Log the mapping for debugging
+    console.log(`Mapping profile ${profile.id} (${profile.full_name}) to card props`);
+    
     return {
       id: profile.id,
       name: profile.full_name || "Anonymous",
       age: profile.age || 0,
-      location: isRelocating ? `Moving to ${moveInCity}` : (profile.current_city || ""),
+      location: isRelocating ? `${moveInCity}, International` : (profile.current_city || ""),
       bio: profile.about_me || "",
       image: profile.avatar_url || "",
       tags: tags,
@@ -187,9 +201,9 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         <div className="p-4 rounded-full bg-gray-100 mb-4">
           <Users className="h-8 w-8 text-gray-400" />
         </div>
-        <h3 className="text-xl font-semibold mb-2">No Berlin matches available</h3>
+        <h3 className="text-xl font-semibold mb-2">No matches available</h3>
         <p className="text-gray-500 mb-6 max-w-xs">
-          There are no other users moving to Berlin on the platform yet. Make sure your profile is set up with Berlin as your destination and try refreshing.
+          There are no users matching your criteria. Try refreshing or changing your search preferences.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button 
@@ -197,12 +211,12 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
             onClick={() => {
               toast({
                 title: "Invite link copied!",
-                description: "Share this link with friends moving to Berlin to join the platform.",
+                description: "Share this link with friends to join the platform.",
               });
             }}
           >
             <UserPlus className="h-4 w-4" />
-            Invite Berlin Friends
+            Invite Friends
           </Button>
           <Button 
             variant="outline"
@@ -212,7 +226,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
               setCurrentIndex(0);
               toast({
                 title: "Refreshing profiles",
-                description: "Looking for new Berlin connections...",
+                description: "Looking for new connections...",
               });
             }}
             className="flex items-center gap-2"
@@ -225,6 +239,8 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     );
   }
 
+  console.log(`Rendering profile at index ${currentIndex} out of ${displayProfiles.length} profiles`);
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4">
       {currentIndex < displayProfiles.length ? (
@@ -234,8 +250,8 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
         />
       ) : (
         <div className="text-center px-4 py-10">
-          <h3 className="text-xl font-semibold mb-2">You've seen all Berlin profiles</h3>
-          <p className="text-gray-500 mb-6">Check back later for new Berlin connections</p>
+          <h3 className="text-xl font-semibold mb-2">You've seen all profiles</h3>
+          <p className="text-gray-500 mb-6">Check back later for new connections</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               onClick={() => {

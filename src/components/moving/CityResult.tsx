@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Share } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { clearCityMatch } from "@/services/cityMatchService";
+import { getUserCityMatch, clearCityMatch } from "@/services/cityMatchService";
 
 interface CityResultProps {
   city: string;

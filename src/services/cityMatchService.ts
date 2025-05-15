@@ -1,9 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 // Define proper interfaces for consistent typing
-interface CityMatchData {
+export interface CityMatchData {
   reason?: string;
   [key: string]: any;
 }
@@ -53,7 +52,7 @@ const parseCityMatch = (data: CityMatchResponse): CityMatchReturn => {
   
   return {
     city: data.city,
-    matchData: matchData,
+    matchData: matchData as CityMatchData, // Explicitly cast to CityMatchData
     created_at: data.created_at,
     id: data.id,
     updated_at: data.updated_at,
@@ -62,34 +61,14 @@ const parseCityMatch = (data: CityMatchResponse): CityMatchReturn => {
 };
 
 export const saveCityMatch = async (
-  userIdOrParams: string | SaveCityMatchParams,
-  city?: string,
-  matchReason?: string
+  params: SaveCityMatchParams
 ): Promise<CityMatchReturn | null> => {
   try {
-    let userId: string;
-    let cityValue: string;
-    let matchData: CityMatchData;
-
-    // Handle both function signatures
-    if (typeof userIdOrParams === 'string') {
-      // Original signature: userId, city, matchReason
-      userId = userIdOrParams;
-      cityValue = city || '';
-      matchData = { reason: matchReason || '' };
-    } else {
-      // New signature: { userId, city, reason, matchData }
-      const params = userIdOrParams;
-      userId = params.userId || 'anonymous';
-      cityValue = params.city;
-      
-      // Use either the provided matchData or create one from reason
-      if (params.matchData) {
-        matchData = params.matchData;
-      } else {
-        matchData = { reason: params.reason || '' };
-      }
-    }
+    const userId = params.userId || 'anonymous';
+    const cityValue = params.city;
+    
+    // Use either the provided matchData or create one from reason
+    const matchData: CityMatchData = params.matchData || { reason: params.reason || '' };
 
     // Check if a match already exists for this user
     const { data: existingMatch, error: fetchError } = await supabase
@@ -159,6 +138,20 @@ export const saveCityMatch = async (
   }
 };
 
+// Legacy function signature for backward compatibility
+export const saveCityMatchLegacy = async (
+  userIdOrParams: string,
+  city: string,
+  matchReason?: string
+): Promise<CityMatchReturn | null> => {
+  return saveCityMatch({
+    userId: userIdOrParams,
+    city: city, 
+    reason: matchReason
+  });
+};
+
+// Function to get a city match for a user
 export const getCityMatch = async (userId: string): Promise<CityMatchReturn | null> => {
   try {
     // Try to get from localStorage first

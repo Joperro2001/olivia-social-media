@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import CityResult from "@/components/moving/CityResult";
-import { getUserCityMatch, clearCityMatch } from "@/services/cityMatchService";
+import { getCityMatch as getUserCityMatch, clearCityMatch } from "@/services/cityMatchService";
 import { useToast } from "@/hooks/use-toast";
 
 const MyCityMatchPage: React.FC = () => {

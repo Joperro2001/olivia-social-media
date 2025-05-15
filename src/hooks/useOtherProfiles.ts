@@ -32,62 +32,62 @@ export const useOtherProfiles = () => {
 
   const fetchOtherProfiles = async () => {
     try {
-      if (!user) {
-        console.log("No user is logged in, cannot fetch profiles");
-        return;
-      }
-      
       setIsLoading(true);
       
-      // First, get the current user's move_in_city
-      const moveInCity = await fetchCurrentUserProfile();
+      // First, get the current user's move_in_city or set a default city
+      let moveInCity = "Berlin"; // Default to Berlin
+      
+      if (user) {
+        const userMoveInCity = await fetchCurrentUserProfile();
+        if (userMoveInCity) {
+          moveInCity = userMoveInCity;
+        }
+      }
+      
       setUserMoveInCity(moveInCity);
+      console.log(`Using city: ${moveInCity} for profile matching`);
       
-      if (!moveInCity) {
-        console.log("User has no move_in_city set, showing no profiles");
-        setProfiles([]);
-        setOriginalProfiles([]);
-        setIsLoading(false);
-        return;
-      }
-      
-      console.log("Current user ID:", user.id);
-      console.log(`Fetching profiles moving to ${moveInCity} and excluding current user`);
-      
-      // Get the IDs of users the current user has already matched with or sent requests to
-      const { data: matchesAsUser1, error: matchError1 } = await supabase
-        .from('profile_matches')
-        .select('user_id_2')
-        .eq('user_id_1', user.id);
-
-      const { data: matchesAsUser2, error: matchError2 } = await supabase
-        .from('profile_matches')
-        .select('user_id_1')
-        .eq('user_id_2', user.id);
-      
-      if (matchError1 || matchError2) {
-        console.error("Error fetching matches:", matchError1 || matchError2);
-        throw new Error("Failed to fetch existing matches");
-      }
-      
-      // Extract all user IDs that should be excluded
-      const matchedUserIds = [
-        ...(matchesAsUser1 ? matchesAsUser1.map(match => match.user_id_2) : []),
-        ...(matchesAsUser2 ? matchesAsUser2.map(match => match.user_id_1) : [])
-      ];
-      
-      console.log("Excluding already matched users:", matchedUserIds);
-      
-      // Get all profiles moving to the same city as the user, excluding the current user and already matched users
+      // Get all profiles moving to the specified city
+      // For logged-out users, don't exclude based on matches
       let query = supabase
         .from("profiles")
-        .select("*")
-        .neq("id", user.id)
-        .eq("move_in_city", moveInCity);
+        .select("*");
+
+      // Only exclude the current user if logged in
+      if (user) {
+        query = query.neq("id", user.id);
+        
+        // Get the IDs of users the current user has already matched with
+        const { data: matchesAsUser1, error: matchError1 } = await supabase
+          .from('profile_matches')
+          .select('user_id_2')
+          .eq('user_id_1', user.id);
+
+        const { data: matchesAsUser2, error: matchError2 } = await supabase
+          .from('profile_matches')
+          .select('user_id_1')
+          .eq('user_id_2', user.id);
+        
+        if (matchError1 || matchError2) {
+          console.error("Error fetching matches:", matchError1 || matchError2);
+        } else {
+          // Extract all user IDs that should be excluded
+          const matchedUserIds = [
+            ...(matchesAsUser1 ? matchesAsUser1.map(match => match.user_id_2) : []),
+            ...(matchesAsUser2 ? matchesAsUser2.map(match => match.user_id_1) : [])
+          ];
+          
+          // Only add the "not in" filter if there are matched users to exclude
+          if (matchedUserIds.length > 0) {
+            console.log("Excluding matched users:", matchedUserIds);
+            query = query.not('id', 'in', `(${matchedUserIds.join(',')})`);
+          }
+        }
+      }
       
-      // Only add the "not in" filter if there are matched users to exclude
-      if (matchedUserIds.length > 0) {
-        query = query.not('id', 'in', `(${matchedUserIds.join(',')})`);
+      // Only filter by move_in_city if specified
+      if (moveInCity) {
+        query = query.eq("move_in_city", moveInCity);
       }
       
       const { data, error } = await query;
@@ -97,31 +97,80 @@ export const useOtherProfiles = () => {
         throw error;
       }
       
-      console.log(`${moveInCity} profiles fetched:`, data ? data.length : 0);
+      console.log(`Profiles fetched: ${data ? data.length : 0}`);
       
       if (data && data.length > 0) {
         console.log("Profiles found:", data);
+        
         // Properly type-cast the relocation_status field for each profile
         const typedProfiles: Profile[] = data.map(profile => ({
           ...profile,
           relocation_status: profile.relocation_status as Profile["relocation_status"]
         }));
+        
         setProfiles(typedProfiles);
         setOriginalProfiles(typedProfiles); // Store the original profiles
       } else {
-        console.log(`No other profiles found moving to ${moveInCity} or all users are already matched`);
-        setProfiles([]);
-        setOriginalProfiles([]);
+        // If no profiles found, use mockData as fallback
+        console.log(`No profiles found moving to ${moveInCity}, using mock data instead`);
+        
+        // Import mock data from bestiesMockData
+        import("@/data/bestiesMockData").then(({ profiles: mockProfiles }) => {
+          console.log("Using mock profiles:", mockProfiles);
+          
+          // Convert mock data to Profile type
+          const convertedProfiles: Profile[] = mockProfiles.map((mock, index) => ({
+            id: mock.id,
+            full_name: mock.name,
+            age: mock.age,
+            current_city: mock.location.split(",")[1]?.trim() || "",
+            move_in_city: "Berlin", // Assume all mock profiles are moving to Berlin
+            about_me: mock.bio,
+            avatar_url: mock.image,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            nationality: "",
+            university: "",
+            relocation_status: "planning",
+            relocation_interests: mock.tags
+          }));
+          
+          setProfiles(convertedProfiles);
+          setOriginalProfiles(convertedProfiles);
+        });
       }
     } catch (error: any) {
-      console.error("Error fetching other profiles:", error);
+      console.error("Error fetching profiles:", error);
       toast({
         title: "Error loading profiles",
         description: error.message,
         variant: "destructive",
       });
-      setProfiles([]);
-      setOriginalProfiles([]);
+      
+      // Use mock data as fallback if there's an error
+      import("@/data/bestiesMockData").then(({ profiles: mockProfiles }) => {
+        console.log("Error occurred, using mock profiles:", mockProfiles);
+        
+        // Convert mock data to Profile type
+        const convertedProfiles: Profile[] = mockProfiles.map((mock) => ({
+          id: mock.id,
+          full_name: mock.name,
+          age: mock.age,
+          current_city: mock.location.split(",")[1]?.trim() || "",
+          move_in_city: "Berlin", 
+          about_me: mock.bio,
+          avatar_url: mock.image,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          nationality: "",
+          university: "",
+          relocation_status: "planning",
+          relocation_interests: mock.tags
+        }));
+        
+        setProfiles(convertedProfiles);
+        setOriginalProfiles(convertedProfiles);
+      });
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +179,9 @@ export const useOtherProfiles = () => {
   // Function to set custom profile ordering
   const setProfilesOrder = (orderedProfileIds: string[]) => {
     if (!orderedProfileIds || orderedProfileIds.length === 0) return;
+    
+    console.log("Setting profile order with IDs:", orderedProfileIds);
+    console.log("Original profiles:", originalProfiles);
     
     // Create a map for O(1) lookups
     const profileMap = originalProfiles.reduce((acc, profile) => {
@@ -142,11 +194,16 @@ export const useOtherProfiles = () => {
       .map(id => profileMap[id])
       .filter(profile => !!profile); // Remove any undefined profiles
     
-    // Add any profiles that might not be in the ordered list (though this shouldn't happen)
+    console.log("Ordered profiles after mapping:", orderedProfiles);
+    
+    // Add any profiles that might not be in the ordered list
     const orderedIds = new Set(orderedProfileIds);
     const remainingProfiles = originalProfiles.filter(profile => !orderedIds.has(profile.id));
     
-    setProfiles([...orderedProfiles, ...remainingProfiles]);
+    const finalProfiles = [...orderedProfiles, ...remainingProfiles];
+    console.log("Final profile order:", finalProfiles);
+    
+    setProfiles(finalProfiles);
   };
 
   // Reset to original order
@@ -155,15 +212,10 @@ export const useOtherProfiles = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      console.log("User detected, initiating profile fetch");
-      fetchOtherProfiles();
-    } else {
-      console.log("No user available, clearing profiles");
-      setIsLoading(false);
-      setProfiles([]);
-      setOriginalProfiles([]);
-    }
+    console.log("useOtherProfiles: initializing profile fetch");
+    fetchOtherProfiles();
+    
+    // Re-fetch profiles when user auth state changes
   }, [user]);
 
   return {

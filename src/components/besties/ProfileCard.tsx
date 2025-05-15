@@ -80,6 +80,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   
   const city = getCity(location);
 
+  // Debug log profile info to help diagnose issues
+  console.log(`Rendering profile card for ${name} (${id}), age: ${age}, location: ${location}`);
+
   return (
     <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
       <div 
