@@ -26,25 +26,35 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     ? rankedProfiles
     : profiles;
 
+  // Debug logging to track the current index and profiles count
   useEffect(() => {
-    // Reset current index when profiles change
-    setCurrentIndex(0);
-  }, [displayProfiles.length]);
-
-  // Debug logging to check profiles
-  useEffect(() => {
+    console.log("Current index:", currentIndex);
     console.log("Display profiles count:", displayProfiles.length);
-    console.log("Current profiles:", displayProfiles);
-  }, [displayProfiles]);
+    console.log("Display profiles:", displayProfiles);
+  }, [currentIndex, displayProfiles]);
+
+  // Reset current index when profiles change
+  useEffect(() => {
+    console.log("Profiles changed, resetting current index");
+    setCurrentIndex(0);
+  }, [displayProfiles.length, profiles.length, rankedProfiles.length]);
 
   const handleSwipeLeft = (id: string) => {
     console.log(`Swiped left on ${id}`);
+    console.log(`Current index: ${currentIndex}, Total profiles: ${displayProfiles.length}`);
+    
     if (currentIndex < displayProfiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex(prevIndex => prevIndex + 1);
+    } else {
+      // If we're at the last profile, display the "no more profiles" message
+      console.log("Reached the end of profiles");
     }
   };
 
   const handleSwipeRight = async (id: string) => {
+    console.log(`Swiped right on ${id}`);
+    console.log(`Current index: ${currentIndex}, Total profiles: ${displayProfiles.length}`);
+    
     if (!user) {
       toast({
         title: "You need to be logged in",
@@ -119,8 +129,12 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
       });
     }
 
+    // Move to the next profile
     if (currentIndex < displayProfiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex(prevIndex => prevIndex + 1);
+    } else {
+      // If we're at the last profile, display the "no more profiles" message
+      console.log("Reached the end of profiles");
     }
   };
 
@@ -132,6 +146,19 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     // Determine if they have a relocation date/timeframe (could be enhanced in the future)
     const isRelocating = Boolean(profile.move_in_city);
     
+    // Format tags to include relocation interests if available
+    let tags = profile.university ? [profile.university] : [];
+    
+    // Add moving location tag
+    if (isRelocating) {
+      tags.push(`Moving to ${moveInCity}`);
+    }
+    
+    // Add relocation interests as tags if available
+    if (profile.relocation_interests && Array.isArray(profile.relocation_interests)) {
+      tags = [...tags, ...profile.relocation_interests];
+    }
+    
     return {
       id: profile.id,
       name: profile.full_name || "Anonymous",
@@ -139,7 +166,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
       location: isRelocating ? `Moving to ${moveInCity}` : (profile.current_city || ""),
       bio: profile.about_me || "",
       image: profile.avatar_url || "",
-      tags: profile.university ? [profile.university, "Moving to Berlin"] : ["Moving to Berlin"],
+      tags: tags,
       onSwipeLeft: handleSwipeLeft,
       onSwipeRight: handleSwipeRight
     };
@@ -182,6 +209,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
             onClick={() => {
               console.log("Refreshing profiles...");
               refetchProfiles();
+              setCurrentIndex(0);
               toast({
                 title: "Refreshing profiles",
                 description: "Looking for new Berlin connections...",
@@ -210,7 +238,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
           <p className="text-gray-500 mb-6">Check back later for new Berlin connections</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
-              onClick={() => setCurrentIndex(0)}
+              onClick={() => {
+                console.log("Resetting profiles index to 0");
+                setCurrentIndex(0);
+              }}
               className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:opacity-90 transition-opacity"
             >
               Reset Profiles
@@ -218,6 +249,7 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
             <Button 
               variant="outline"
               onClick={() => {
+                console.log("Refreshing profiles...");
                 refetchProfiles();
                 setCurrentIndex(0);
               }}

@@ -143,8 +143,14 @@ export const saveCityMatch = async (
       result = data;
     }
 
+    // Ensure that result.match_data is properly typed as CityMatchData
+    const typedResult: CityMatchResponse = {
+      ...result,
+      match_data: result.match_data as CityMatchData
+    };
+
     // Parse the result and save to localStorage
-    const parsedMatch = parseCityMatch(result);
+    const parsedMatch = parseCityMatch(typedResult);
     saveCityMatchToLocalStorage(parsedMatch);
     return parsedMatch;
   } catch (error) {
@@ -177,7 +183,13 @@ export const getCityMatch = async (userId: string): Promise<CityMatchReturn | nu
 
     // If we found a match, parse it and save to localStorage
     if (data) {
-      const parsedMatch = parseCityMatch(data);
+      // Ensure data.match_data is properly typed as CityMatchData
+      const typedData: CityMatchResponse = {
+        ...data,
+        match_data: data.match_data as CityMatchData
+      };
+      
+      const parsedMatch = parseCityMatch(typedData);
       saveCityMatchToLocalStorage(parsedMatch);
       return parsedMatch;
     }
