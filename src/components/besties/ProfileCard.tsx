@@ -83,7 +83,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
   return (
     <div className="w-full h-[70vh] rounded-3xl overflow-hidden relative shadow-xl">
       <div 
-        className="absolute inset-0 bg-cover bg-center" 
+        className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${displayImage})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70" />

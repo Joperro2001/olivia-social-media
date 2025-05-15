@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import ProfileCard from "@/components/besties/ProfileCard";
 import { Button } from "@/components/ui/button";
@@ -26,8 +27,15 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
     : profiles;
 
   useEffect(() => {
+    // Reset current index when profiles change
     setCurrentIndex(0);
   }, [displayProfiles.length]);
+
+  // Debug logging to check profiles
+  useEffect(() => {
+    console.log("Display profiles count:", displayProfiles.length);
+    console.log("Current profiles:", displayProfiles);
+  }, [displayProfiles]);
 
   const handleSwipeLeft = (id: string) => {
     console.log(`Swiped left on ${id}`);
@@ -209,7 +217,10 @@ const ProfileMatching: React.FC<ProfileMatchingProps> = ({ onMatchFound }) => {
             </Button>
             <Button 
               variant="outline"
-              onClick={refetchProfiles}
+              onClick={() => {
+                refetchProfiles();
+                setCurrentIndex(0);
+              }}
               className="flex items-center gap-2"
             >
               <RefreshCw className="h-4 w-4" />
