@@ -56,6 +56,7 @@ const EditProfilePage: React.FC = () => {
       move_in_city: "",
       about_me: "",
     },
+    mode: "onChange", // This will make validations run on change
   });
   
   // Refresh profile data when component mounts
@@ -299,7 +300,7 @@ const EditProfilePage: React.FC = () => {
                       <FormItem>
                         <FormLabel>Age</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || field.value)} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
