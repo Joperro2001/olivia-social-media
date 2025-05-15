@@ -20,6 +20,7 @@ export const useConfig = () => {
         
         // Try to get config from Supabase Edge Function
         const { data, error } = await supabase.functions.invoke("get-config");
+        console.log("data", data);
         
         if (!error && data && data.VITE_API_BASE_URL) {
           setConfig({
