@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,6 +25,8 @@ export const useConfig = () => {
           setConfig({
             apiBaseUrl: data.VITE_API_BASE_URL,
           });
+          // Save the fetched config to localStorage
+          localStorage.setItem('app_config', JSON.stringify({ VITE_API_BASE_URL: data.VITE_API_BASE_URL }));
         }
       } catch (error) {
         console.error("Error fetching config:", error);
