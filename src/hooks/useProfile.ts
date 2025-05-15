@@ -28,6 +28,8 @@ export const useProfile = () => {
     interests: interests.map(i => i.interest)
   } : null;
 
+  console.log("useProfile hook returning profileWithInterests:", profileWithInterests);
+
   return {
     profile: profileWithInterests,
     interests,

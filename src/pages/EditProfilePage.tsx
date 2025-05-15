@@ -43,6 +43,7 @@ const EditProfilePage: React.FC = () => {
   const MAX_INTERESTS = 4;
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formInitialized, setFormInitialized] = useState(false);
 
   // Initialize form with validation
   const form = useForm<FormValues>({
@@ -62,17 +63,17 @@ const EditProfilePage: React.FC = () => {
   // Fetch profile data when component mounts if needed
   useEffect(() => {
     if (user && !profile) {
+      console.log("Fetching profile because no profile data exists");
       fetchProfile();
     }
   }, [user, profile, fetchProfile]);
   
-  // Load profile data when available
+  // Load profile data when available - but only once to prevent re-initialization
   useEffect(() => {
-    if (profile) {
-      console.log("Setting form values with profile:", profile);
+    if (profile && !formInitialized) {
+      console.log("Initializing form with profile data:", profile);
       form.reset({
         full_name: profile.full_name || "",
-        // Ensure age is converted to a number
         age: profile.age ? Number(profile.age) : 25,
         university: profile.university || "",
         nationality: profile.nationality || "",
@@ -80,15 +81,18 @@ const EditProfilePage: React.FC = () => {
         move_in_city: profile.move_in_city || "",
         about_me: profile.about_me || "",
       });
+      
+      // Set initially selected interests
+      if (profile.interests && profile.interests.length > 0) {
+        setSelectedInterests(profile.interests);
+      } else if (interests && interests.length > 0) {
+        setSelectedInterests(interests.map(interest => interest.interest));
+      }
+      
+      setFormInitialized(true);
+      console.log("Form initialized with profile data");
     }
-    
-    // Set initially selected interests
-    if (profile?.interests && profile.interests.length > 0) {
-      setSelectedInterests(profile.interests);
-    } else if (interests && interests.length > 0) {
-      setSelectedInterests(interests.map(interest => interest.interest));
-    }
-  }, [profile, interests, form]);
+  }, [profile, interests, form, formInitialized]);
 
   const handleInterestToggle = (interest: string) => {
     setSelectedInterests(prev => {
@@ -161,12 +165,16 @@ const EditProfilePage: React.FC = () => {
 
   const syncInterests = async () => {
     try {
+      console.log("Syncing interests:", selectedInterests);
+      console.log("Current interests in DB:", interests);
+      
       // Remove interests that are no longer selected
       const interestsToRemove = interests.filter(
         interest => !selectedInterests.includes(interest.interest)
       );
       
       for (const interest of interestsToRemove) {
+        console.log("Removing interest:", interest);
         await removeInterest(interest.id);
       }
       
@@ -177,6 +185,7 @@ const EditProfilePage: React.FC = () => {
       );
       
       for (const interest of interestsToAdd) {
+        console.log("Adding interest:", interest);
         await addInterest(interest);
       }
       
@@ -195,12 +204,16 @@ const EditProfilePage: React.FC = () => {
   const onSubmit = async (data: FormValues) => {
     console.log("Form submitted with data:", data);
     setIsSaving(true);
+    
     try {
       // First update profile
+      console.log("Calling updateProfile with:", data);
       const profileUpdated = await updateProfile(data);
+      console.log("Profile update result:", profileUpdated);
       
       // Then sync interests
       const interestsUpdated = await syncInterests();
+      console.log("Interests update result:", interestsUpdated);
       
       if (profileUpdated && interestsUpdated) {
         toast({
@@ -209,6 +222,8 @@ const EditProfilePage: React.FC = () => {
         });
         // Navigate back to profile page
         navigate("/profile");
+      } else {
+        throw new Error("Failed to update profile or interests");
       }
     } catch (error: any) {
       console.error("Error saving profile:", error);

@@ -17,9 +17,13 @@ export const useProfileData = () => {
   
   const fetchProfile = async () => {
     try {
-      if (!user || fetchInProgress.current) return;
+      if (!user || fetchInProgress.current) {
+        console.log("Fetch aborted: User not available or fetch already in progress");
+        return;
+      }
       
       fetchInProgress.current = true;
+      setIsLoading(true);
       
       console.log("Fetching profile data for user:", user.id);
       
@@ -30,7 +34,12 @@ export const useProfileData = () => {
         .eq("id", user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        throw profileError;
+      }
+      
+      console.log("Profile data fetched:", profileData);
       
       // Fetch interests
       const { data: interestsData, error: interestsError } = await supabase
@@ -38,7 +47,12 @@ export const useProfileData = () => {
         .select("*")
         .eq("user_id", user.id);
 
-      if (interestsError) throw interestsError;
+      if (interestsError) {
+        console.error("Error fetching interests:", interestsError);
+        throw interestsError;
+      }
+
+      console.log("Interests data fetched:", interestsData);
 
       // Convert profileData to Profile type with proper type casting for enum fields
       const relocationStatus = profileData.relocation_status as Profile["relocation_status"];
@@ -61,24 +75,30 @@ export const useProfileData = () => {
       });
       
       setInterests(interestsData || []);
+      console.log("Profile and interests state updated");
     } catch (error: any) {
       console.error("Error fetching profile:", error);
       toast({
         title: "Error loading profile",
-        description: error.message,
+        description: error.message || "Failed to load profile data",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
       fetchInProgress.current = false;
       initialFetchDone.current = true;
+      console.log("Fetch completed, loading state:", false);
     }
   };
 
   useEffect(() => {
+    console.log("useProfileData useEffect triggered, user:", !!user, "initialFetchDone:", initialFetchDone.current);
+    
     if (user && !initialFetchDone.current) {
+      console.log("Initiating profile fetch");
       fetchProfile();
     } else if (!user) {
+      console.log("Resetting profile state - no user");
       setProfile(null);
       setInterests([]);
       setIsLoading(false);
