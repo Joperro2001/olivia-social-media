@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 interface ChatRequest {
@@ -51,7 +50,8 @@ export const sendChatMessage = async (
     return null;
   }
   
-  const apiUrl = `${baseUrl}/chat/`;
+  const cleanedBaseUrl = baseUrl.replace(/\/$/, ""); // Remove trailing slash if exists
+  const apiUrl = `${cleanedBaseUrl}/chat/`; // Ensure chat/ always has a leading slash and trailing for consistency
   
   try {
     const request: ChatRequest = {
@@ -110,8 +110,9 @@ export const testApiConnection = async (): Promise<boolean> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
     
+    const cleanedBaseUrl = baseUrl.replace(/\/$/, ""); // Remove trailing slash if exists
     // Use GET request to test connectivity
-    const response = await fetch(`${baseUrl}/health`, { 
+    const response = await fetch(`${cleanedBaseUrl}/health`, { 
       method: 'GET',
       cache: 'no-cache',
       headers: {
