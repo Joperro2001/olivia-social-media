@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -48,7 +47,8 @@ export const useAIRankProfiles = () => {
         throw new Error("API base URL is not configured");
       }
       
-      console.log("Making request to:", `${baseUrl}/rank/`);
+      const cleanedBaseUrl = baseUrl.replace(/\/$/, ""); // Remove trailing slash
+      console.log("Making request to:", `${cleanedBaseUrl}/rank/`);
       
       // Corrected request body to match the expected format by the backend
       const requestBody = {
@@ -58,7 +58,7 @@ export const useAIRankProfiles = () => {
       console.log("Sending request body:", JSON.stringify(requestBody));
       
       // Make request to AI ranking endpoint
-      const response = await fetch(`${baseUrl}/rank/`, { // Added trailing slash
+      const response = await fetch(`${cleanedBaseUrl}/rank/`, { // Added trailing slash
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
