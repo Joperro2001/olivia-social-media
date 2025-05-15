@@ -40,4 +40,3 @@ class ChatResponse(BaseModel):
     session_id: str
     ai_response: Optional[str] = None
     error: Optional[str] = None
-

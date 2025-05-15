@@ -161,29 +161,30 @@ def read_conversation_history(user_id: str, max_messages: int = 30) -> Dict[str,
 # --- Checklist Tool Functions ---
 
 @tool("read_user_checklist", args_schema=ReadChecklistInput)
-def read_user_checklist(user_id: str) -> Dict[str, Any] | None:
+def read_user_checklist(user_id: str) -> Dict[str, Any]:
     """Reads a user's personalized moving checklist from Supabase.
-    Fetches the most recently updated checklist if multiple were to exist for the same user.
+    The checklist data is expected to be a JSON object like {"items": [...]}.
     Args:
         user_id: Identifier for the user.
     Returns:
-        The checklist data as a dictionary (JSONB) if found, otherwise None. 
-        Returns a dictionary with an 'error' key if an error occurs.
+        A dictionary containing checklist items (e.g., {"items": [...]}) if found.
+        Returns {"items": []} if no checklist is found or if data is malformed.
+        Returns a dictionary with an 'error' key if a Supabase error occurs.
     """
-    print(f"[ChecklistTool] Attempting to read checklist for user_id: {user_id}")
+    print(f"[ChecklistTool] Attempting to read checklist for user_id: {user_id} (expecting {{'items': [...]}} format)")
     try:
         response = (
             supabase_client.table("user_checklists")
-            .select("checklist_data, updated_at")  # Select updated_at for ordering
+            .select("checklist_data, updated_at")
             .eq("user_id", user_id)
-            .order("updated_at", desc=True)  # Order by most recent
+            .order("updated_at", desc=True)
             .limit(1)
             .execute()
         )
-        print(f"[ChecklistTool] Raw response from Supabase: {type(response)}")
+        # print(f"[ChecklistTool] Raw response from Supabase: {response}")
 
-        if response is None:
-            print("[ChecklistTool] Supabase client returned a None response object.")
+        if response is None: # Should not happen with supabase-py v1+
+            print("[ChecklistTool] Supabase client returned a None response object unexpectedly.")
             return {"error": "Error reading checklist: Supabase client returned an unexpected None response."}
 
         if hasattr(response, 'error') and response.error:
@@ -191,23 +192,32 @@ def read_user_checklist(user_id: str) -> Dict[str, Any] | None:
             return {"error": f"Error reading checklist for user {user_id}: {response.error.message if hasattr(response.error, 'message') else response.error}"}
         
         if hasattr(response, 'data'):
-            if response.data is None: # Should not happen if hasattr is true, but defensive
-                print("[ChecklistTool] Response has 'data' attribute but it is None.")
-                return None # No record found
+            if response.data is None or (isinstance(response.data, list) and len(response.data) == 0):
+                print("[ChecklistTool] No checklist found for user (empty data list or None). Returning {{'items': []}}.")
+                return {"items": []} # No record found
+            
             if isinstance(response.data, list) and len(response.data) > 0:
-                # Log the entire record found, including its updated_at timestamp
-                print(f"[ChecklistTool] Checklist record found: {response.data[0]}") 
-                return response.data[0].get("checklist_data") 
-            elif isinstance(response.data, list) and len(response.data) == 0:
-                print("[ChecklistTool] No checklist found for user (empty data list).")
-                return None # No record found
-            else:
-                # This case handles if response.data is not a list or is an unexpected structure
-                print(f"[ChecklistTool] Unexpected data format in response: {response.data}")
-                return {"error": f"Error reading checklist: Unexpected data format from Supabase: {type(response.data)}"}
+                db_record = response.data[0]
+                checklist_data_from_db = db_record.get("checklist_data")
+                print(f"[ChecklistTool] Checklist record found. Raw checklist_data from DB: {checklist_data_from_db}")
+                
+                if isinstance(checklist_data_from_db, dict) and "items" in checklist_data_from_db and isinstance(checklist_data_from_db["items"], list):
+                    # Valid format found
+                    return checklist_data_from_db
+                elif checklist_data_from_db is None: # checklist_data field is NULL in DB
+                    print("[ChecklistTool] checklist_data in DB is NULL. Returning {{'items': []}}.")
+                    return {"items": []}
+                else:
+                    # Malformed checklist_data
+                    print(f"[ChecklistTool] Warning: checklist_data from DB is malformed or not in {{'items': [...]}} format. Data: {checklist_data_from_db}. Returning {{'items': []}}.")
+                    return {"items": []}
+            else: # Should be caught by earlier checks, but as a safeguard
+                print(f"[ChecklistTool] Unexpected response.data structure: {response.data}. Returning {{'items': []}}.")
+                return {"items": []}
         else:
-            print("[ChecklistTool] Supabase response object missing 'data' attribute despite no error.")
-            return {"error": "Error reading checklist: Supabase response object missing 'data' attribute despite no error."}
+            # This case implies no error attribute, but also no data attribute.
+            print("[ChecklistTool] Supabase response object missing 'data' attribute despite no error. Returning {{'error': ...}}.")
+            return {"error": "Error reading checklist: Supabase response object missing 'data' attribute."}
 
     except Exception as e:
         print(f"[ChecklistTool] Exception during read_user_checklist: {e}")
@@ -216,42 +226,39 @@ def read_user_checklist(user_id: str) -> Dict[str, Any] | None:
 @tool("write_user_checklist", args_schema=WriteChecklistInput)
 def write_user_checklist(user_id: str, checklist_data: Dict[str, Any]) -> str:
     """Writes or overwrites a user's personalized moving checklist in Supabase.
+    The checklist_data MUST be a dictionary of the format {"items": [list_of_item_objects]}.
+    Each item_object in the list should contain its own 'category' field.
     Args:
         user_id: Identifier for the user.
-        checklist_data: The checklist data in JSON format. Should include a 'title' field.
+        checklist_data: The checklist data in {"items": [...]} format.
     Returns:
         A string indicating success or an error message.
     """
-    print(f"[ChecklistTool] Attempting to write checklist for user_id: {user_id} with data: {checklist_data}")
+    print(f"[ChecklistTool] Attempting to write checklist for user_id: {user_id} with data: {str(checklist_data)[:200]}...")
+    
+    if not isinstance(checklist_data, dict) or "items" not in checklist_data or not isinstance(checklist_data["items"], list):
+        error_msg = f"Error: checklist_data must be a dictionary with an 'items' key containing a list. Received: {str(checklist_data)[:200]}"
+        print(f"[ChecklistTool] {error_msg}")
+        return error_msg
+
+    # Validate items structure (basic check, LLM is primarily responsible for correct item fields)
+    for item in checklist_data["items"]:
+        if not isinstance(item, dict) or "description" not in item or "category" not in item:
+            error_msg = f"Error: Each item in checklist_data['items'] must be a dictionary with at least 'description' and 'category'. Found: {str(item)[:100]}"
+            print(f"[ChecklistTool] {error_msg}")
+            return error_msg
+            
+    default_title = f"Relocation Checklist for {user_id}"
+    # print(f"[ChecklistTool] Using default title: '{default_title}'") # Title is less prominent now
+
     try:
-        # Extract title from checklist_data. Agent prompt now instructs to include it here.
-        # Provide a default title if not found, or make it strictly required.
-        title = checklist_data.pop("title", None)
-        if title is None:
-            # Fallback title, or could return an error if title is absolutely mandatory from LLM
-            title = f"Checklist for {user_id}"
-            print(f"[ChecklistTool] Warning: 'title' not found in checklist_data. Using default: '{title}'")
-
-        # Optional: Extract description if you plan to use it
-        # description = checklist_data.pop("description", None)
-
-        # The remaining items in checklist_data are for the JSONB field.
-        # Ensure checklist_data is not None if all known keys were popped and it was otherwise empty.
-        actual_checklist_json_data = checklist_data if checklist_data else {}
-
         upsert_payload = {
             "user_id": user_id,
-            "title": title,
-            # "description": description, # Add if you implement description
-            "checklist_data": actual_checklist_json_data
+            "title": default_title, 
+            "checklist_data": checklist_data # Directly use the provided {"items": [...]} structure
         }
         
-        # Remove keys with None values if their DB columns are NOT nullable and don't have defaults
-        # For example, if description was optional:
-        # if description is None:
-        #     upsert_payload.pop("description", None)
-
-        print(f"[ChecklistTool] Upserting payload to Supabase: {upsert_payload}")
+        print(f"[ChecklistTool] Upserting payload to Supabase: {str(upsert_payload)[:300]}...")
 
         response = (
             supabase_client.table("user_checklists")
@@ -263,15 +270,16 @@ def write_user_checklist(user_id: str, checklist_data: Dict[str, Any]) -> str:
             error_message = response.error.message if hasattr(response.error, 'message') else str(response.error)
             print(f"[ChecklistTool] Supabase error writing checklist: {error_message} (Code: {response.error.code if hasattr(response.error, 'code') else 'N/A'})")
             return f"Error writing checklist for user {user_id}: {error_message}"
-        elif hasattr(response, 'data') and response.data and len(response.data) > 0:
-            print(f"[ChecklistTool] Checklist successfully written for user {user_id}. Response data: {response.data}")
-            return f"Checklist successfully written for user {user_id}."
-        elif not (hasattr(response, 'error') and response.error):
-            print(f"[ChecklistTool] Checklist write operation completed for user {user_id} (no error, no data returned by upsert).")
-            return f"Checklist write operation completed for user {user_id} (data may or may not be returned by upsert)."
-        else:
-            print(f"[ChecklistTool] Failed to write checklist for user {user_id} due to an unknown Supabase response issue.")
-            return f"Failed to write checklist for user {user_id} due to an unknown issue with Supabase response."
+        # Upsert in supabase-py v1+ returns a ModelResponse with data attribute that is a list of dicts
+        elif hasattr(response, 'data') and isinstance(response.data, list): # Can be empty list if nothing was upserted but no error.
+            # if len(response.data) > 0:
+            #     print(f"[ChecklistTool] Checklist successfully written for user {user_id}. Response data: {response.data}")
+            # else:
+            #     print(f"[ChecklistTool] Checklist write operation completed for user {user_id} (no error, upsert may not have changed data or returned it).")
+            return f"Checklist successfully written/updated for user {user_id}."
+        else: # Should not happen if no error and data is not a list
+            print(f"[ChecklistTool] Failed to write checklist for user {user_id} due to an unexpected Supabase response structure: {response}")
+            return f"Failed to write checklist for user {user_id} due to an unknown issue with Supabase response structure."
 
     except Exception as e:
         print(f"[ChecklistTool] An unexpected error occurred in write_user_checklist: {e}")

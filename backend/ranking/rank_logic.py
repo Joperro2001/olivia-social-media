@@ -131,7 +131,7 @@ Each object in the array should represent a candidate user and must contain:
     Example for a candidate named Priya: "It seems Priya is also planning a move to Berlin around the same time as you, {requesting_user_name}, and you both love exploring local cafes!"
     Another example for a candidate named Alex: "Alex could be a great connection! They're also a student, interested in tech meetups in Berlin, much like you, {requesting_user_name}."
 
-The JSON array should be ordered from the best match (most similar) to the least compatible.
+The JSON array should be ordered from the best match (most similar) to the least compatible. Rank every user, even if some of them are very unrelated still rank them at the bottom.
 Output ONLY the JSON array, with no other text before or after it.
 """),
         ("human", f"Please rank these users for me, {requesting_user_name}, and tell me a bit about why each might be a good connection.")
