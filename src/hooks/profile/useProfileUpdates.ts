@@ -13,31 +13,48 @@ export const useProfileUpdates = (
 
   const updateProfile = async (profileData: Partial<Profile>) => {
     try {
-      if (!user) return false;
+      if (!user) {
+        console.error("No authenticated user found");
+        toast({
+          title: "Authentication required",
+          description: "Please log in to update your profile.",
+          variant: "destructive",
+        });
+        return false;
+      }
 
-      const { error } = await supabase
+      console.log("Updating profile with data:", profileData);
+
+      // Process data before sending to database
+      // Ensure age is sent as a number
+      const processedData = {
+        ...profileData,
+        age: profileData.age ? Number(profileData.age) : profile?.age,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error, data } = await supabase
         .from("profiles")
-        .update({
-          ...profileData,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
+        .update(processedData)
+        .eq("id", user.id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error updating profile:", error);
+        throw error;
+      }
 
-      setProfile((prev: Profile | null) => prev ? { ...prev, ...profileData } : null);
+      console.log("Profile updated successfully:", data);
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
+      // Update local state with the updated profile
+      setProfile((prev: Profile | null) => prev ? { ...prev, ...processedData } : null);
       
       return true;
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
         title: "Error updating profile",
-        description: error.message,
+        description: error.message || "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
       return false;

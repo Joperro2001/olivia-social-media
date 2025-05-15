@@ -36,7 +36,7 @@ const EditProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { profile, interests, updateProfile, uploadAvatar, addInterest, removeInterest, isLoading } = useProfile();
+  const { profile, interests, updateProfile, uploadAvatar, addInterest, removeInterest, isLoading, fetchProfile } = useProfile();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -56,14 +56,24 @@ const EditProfilePage: React.FC = () => {
       move_in_city: "",
       about_me: "",
     },
+    mode: "onChange", // Enable validation as the user types
   });
+  
+  // Fetch profile data when component mounts if needed
+  useEffect(() => {
+    if (user && !profile) {
+      fetchProfile();
+    }
+  }, [user, profile, fetchProfile]);
   
   // Load profile data when available
   useEffect(() => {
     if (profile) {
+      console.log("Setting form values with profile:", profile);
       form.reset({
         full_name: profile.full_name || "",
-        age: profile.age || 25,
+        // Ensure age is converted to a number
+        age: profile.age ? Number(profile.age) : 25,
         university: profile.university || "",
         nationality: profile.nationality || "",
         current_city: profile.current_city || "",
@@ -148,29 +158,40 @@ const EditProfilePage: React.FC = () => {
   };
 
   const syncInterests = async () => {
-    // Remove interests that are no longer selected
-    const interestsToRemove = interests.filter(
-      interest => !selectedInterests.includes(interest.interest)
-    );
-    
-    for (const interest of interestsToRemove) {
-      await removeInterest(interest.id);
+    try {
+      // Remove interests that are no longer selected
+      const interestsToRemove = interests.filter(
+        interest => !selectedInterests.includes(interest.interest)
+      );
+      
+      for (const interest of interestsToRemove) {
+        await removeInterest(interest.id);
+      }
+      
+      // Add new interests
+      const existingInterests = interests.map(i => i.interest);
+      const interestsToAdd = selectedInterests.filter(
+        interest => !existingInterests.includes(interest)
+      );
+      
+      for (const interest of interestsToAdd) {
+        await addInterest(interest);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error syncing interests:", error);
+      toast({
+        title: "Error saving interests",
+        description: "There was a problem saving your interests. Please try again.",
+        variant: "destructive",
+      });
+      return false;
     }
-    
-    // Add new interests
-    const existingInterests = interests.map(i => i.interest);
-    const interestsToAdd = selectedInterests.filter(
-      interest => !existingInterests.includes(interest)
-    );
-    
-    for (const interest of interestsToAdd) {
-      await addInterest(interest);
-    }
-    
-    return true;
   };
 
   const onSubmit = async (data: FormValues) => {
+    console.log("Form submitted with data:", data);
     setIsSaving(true);
     try {
       // First update profile
@@ -180,11 +201,20 @@ const EditProfilePage: React.FC = () => {
       const interestsUpdated = await syncInterests();
       
       if (profileUpdated && interestsUpdated) {
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been successfully updated.",
+        });
         // Navigate back to profile page
         navigate("/profile");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving profile:", error);
+      toast({
+        title: "Error saving profile",
+        description: error.message || "There was a problem saving your profile. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -271,7 +301,14 @@ const EditProfilePage: React.FC = () => {
                       <FormItem>
                         <FormLabel>Age</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input 
+                            type="number"
+                            {...field}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              field.onChange(value === "" ? "" : Number(value));
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
