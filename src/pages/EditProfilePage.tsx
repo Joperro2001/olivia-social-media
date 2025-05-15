@@ -9,7 +9,7 @@ import { Form } from "@/components/ui/form";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/context/AuthContext";
 
-// Import our new components
+// Import our components
 import ProfileEditHeader from "@/components/profile/ProfileEditHeader";
 import ProfileImageSection from "@/components/profile/ProfileImageSection";
 import ProfileForm, { formSchema, ProfileFormValues } from "@/components/profile/ProfileForm";
@@ -25,7 +25,7 @@ const EditProfilePage: React.FC = () => {
   const MAX_INTERESTS = 4;
   const [formInitialized, setFormInitialized] = useState(false);
 
-  // Initialize form with validation
+  // Initialize form with improved validation
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,7 +37,7 @@ const EditProfilePage: React.FC = () => {
       move_in_city: "",
       about_me: "",
     },
-    mode: "onChange", // Enable validation as the user types
+    mode: "onBlur", // Change to onBlur for a better user experience
   });
   
   // Fetch profile data when component mounts if needed
@@ -117,6 +117,20 @@ const EditProfilePage: React.FC = () => {
     setIsSaving(true);
     
     try {
+      // First validate all form fields
+      const validationResult = formSchema.safeParse(data);
+      
+      if (!validationResult.success) {
+        console.error("Validation errors:", validationResult.error);
+        toast({
+          title: "Validation Error",
+          description: "Please correct the errors in the form before submitting.",
+          variant: "destructive",
+        });
+        setIsSaving(false);
+        return;
+      }
+      
       // First update profile
       console.log("Calling updateProfile with:", data);
       const profileUpdated = await updateProfile(data);

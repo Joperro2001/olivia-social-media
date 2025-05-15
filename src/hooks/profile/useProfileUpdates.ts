@@ -17,13 +17,23 @@ export const useProfileUpdates = (
         console.error("No authenticated user found");
         toast({
           title: "Authentication required",
-          description: "Please log in to update your profile.",
+          description: "You need to be logged in to update your profile.",
           variant: "destructive",
         });
         return false;
       }
 
       console.log("Updating profile with data:", profileData);
+
+      // Validate required fields
+      if (profileData.full_name && profileData.full_name.trim().length < 2) {
+        toast({
+          title: "Invalid name",
+          description: "Name must be at least 2 characters",
+          variant: "destructive",
+        });
+        return false;
+      }
 
       // Process data before sending to database
       const processedData = {
@@ -43,6 +53,28 @@ export const useProfileUpdates = (
 
       if (error) {
         console.error("Supabase error updating profile:", error);
+        
+        // Provide more specific error messages based on the error code
+        if (error.code === '23505') {
+          toast({
+            title: "Update failed",
+            description: "This information is already in use by another profile.",
+            variant: "destructive",
+          });
+        } else if (error.code === '23503') {
+          toast({
+            title: "Update failed",
+            description: "Referenced record does not exist.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Update failed",
+            description: error.message || "An unexpected error occurred.",
+            variant: "destructive",
+          });
+        }
+        
         throw error;
       }
 
@@ -55,11 +87,6 @@ export const useProfileUpdates = (
         const updatedProfile = { ...prev, ...processedData };
         console.log("Updated local profile state:", updatedProfile);
         return updatedProfile;
-      });
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
       });
       
       return true;

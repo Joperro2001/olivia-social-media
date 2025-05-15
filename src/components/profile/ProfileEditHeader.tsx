@@ -11,13 +11,14 @@ interface ProfileEditHeaderProps {
 
 const ProfileEditHeader: React.FC<ProfileEditHeaderProps> = ({ onSave, onBack, isSaving }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-4 sticky top-0 z-10 bg-[#FDF5EF]">
+    <div className="flex items-center justify-between px-4 py-4 sticky top-0 z-10 bg-[#FDF5EF] shadow-sm">
       <div className="flex items-center">
         <Button 
           variant="ghost" 
           size="icon"
           onClick={onBack}
           className="mr-2"
+          aria-label="Go back"
         >
           <ChevronLeft size={20} />
         </Button>
@@ -27,6 +28,7 @@ const ProfileEditHeader: React.FC<ProfileEditHeaderProps> = ({ onSave, onBack, i
         onClick={onSave}
         className="flex items-center gap-1"
         disabled={isSaving}
+        aria-label={isSaving ? "Saving profile..." : "Save profile"}
       >
         {isSaving ? (
           <>

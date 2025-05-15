@@ -3,20 +3,36 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Profile } from "@/types/Profile";
 
-// Define form validation schema
+// Define form validation schema with improved error messages and validation rules
 const formSchema = z.object({
-  full_name: z.string().min(2, "Name must be at least 2 characters"),
-  age: z.coerce.number().min(18, "Must be at least 18 years old").max(100, "Age cannot exceed 100"),
-  university: z.string().optional(),
-  nationality: z.string().min(2, "Nationality is required"),
-  current_city: z.string().min(2, "Current city is required"),
-  move_in_city: z.string().min(2, "Moving to city is required"),
-  about_me: z.string().min(10, "Please write at least 10 characters about yourself"),
+  full_name: z.string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name cannot exceed 50 characters"),
+  age: z.coerce
+    .number()
+    .int("Age must be a whole number")
+    .min(18, "You must be at least 18 years old to use this platform")
+    .max(100, "Please enter a valid age"),
+  university: z.string()
+    .optional()
+    .transform(val => val === "" ? undefined : val),
+  nationality: z.string()
+    .min(2, "Please specify your nationality")
+    .max(50, "Nationality name is too long"),
+  current_city: z.string()
+    .min(2, "Please specify your current city")
+    .max(100, "City name is too long"),
+  move_in_city: z.string()
+    .min(2, "Please specify the city you're moving to")
+    .max(100, "City name is too long"),
+  about_me: z.string()
+    .min(10, "Please write at least 10 characters about yourself")
+    .max(1000, "Bio cannot exceed 1000 characters"),
 });
 
 export type ProfileFormValues = z.infer<typeof formSchema>;
@@ -42,6 +58,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
               <FormControl>
                 <Input placeholder="Your name" {...field} />
               </FormControl>
+              <FormDescription>
+                Your name as you want it to appear on your profile
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -64,6 +83,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
                   }}
                 />
               </FormControl>
+              <FormDescription>
+                You must be at least 18 years old to use this platform
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -81,8 +103,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
             <FormItem>
               <FormLabel>University</FormLabel>
               <FormControl>
-                <Input placeholder="Your university" {...field} />
+                <Input placeholder="Your university (optional)" {...field} />
               </FormControl>
+              <FormDescription>
+                Optional: Add your university or educational institution
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -97,6 +122,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
               <FormControl>
                 <Input placeholder="Your nationality" {...field} />
               </FormControl>
+              <FormDescription>
+                Your country of origin or citizenship
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -111,6 +139,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
               <FormControl>
                 <Input placeholder="Your current city" {...field} />
               </FormControl>
+              <FormDescription>
+                Where you currently live
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -125,6 +156,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
               <FormControl>
                 <Input placeholder="City you're moving to" {...field} />
               </FormControl>
+              <FormDescription>
+                The city you're relocating to
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -143,11 +177,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
               <FormLabel>Bio</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Tell us about yourself" 
+                  placeholder="Tell us about yourself, your interests, and what you're looking for in your new city" 
                   className="min-h-[120px]"
                   {...field} 
                 />
               </FormControl>
+              <FormDescription>
+                Share a bit about yourself (10-1000 characters)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

@@ -29,8 +29,8 @@ const InterestSelectionSection: React.FC<InterestSelectionSectionProps> = ({
         }
         // Show toast notification if max limit reached
         toast({
-          title: "Maximum interests reached",
-          description: `You can select up to ${maxInterests} interests.`,
+          title: `Maximum of ${maxInterests} interests allowed`,
+          description: `Please remove an interest before adding a new one.`,
           variant: "destructive",
         });
         return prev;
@@ -42,7 +42,7 @@ const InterestSelectionSection: React.FC<InterestSelectionSectionProps> = ({
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm p-5 border space-y-4">
       <h3 className="font-semibold text-lg">Interests</h3>
       <p className="text-sm text-gray-500 mb-3">
-        Select up to {maxInterests} interests from the options below
+        Select up to {maxInterests} interests from the options below to help us match you with like-minded people
       </p>
       
       <div className="flex flex-wrap gap-2 mb-4">
@@ -51,13 +51,20 @@ const InterestSelectionSection: React.FC<InterestSelectionSectionProps> = ({
             <Badge 
               key={interest}
               variant="secondary" 
-              className="bg-lavender-light text-primary-dark"
+              className="bg-lavender-light text-primary-dark flex items-center"
             >
               {interest}
+              <button 
+                className="ml-1 hover:text-red-500 transition-colors"
+                onClick={() => handleInterestToggle(interest)}
+                aria-label={`Remove ${interest} interest`}
+              >
+                &times;
+              </button>
             </Badge>
           ))
         ) : (
-          <p className="text-sm text-gray-500">No interests selected yet.</p>
+          <p className="text-sm text-gray-500">No interests selected yet. Choose what you're passionate about!</p>
         )}
       </div>
       
@@ -85,6 +92,12 @@ const InterestSelectionSection: React.FC<InterestSelectionSectionProps> = ({
             </label>
           </div>
         ))}
+      </div>
+      
+      <div className="mt-4 text-sm text-gray-500">
+        <p>
+          {selectedInterests.length} of {maxInterests} interests selected
+        </p>
       </div>
     </div>
   );
